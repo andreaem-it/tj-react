@@ -5,6 +5,7 @@ import HeroSection from "./HeroSection";
 import PostsGrid from "./PostsGrid";
 import OfferteSidebar from "./OfferteSidebar";
 import TrendingSidebar from "./TrendingSidebar";
+import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
 import type { PostWithMeta } from "@/lib/api";
 
 const PER_PAGE = 10;
@@ -12,6 +13,8 @@ const PER_PAGE = 10;
 interface HomeContentProps {
   initialPosts: PostWithMeta[];
   initialTotalPages: number;
+  /** Pagine già caricate lato server (per "Load more" senza duplicati). */
+  initialPagesConsumed?: number;
   offertePosts: PostWithMeta[];
   trendingPosts: PostWithMeta[];
   categoryId?: number;
@@ -20,14 +23,15 @@ interface HomeContentProps {
 export default function HomeContent({
   initialPosts,
   initialTotalPages,
+  initialPagesConsumed = 1,
   offertePosts,
   trendingPosts,
   categoryId,
 }: HomeContentProps) {
-  const heroPosts = initialPosts.slice(0, 3);
-  const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts.slice(3));
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(initialTotalPages > 1);
+  const heroPosts = initialPosts.slice(0, 4);
+  const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts.slice(4));
+  const [page, setPage] = useState(initialPagesConsumed);
+  const [hasMore, setHasMore] = useState(initialPagesConsumed < initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
 
   const onLoadMore = useCallback(async () => {
@@ -52,15 +56,19 @@ export default function HomeContent({
   }, [page, hasMore, isLoading, categoryId]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* Sezione in testa: tutta la larghezza, 4 articoli (1 grande + 3 a destra). La sidebar inizia sotto. */}
+      <HeroSection posts={heroPosts} />
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">
-          <HeroSection posts={heroPosts} />
+          {/* Banner nella colonna articoli, sopra la griglia */}
+          <InlineBannerPlaceholder width="100%" height={90} className="mb-6" />
           <PostsGrid
             posts={gridPosts}
             hasMore={hasMore}
             onLoadMore={onLoadMore}
             isLoading={isLoading}
+            emptyGridIsExpected={initialPosts.length > 0 && initialPosts.length <= 4}
           />
         </div>
         <div className="flex flex-col gap-6 lg:w-[320px] shrink-0">
@@ -87,6 +95,8 @@ export default function HomeContent({
             </a>
           </div>
           <OfferteSidebar posts={offertePosts} />
+          {/* Banner sotto la colonna Offerte */}
+          <InlineBannerPlaceholder width="100%" height={250} />
           <TrendingSidebar posts={trendingPosts} />
         </div>
       </div>

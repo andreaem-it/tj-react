@@ -1,10 +1,14 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import type { PostWithMeta } from "@/lib/api";
 
 interface ArticleCardProps {
   post: PostWithMeta;
-  variant?: "default" | "hero";
+  variant?: "default" | "hero" | "strip";
+  size?: "large" | "medium" | "small";
 }
 
 function formatDate(dateStr: string): string {
@@ -20,28 +24,69 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function ArticleCard({ post, variant = "default" }: ArticleCardProps) {
+export default function ArticleCard({ post, variant = "default", size }: ArticleCardProps) {
+  const [heroImageError, setHeroImageError] = useState(false);
   const href = `/${post.slug}`;
-  const categoryHref = `/category/${post.categoryId}`;
+  const categoryHref = `/${post.categorySlug}`;
+  const showHeroImage = variant === "hero" && post.imageUrl && !heroImageError;
+
+  if (variant === "strip") {
+    return (
+      <Link href={href} className="group block">
+        <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-content-bg mb-2">
+          {post.imageUrl && (
+            <Image
+              src={post.imageUrl}
+              alt={post.imageAlt}
+              fill
+              className="object-cover transition-transform group-hover:scale-105"
+              sizes="(max-width: 768px) 50vw, 20vw"
+            />
+          )}
+        </div>
+        <h2 className="text-white font-semibold text-sm line-clamp-2 group-hover:text-accent transition-colors">
+          {post.title}
+        </h2>
+      </Link>
+    );
+  }
 
   if (variant === "hero") {
+    const titleLines = size === "large" ? 2 : size === "medium" ? 3 : 2;
+    const titleSize = size === "large" ? "text-base md:text-xl" : size === "medium" ? "text-sm md:text-base" : "text-xs md:text-sm";
     return (
-      <Link href={href} className="group block relative overflow-hidden rounded-lg aspect-[16/10] min-h-[200px]">
-        {post.imageUrl && (
+      <Link href={href} className="group block relative overflow-hidden rounded-lg h-full min-h-[120px] w-full bg-sidebar-bg">
+        {showHeroImage ? (
           <Image
-            src={post.imageUrl}
+            src={post.imageUrl!}
             alt={post.imageAlt}
             fill
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 50vw"
+            onError={() => setHeroImageError(true)}
           />
+        ) : (
+          <div className="absolute inset-0 bg-sidebar-bg" aria-hidden />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <span className="inline-block text-accent text-xs font-semibold uppercase tracking-wide mb-1">
+        {/* Overlay scuro in basso: titolo sempre leggibile anche con immagine chiara o mancante */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" aria-hidden />
+        {/* In basso: label categoria (arancione); sotto, titolo con sfondo nero che segue ogni riga del testo */}
+        <div className="absolute bottom-0 left-0 right-0 p-2 md:p-3 max-w-full z-[1]">
+          <span className="block bg-accent text-white text-[10px] md:text-xs font-semibold uppercase tracking-wide px-2 py-0.5 mb-1 w-fit">
             {post.categoryName}
           </span>
-          <h2 className="text-white font-bold text-lg line-clamp-2">{post.title}</h2>
+          {/* box-decoration-clone: lo sfondo nero viene applicato a ogni riga del testo, non a un contenitore */}
+          <span
+            className={`block overflow-hidden max-w-full ${titleLines === 2 ? "line-clamp-2" : "line-clamp-3"}`}
+            style={{ display: "block" }}
+          >
+            <span
+              className={`inline text-white font-bold ${titleSize} uppercase leading-tight bg-black px-2 py-0.5 md:px-3 md:py-1`}
+              style={{ boxDecorationBreak: "clone", WebkitBoxDecorationBreak: "clone" }}
+            >
+              {post.title}
+            </span>
+          </span>
         </div>
       </Link>
     );

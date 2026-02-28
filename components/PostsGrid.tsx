@@ -8,13 +8,18 @@ interface PostsGridProps {
   hasMore: boolean;
   onLoadMore: () => void;
   isLoading?: boolean;
+  /** Se true, la griglia può essere vuota perché tutti i post sono in hero (es. categoria con 3 articoli). */
+  emptyGridIsExpected?: boolean;
 }
 
-export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading }: PostsGridProps) {
+export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, emptyGridIsExpected }: PostsGridProps) {
   if (posts.length === 0) {
-    return (
-      <p className="text-muted py-8 text-center">Nessun articolo trovato.</p>
-    );
+    if (!hasMore && !emptyGridIsExpected) {
+      return (
+        <p className="text-muted py-8 text-center">Nessun articolo trovato.</p>
+      );
+    }
+    return null;
   }
 
   return (

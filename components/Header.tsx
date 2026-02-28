@@ -1,52 +1,48 @@
+import Image from "next/image";
 import Link from "next/link";
-import { fetchCategories } from "@/lib/api";
+import { fetchCategories, fetchPosts, fetchPostsForMegamenu, getCategoryUrlSlug, MEGAMENU_POSTS_TARGET, resolveCategoryByUrlSlug } from "@/lib/api";
+import NavBar from "./NavBar";
 
-const NAV_ITEMS = [
-  { label: "Ultime Notizie", href: "/" },
-  { label: "Apple", slug: "apple" },
-  { label: "Apps", slug: "apps" },
-  { label: "Tech", slug: "tech" },
-  { label: "Gaming", slug: "gaming" },
-  { label: "Smart Home", slug: "smart-home" },
-  { label: "IA", slug: "ia" },
-  { label: "Offerte", slug: "offerte" },
-];
+const LOGO_URL = "https://static.techjournal.it/2024/01/logo-techjournal-250.png";
 
-function NavLink({
-  href,
-  label,
-  hasDropdown,
-}: {
-  href: string;
-  label: string;
-  hasDropdown?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className="text-foreground hover:text-accent transition-colors text-sm font-medium flex items-center gap-0.5"
-    >
-      {label}
-      {hasDropdown && (
-        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
-          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-        </svg>
-      )}
-    </Link>
-  );
-}
+const MEGAMENU_SLUGS = ["apple", "apps", "tech", "gaming", "smart-home", "ia", "offerte"];
 
 export default async function Header() {
   const categories = await fetchCategories();
-  const slugToId = new Map(categories.map((c) => [c.slug, c.id]));
+  const categoryLinks: Record<string, string> = Object.fromEntries(
+    categories.map((c) => [getCategoryUrlSlug(c), String(c.id)])
+  );
+
+  const megamenuBySlug: Record<string, { slug: string; title: string; imageUrl: string | null; imageAlt: string }[]> = {};
+  await Promise.all(
+    MEGAMENU_SLUGS.map(async (menuSlug) => {
+      const cat = resolveCategoryByUrlSlug(categories, menuSlug);
+      const id = cat?.id;
+      const posts = id != null
+        ? await fetchPostsForMegamenu({ categoryId: id, categories })
+        : (await fetchPosts({ perPage: MEGAMENU_POSTS_TARGET, page: 1 })).posts;
+      megamenuBySlug[menuSlug] = posts.map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        imageUrl: p.imageUrl,
+        imageAlt: p.imageAlt,
+      }));
+    })
+  );
 
   return (
     <header className="sticky top-0 z-50 bg-header-bg border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between py-3">
           <Link href="/" className="flex items-center shrink-0">
-            <span className="text-xl font-bold text-white">tech</span>
-            <span className="text-xl font-bold text-accent">journal</span>
+            <Image
+              src={LOGO_URL}
+              alt="TechJournal"
+              width={250}
+              height={50}
+              className="h-9 w-auto object-contain"
+              priority
+            />
           </Link>
           <div className="flex items-center gap-4">
             <a
@@ -71,30 +67,7 @@ export default async function Header() {
             </a>
           </div>
         </div>
-        <nav className="flex items-center gap-6 py-3 border-t border-white/10">
-          {NAV_ITEMS.map((item) => {
-            const href =
-              "href" in item ? item.href : `/category/${slugToId.get(item.slug) ?? item.slug}`;
-            const isDropdown = "slug" in item;
-            return (
-              <NavLink
-                key={"href" in item ? item.href : item.slug}
-                href={href}
-                label={item.label}
-                hasDropdown={isDropdown}
-              />
-            );
-          })}
-          <Link
-            href="/search"
-            className="ml-auto text-white/90 hover:text-accent transition-colors"
-            aria-label="Cerca"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </Link>
-        </nav>
+        <NavBar categoryLinks={categoryLinks} megamenuBySlug={megamenuBySlug} />
       </div>
     </header>
   );

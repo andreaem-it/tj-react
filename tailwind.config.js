@@ -13,10 +13,10 @@ module.exports = {
         background: "#1a1a1a",
         foreground: "#ffffff",
         muted: "#aaaaaa",
-        accent: "#20b2aa",
-        "header-bg": "#1a1a1a",
+        accent: "#f5a623",
+        "header-bg": "#212121",
         "content-bg": "#2c2f3a",
-        "sidebar-bg": "#2b2b2b",
+        "sidebar-bg": "#252525",
       },
       fontFamily: {
         sans: [

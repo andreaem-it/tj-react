@@ -3,11 +3,11 @@
 :root {
   --background: #1a1a1a;
   --foreground: #ffffff;
-  --muted: #aaaaaa;
-  --accent: #20b2aa;
-  --header-bg: #1a1a1a;
+  --muted: #9ca3af;
+  --accent: #f5a623;
+  --header-bg: #212121;
   --content-bg: #2c2f3a;
-  --sidebar-bg: #2b2b2b;
+  --sidebar-bg: #252525;
 }
 
 @theme inline {
@@ -18,7 +18,7 @@
   --color-header-bg: var(--header-bg);
   --color-content-bg: var(--content-bg);
   --color-sidebar-bg: var(--sidebar-bg);
-  --font-sans: ui-sans-serif, system-ui, sans-serif, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 body {

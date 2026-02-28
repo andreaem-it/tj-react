@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchPostBySlug, fetchPosts } from "@/lib/api";
+import { fetchPostBySlug, fetchPosts, fetchCategories, fetchPostsByCategorySlug, fetchPostsForInitialDisplay, resolveCategoryByUrlSlug } from "@/lib/api";
 import ShareButtons from "@/components/ShareButtons";
 import TrendingSidebar from "@/components/TrendingSidebar";
+import HomeContent from "@/components/HomeContent";
+import OffertePage from "@/components/OffertePage";
 
 export const revalidate = 60;
 
@@ -14,8 +16,11 @@ interface ArticlePageProps {
 export async function generateMetadata({ params }: ArticlePageProps) {
   const { slug } = await params;
   const post = await fetchPostBySlug(slug);
-  if (!post) return { title: "Articolo non trovato" };
-  return { title: `${post.title} | TechJournal` };
+  if (post) return { title: `${post.title} | TechJournal` };
+  const categories = await fetchCategories();
+  const cat = resolveCategoryByUrlSlug(categories, slug);
+  if (cat) return { title: `${cat.name} | TechJournal` };
+  return { title: "Pagina non trovata" };
 }
 
 function formatDate(dateStr: string): string {
@@ -29,12 +34,52 @@ function formatDate(dateStr: string): string {
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const [post, allPosts] = await Promise.all([
-    fetchPostBySlug(slug),
-    fetchPosts({ perPage: 15 }).then((r) => r.posts),
+  const post = await fetchPostBySlug(slug);
+
+  if (post) {
+    return <ArticleView slug={slug} post={post} />;
+  }
+
+  const categories = await fetchCategories();
+  const cat = resolveCategoryByUrlSlug(categories, slug);
+  if (!cat) notFound();
+
+  if (slug === "offerte") {
+    const offertePosts = await fetchPostsByCategorySlug("offerte", 10);
+    return <OffertePage posts={offertePosts} />;
+  }
+
+  const [
+    { posts: initialPosts, totalPages, pagesConsumed },
+    offertePosts,
+    trendingPosts,
+  ] = await Promise.all([
+    fetchPostsForInitialDisplay({ categoryId: cat.id, categories }),
+    fetchPostsByCategorySlug("offerte", 5),
+    fetchPosts({ perPage: 20, page: 1 }).then((r) => r.posts),
   ]);
 
-  if (!post) notFound();
+  return (
+    <HomeContent
+      initialPosts={initialPosts}
+      initialTotalPages={totalPages}
+      initialPagesConsumed={pagesConsumed}
+      offertePosts={offertePosts}
+      trendingPosts={trendingPosts}
+      categoryId={cat.id}
+    />
+  );
+}
+
+async function ArticleView({
+  slug,
+  post,
+}: {
+  slug: string;
+  post: Awaited<ReturnType<typeof fetchPostBySlug>>;
+}) {
+  const allPosts = await fetchPosts({ perPage: 15 }).then((r) => r.posts);
+  if (!post) return null;
 
   const shareUrl = `https://www.techjournal.it/${post.slug}/`;
 
@@ -46,7 +91,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </aside>
         <article className="flex-1 min-w-0 bg-content-bg rounded-lg p-6 md:p-8">
           <Link
-            href={`/category/${post.categoryId}`}
+            href={`/${post.categorySlug}`}
             className="text-accent text-sm font-semibold uppercase tracking-wide hover:underline"
           >
             {post.categoryName}
