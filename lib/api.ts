@@ -23,6 +23,19 @@ export interface WPFeaturedMedia {
   media_details?: WPMediaDetails;
 }
 
+export interface WPAuthor {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  avatar_urls?: { 24?: string; 48?: string; 96?: string };
+}
+
+/** Fallback per autori quando l’embed WP restituisce 404 (endpoint users disabilitato). */
+const AUTHOR_FALLBACK: Record<number, { name: string; avatarUrl: string | null }> = {
+  1: { name: "Andrea Emili", avatarUrl: "https://www.techjournal.it/core/cache/ls/avatar/bcc3c7fe613a4b557760983d0e21d6c6.jpg" },
+};
+
 export interface WPPost {
   id: number;
   date: string;
@@ -33,9 +46,11 @@ export interface WPPost {
   excerpt: { rendered: string };
   featured_media: number;
   categories: number[];
+  author?: number;
   _embedded?: {
     "wp:featuredmedia"?: WPFeaturedMedia[];
     "wp:term"?: WPCategory[][];
+    author?: WPAuthor[];
   };
 }
 
@@ -52,6 +67,8 @@ export interface PostWithMeta {
   categoryId: number;
   imageUrl: string | null;
   imageAlt: string;
+  authorName: string;
+  authorAvatarUrl: string | null;
 }
 
 function stripHtml(html: string): string {
@@ -81,6 +98,12 @@ function decodeHtmlEntities(text: string): string {
 function postFromApi(p: WPPost): PostWithMeta {
   const media = p._embedded?.["wp:featuredmedia"]?.[0];
   const terms = p._embedded?.["wp:term"]?.[0] ?? [];
+  const authorRaw = p._embedded?.author;
+  const authorItem = Array.isArray(authorRaw) ? authorRaw[0] : authorRaw;
+  const isEmbeddedAuthor = authorItem && typeof authorItem === "object" && "name" in authorItem && typeof (authorItem as WPAuthor).name === "string";
+  const author = isEmbeddedAuthor ? (authorItem as WPAuthor) : null;
+  const authorId = typeof p.author === "number" ? p.author : 0;
+  const fallback = authorId ? AUTHOR_FALLBACK[authorId] : undefined;
   const category = terms.find((t) => t.taxonomy === "category") ?? {
     name: "Notizie",
     slug: "notizie",
@@ -90,6 +113,10 @@ function postFromApi(p: WPPost): PostWithMeta {
   };
   const rawTitle = stripHtml(p.title.rendered);
   const rawExcerpt = stripHtml(p.excerpt.rendered);
+  const avatarUrl =
+    author?.avatar_urls?.[96] ?? author?.avatar_urls?.[48] ?? author?.avatar_urls?.[24]
+    ?? fallback?.avatarUrl ?? null;
+  const authorName = author?.name ? decodeHtmlEntities(author.name) : (fallback?.name ?? "Redazione");
   return {
     id: p.id,
     date: p.date,
@@ -103,6 +130,8 @@ function postFromApi(p: WPPost): PostWithMeta {
     categoryId: category.id,
     imageUrl: media?.source_url ?? null,
     imageAlt: decodeHtmlEntities(media?.alt_text ?? rawTitle),
+    authorName,
+    authorAvatarUrl: avatarUrl ?? null,
   };
 }
 
@@ -326,14 +355,26 @@ export async function fetchPostsForMegamenu(params: {
   return all.slice(0, MEGAMENU_POSTS_TARGET);
 }
 
-export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null> {
+/** Fetch raw posts con _embed (per autore da _embedded.author). */
+export async function fetchPostsWithEmbed() {
+  const res = await fetch(`${WP_BASE}/posts?_embed`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error("Errore fetch posts");
+  return res.json();
+}
+
+/** Post singolo raw con _embed (per autore da _embedded.author). */
+export async function fetchPostBySlugRaw(slug: string): Promise<WPPost | null> {
   const res = await fetch(
     `${WP_BASE}/posts?slug=${encodeURIComponent(slug)}&_embed=1`,
     { next: { revalidate: 60 } }
   );
   if (!res.ok) return null;
   const raw: WPPost[] = await res.json();
-  const post = raw[0];
+  return raw[0] ?? null;
+}
+
+export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null> {
+  const post = await fetchPostBySlugRaw(slug);
   if (!post) return null;
   return postFromApi(post);
 }
@@ -372,6 +413,11 @@ const WP_SLUG_TO_URL_SLUG: Record<string, string> = Object.fromEntries(
 /** Restituisce lo slug da usare in URL per una categoria (es. /apps invece di /applicazioni). */
 export function getCategoryUrlSlug(cat: WPCategory): string {
   return WP_SLUG_TO_URL_SLUG[cat.slug] ?? cat.slug;
+}
+
+/** Dato lo slug WordPress di una categoria, restituisce lo slug per l’URL (es. "games" → "gaming"). */
+export function getCategoryUrlSlugFromWpSlug(wpSlug: string): string {
+  return WP_SLUG_TO_URL_SLUG[wpSlug] ?? wpSlug;
 }
 
 /**

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { PostWithMeta } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
 
 interface OffertePageProps {
   posts: PostWithMeta[];
@@ -25,7 +25,7 @@ export default function OffertePage({ posts }: OffertePageProps) {
               key={post.id}
               className="bg-content-bg rounded-xl overflow-hidden border border-white/5 hover:border-accent/30 transition-colors"
             >
-              <Link href={`/${post.slug}`} className="block group">
+              <Link href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`} className="block group">
                 <div className="flex flex-col md:flex-row">
                   {post.imageUrl && (
                     <div className="relative w-full md:w-72 shrink-0 aspect-video md:aspect-square bg-sidebar-bg">

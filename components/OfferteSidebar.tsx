@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { PostWithMeta } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
 
 interface OfferteSidebarProps {
   posts: PostWithMeta[];
@@ -16,7 +16,7 @@ export default function OfferteSidebar({ posts }: OfferteSidebarProps) {
         {posts.slice(0, 5).map((post) => (
           <Link
             key={post.id}
-            href={`/${post.slug}`}
+            href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
             className="block group overflow-hidden rounded-lg aspect-video relative bg-content-bg"
           >
             {post.imageUrl && (

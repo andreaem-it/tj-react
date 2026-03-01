@@ -33,10 +33,12 @@ const MEGAMENU_COLUMNS = 5;
 function MegamenuPanel({
   label,
   categoryHref,
+  categorySlug,
   posts,
 }: {
   label: string;
   categoryHref: string;
+  categorySlug: string;
   posts: MegamenuPost[];
 }) {
   const padded = [...posts];
@@ -52,7 +54,7 @@ function MegamenuPanel({
           post.slug ? (
             <Link
               key={post.slug}
-              href={`/${post.slug}`}
+              href={`/${categorySlug}/${post.slug}`}
               className="flex flex-col min-w-0 rounded overflow-hidden hover:bg-white/5 group"
             >
               <div className="relative w-full aspect-4/3 rounded overflow-hidden bg-content-bg shrink-0">
@@ -174,7 +176,7 @@ export default function NavBar({ megamenuBySlug = {} }: NavBarProps) {
             className="absolute top-full left-0 right-0 z-50 pt-0"
             onMouseEnter={handleEnter.bind(null, activeSlug)}
           >
-            <MegamenuPanel label={label} categoryHref={categoryHref} posts={posts} />
+            <MegamenuPanel label={label} categoryHref={categoryHref} categorySlug={activeSlug} posts={posts} />
           </div>
         );
       })()}

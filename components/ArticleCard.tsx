@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import type { PostWithMeta } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
 
 interface ArticleCardProps {
   post: PostWithMeta;
@@ -26,8 +26,9 @@ function formatDate(dateStr: string): string {
 
 export default function ArticleCard({ post, variant = "default", size }: ArticleCardProps) {
   const [heroImageError, setHeroImageError] = useState(false);
-  const href = `/${post.slug}`;
-  const categoryHref = `/${post.categorySlug}`;
+  const categoryUrlSlug = getCategoryUrlSlugFromWpSlug(post.categorySlug);
+  const href = `/${categoryUrlSlug}/${post.slug}`;
+  const categoryHref = `/${categoryUrlSlug}`;
   const showHeroImage = variant === "hero" && post.imageUrl && !heroImageError;
 
   if (variant === "strip") {

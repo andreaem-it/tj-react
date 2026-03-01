@@ -98,6 +98,12 @@ export default function HomeContent({
           {/* Banner sotto la colonna Offerte */}
           <InlineBannerPlaceholder width="100%" height={250} />
           <TrendingSidebar posts={trendingPosts} />
+          <InlineBannerPlaceholder width="100%" height={250} />
+          <InlineBannerPlaceholder width="100%" height={250} />
+          <InlineBannerPlaceholder width="100%" height={250} />
+          <InlineBannerPlaceholder width="100%" height={250} />
+          <InlineBannerPlaceholder width="100%" height={250} />
+          <InlineBannerPlaceholder width="100%" height={250} />
         </div>
       </div>
     </div>
