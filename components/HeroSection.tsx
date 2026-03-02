@@ -22,7 +22,7 @@ export default function HeroSection({ posts }: HeroSectionProps) {
       <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-2 gap-2 md:gap-3">
         {/* Colonna 1 (6/12): elemento grande */}
         <div className="lg:col-start-1 lg:col-span-6 lg:row-span-2 min-h-[220px] sm:min-h-[280px] lg:min-h-[320px]">
-          <ArticleCard post={first} variant="hero" size="large" />
+          <ArticleCard post={first} variant="hero" size="large" priority />
         </div>
         {/* Colonna 2 (3/12): elemento medio */}
         <div className="lg:col-start-7 lg:col-span-3 lg:row-span-2 min-h-[200px] sm:min-h-[240px] lg:min-h-[320px]">

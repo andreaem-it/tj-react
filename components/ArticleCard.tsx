@@ -4,11 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
+import { BLUR_DATA_URL } from "@/lib/constants";
 
 interface ArticleCardProps {
   post: PostWithMeta;
   variant?: "default" | "hero" | "strip";
   size?: "large" | "medium" | "small";
+  /** Imposta priority per le immagini above-the-fold (hero, prime card). */
+  priority?: boolean;
 }
 
 function formatDate(dateStr: string): string {
@@ -24,7 +27,7 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function ArticleCard({ post, variant = "default", size }: ArticleCardProps) {
+export default function ArticleCard({ post, variant = "default", size, priority }: ArticleCardProps) {
   const [heroImageError, setHeroImageError] = useState(false);
   const categoryUrlSlug = getCategoryUrlSlugFromWpSlug(post.categorySlug);
   const href = `/${categoryUrlSlug}/${post.slug}`;
@@ -42,6 +45,8 @@ export default function ArticleCard({ post, variant = "default", size }: Article
               fill
               className="object-cover transition-transform group-hover:scale-105"
               sizes="(max-width: 768px) 50vw, 20vw"
+              placeholder="blur"
+              blurDataURL={BLUR_DATA_URL}
             />
           )}
         </div>
@@ -64,6 +69,9 @@ export default function ArticleCard({ post, variant = "default", size }: Article
             fill
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 50vw"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
+            priority={priority}
             onError={() => setHeroImageError(true)}
           />
         ) : (
@@ -103,6 +111,9 @@ export default function ArticleCard({ post, variant = "default", size }: Article
             fill
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 50vw"
+            placeholder="blur"
+            blurDataURL={BLUR_DATA_URL}
+            priority={priority}
           />
         ) : (
           <div className="absolute inset-0 bg-sidebar-bg" />

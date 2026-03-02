@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import BannerPlaceholder from "@/components/BannerPlaceholder";
+import NewsletterModal from "@/components/NewsletterModal";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
           <BannerPlaceholder side="right" width={160} minHeight={600} />
         </main>
         <Footer />
+        <NewsletterModal />
         <ScrollToTop />
       </body>
     </html>

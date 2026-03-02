@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useCallback, useEffect } from "react";
+import { BLUR_DATA_URL } from "@/lib/constants";
 
 const NAV_ITEMS = [
   { label: "Ultime Notizie", href: "/" },
@@ -67,6 +68,8 @@ function MegamenuPanel({
                     fill
                     className="object-cover group-hover:scale-105 transition-transform"
                     sizes="200px"
+                    placeholder="blur"
+                    blurDataURL={BLUR_DATA_URL}
                   />
                 ) : (
                   <div className="absolute inset-0 bg-sidebar-bg" />

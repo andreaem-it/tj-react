@@ -13,13 +13,7 @@ export default function TrendingSidebar({ posts, currentSlug, currentPost }: Tre
   const list = relatedPosts.slice(0, 8);
 
   return (
-    <aside className="bg-sidebar-bg rounded-lg p-6 w-full lg:w-[280px] shrink-0 lg:sticky lg:top-[150px] self-start">
-      {currentPost && (
-        <div className="mb-6 p-4 rounded-lg bg-black/80">
-          <h2 className="text-white font-bold text-sm mb-3 line-clamp-2">{currentPost.title}</h2>
-          <ShareButtons title={currentPost.title} url={currentPost.shareUrl} variant="dark" />
-        </div>
-      )}
+    <aside className="bg-sidebar-bg rounded-lg p-6 w-full lg:w-[320px] shrink-0 lg:sticky lg:top-[150px] self-start w-full">
       <ul className="divide-y divide-border">
         {list.map((post) => (
           <li key={post.id} className="py-3 first:pt-0">

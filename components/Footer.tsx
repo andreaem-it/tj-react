@@ -33,6 +33,13 @@ export default function Footer() {
             </a>
           </div>
         </div>
+        <p className="text-muted text-xs mt-6 pt-6 border-t border-border w-full text-center">
+          <strong>TechJournal</strong> è un blog personale e non è iscritto
+          come testata giornalistica. I contenuti pubblicati hanno scopo informativo e di intrattenimento; le
+          informazioni riportate potrebbero non essere verificate o aggiornate. <br/>Le opinioni espresse sono
+          esclusivamente degli autori. Non si assume alcuna responsabilità per eventuali errori, omissioni o
+          reclami relativi ai contenuti del sito. <br/>Per questioni legali o commerciali contattare il titolare.
+        </p>
       </div>
     </footer>
   );

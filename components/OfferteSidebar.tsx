@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
+import { BLUR_DATA_URL } from "@/lib/constants";
 
 interface OfferteSidebarProps {
   posts: PostWithMeta[];
@@ -26,6 +27,8 @@ export default function OfferteSidebar({ posts }: OfferteSidebarProps) {
                 fill
                 className="object-cover transition-transform group-hover:scale-105"
                 sizes="320px"
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
               />
             )}
             <span className="absolute bottom-2 left-2 text-accent text-xs font-semibold uppercase">

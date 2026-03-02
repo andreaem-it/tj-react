@@ -1,4 +1,48 @@
+import https from "node:https";
+
 const WP_BASE = "https://www.techjournal.it/wp-json/wp/v2";
+
+/** Fetch a WordPress URL con https nativo di Node (bypass cache Next.js). */
+function fetchWpWithNodeHttps(wpUrl: string): Promise<{ raw: WPPost[]; totalPages: number }> {
+  return new Promise((resolve, reject) => {
+    const u = new URL(wpUrl);
+    const opts = {
+      hostname: u.hostname,
+      path: u.pathname + u.search,
+      method: "GET",
+      headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+    };
+    https.get(opts, (res) => {
+      let body = "";
+      res.on("data", (chunk: Buffer) => { body += chunk.toString(); });
+      res.on("end", () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`WP API HTTP ${res.statusCode}: ${body.slice(0, 200)}`));
+          return;
+        }
+        const totalPages = Number(res.headers["x-wp-totalpages"]) || 1;
+        try {
+          const raw = JSON.parse(body) as WPPost[];
+          resolve({ raw, totalPages });
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on("error", reject);
+  });
+}
+
+/** Richiede una singola pagina di post a WordPress via Node https. Usato solo per Load more (route /api/posts/[page]). */
+export function fetchPostsPageFromWordPress(
+  page: number,
+  perPage: number
+): Promise<{ posts: PostWithMeta[]; totalPages: number }> {
+  const wpUrl = `${WP_BASE}/posts?per_page=${perPage}&page=${page}&_embed=1`;
+  return fetchWpWithNodeHttps(wpUrl).then(({ raw, totalPages }) => ({
+    posts: raw.map(postFromApi),
+    totalPages,
+  }));
+}
 
 export interface WPCategory {
   id: number;
@@ -70,6 +114,8 @@ export interface PostWithMeta {
   imageAlt: string;
   authorName: string;
   authorAvatarUrl: string | null;
+  /** Conteggio letture (se esposto dall'API WP via campi o meta). */
+  viewCount: number | null;
 }
 
 function stripHtml(html: string): string {
@@ -133,6 +179,7 @@ function postFromApi(p: WPPost): PostWithMeta {
     imageAlt: decodeHtmlEntities(media?.alt_text ?? rawTitle),
     authorName,
     authorAvatarUrl: avatarUrl ?? null,
+    viewCount: getViewCountFromPost(p),
   };
 }
 
@@ -170,16 +217,21 @@ async function fetchPostsSingleCategory(params: {
   perPage: number;
   page: number;
   categoryId: number;
+  requestCache?: RequestCache;
 }): Promise<{ posts: PostWithMeta[]; totalPages: number }> {
-  const { perPage, page, categoryId } = params;
+  const { perPage, page, categoryId, requestCache } = params;
   const searchParams = new URLSearchParams({
     per_page: String(perPage),
     page: String(page),
     _embed: "1",
     categories: String(categoryId),
   });
+  if (requestCache === "no-store") {
+    searchParams.set("_", String(Date.now()));
+  }
   const res = await fetch(`${WP_BASE}/posts?${searchParams.toString()}`, {
-    next: { revalidate: 60 },
+    ...(requestCache !== undefined && { cache: requestCache }),
+    ...(requestCache === undefined && { next: { revalidate: 60 } }),
   });
   if (!res.ok) throw new Error(`WP API error: ${res.status}`);
   const totalPages = Number(res.headers.get("X-WP-TotalPages")) || 1;
@@ -214,8 +266,10 @@ export async function fetchPosts(params: {
   page?: number;
   categoryId?: number;
   categoryIds?: number[];
+  /** Se impostato (es. "no-store"), la fetch a WP non usa cache Next.js. Utile per route API "Load more". */
+  requestCache?: RequestCache;
 }): Promise<{ posts: PostWithMeta[]; totalPages: number }> {
-  const { perPage = 10, page = 1, categoryId, categoryIds } = params;
+  const { perPage = 10, page = 1, categoryId, categoryIds, requestCache } = params;
   const ids = categoryIds ?? (categoryId != null && categoryId > 0 ? [categoryId] : []);
 
   if (ids.length === 0) {
@@ -224,9 +278,13 @@ export async function fetchPosts(params: {
       page: String(page),
       _embed: "1",
     });
-    const res = await fetch(`${WP_BASE}/posts?${searchParams.toString()}`, {
-      next: { revalidate: 60 },
-    });
+    const wpUrl = `${WP_BASE}/posts?${searchParams.toString()}`;
+    if (requestCache === "no-store") {
+      const { raw, totalPages } = await fetchWpWithNodeHttps(wpUrl);
+      const posts = raw.map(postFromApi);
+      return { posts, totalPages };
+    }
+    const res = await fetch(wpUrl, { next: { revalidate: 60 } });
     if (!res.ok) throw new Error(`WP API error: ${res.status}`);
     const totalPages = Number(res.headers.get("X-WP-TotalPages")) || 1;
     const raw: WPPost[] = await res.json();
@@ -235,7 +293,7 @@ export async function fetchPosts(params: {
   }
 
   if (ids.length === 1) {
-    return fetchPostsSingleCategory({ perPage, page, categoryId: ids[0] });
+    return fetchPostsSingleCategory({ perPage, page, categoryId: ids[0], requestCache });
   }
 
   /* Più categorie: l’API WP con più ID fa AND. Facciamo una richiesta per categoria, uniamo (OR), dedup, ordiniamo, paginiamo. */
@@ -297,11 +355,13 @@ export async function fetchPostsForInitialDisplay(params: {
   let page = 1;
   let totalPages = 1;
 
+  const PER_PAGE = 10;
   while (all.length < INITIAL_POSTS_TARGET) {
     const { posts, totalPages: tp } = await fetchPosts({
-      perPage: 20,
+      perPage: PER_PAGE,
       page,
       categoryIds: categoryIds ?? (categoryId != null ? [categoryId] : undefined),
+      requestCache: "no-store",
     });
     totalPages = tp;
     if (posts.length === 0) break;
@@ -388,6 +448,31 @@ export function getViewCountFromPost(post: WPPost | null): number | null {
 }
 
 /**
+ * Restituisce una lista di post ordinati per popolarità (viewCount desc, poi data).
+ */
+export async function fetchMostReadPosts(params: {
+  categoryId?: number;
+  limit?: number;
+}): Promise<PostWithMeta[]> {
+  const { categoryId, limit = 5 } = params;
+  // Prendiamo un buon numero di articoli recenti e li ordiniamo per viewCount.
+  const { posts } = await fetchPosts({
+    perPage: 40,
+    page: 1,
+    categoryId,
+  });
+  const list = [...posts];
+  list.sort((a, b) => {
+    const va = a.viewCount ?? 0;
+    const vb = b.viewCount ?? 0;
+    if (vb !== va) return vb - va;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+  // Mostra prima i post che hanno effettivamente delle letture.
+  return list.filter((p) => (p.viewCount ?? 0) > 0).slice(0, limit);
+}
+
+/**
  * Ricerca articoli tramite API WordPress (parametro search).
  */
 export async function fetchSearchPosts(params: {
@@ -412,6 +497,63 @@ export async function fetchSearchPosts(params: {
   const raw: WPPost[] = await res.json();
   const posts = raw.map(postFromApi);
   return { posts, totalPages };
+}
+
+/**
+ * Articoli correlati: stessa categoria, escluso il post corrente,
+ * ordinati per viewCount decrescente e data più recente.
+ */
+export async function fetchRelatedPosts(params: {
+  baseSlug: string;
+  categoryId: number;
+  limit?: number;
+}): Promise<PostWithMeta[]> {
+  const { baseSlug, categoryId, limit = 4 } = params;
+  // Prendiamo un po' di articoli della stessa categoria e li rankiamo lato server.
+  const { posts } = await fetchPosts({ perPage: 30, page: 1, categoryId });
+  const candidates = posts.filter((p) => p.slug !== baseSlug);
+  candidates.sort((a, b) => {
+    const va = a.viewCount ?? 0;
+    const vb = b.viewCount ?? 0;
+    if (vb !== va) return vb - va;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+  return candidates.slice(0, limit);
+}
+
+/**
+ * Top articoli per periodo (trending nel tempo): filtra per data (ultimi 7 o 30 giorni),
+ * ordina per viewCount decrescente e data.
+ */
+export async function fetchTrendingByPeriod(params: {
+  period: "week" | "month";
+  categoryId?: number;
+  limit?: number;
+}): Promise<PostWithMeta[]> {
+  const { period, categoryId, limit = 5 } = params;
+  const days = period === "week" ? 7 : 30;
+  const after = new Date();
+  after.setDate(after.getDate() - days);
+  const afterIso = after.toISOString();
+  const searchParams = new URLSearchParams({
+    after: afterIso,
+    per_page: "60",
+    _embed: "1",
+    ...(categoryId != null && categoryId > 0 ? { categories: String(categoryId) } : {}),
+  });
+  const res = await fetch(`${WP_BASE}/posts?${searchParams.toString()}`, {
+    next: { revalidate: 60 },
+  });
+  if (!res.ok) return [];
+  const raw: WPPost[] = await res.json();
+  const posts = raw.map(postFromApi);
+  const sorted = [...posts].sort((a, b) => {
+    const va = a.viewCount ?? 0;
+    const vb = b.viewCount ?? 0;
+    if (vb !== va) return vb - va;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+  return sorted.slice(0, limit);
 }
 
 /** Post singolo raw con _embed (per autore da _embedded.author). */

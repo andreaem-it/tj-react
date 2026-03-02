@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import HeroSection from "./HeroSection";
 import PostsGrid from "./PostsGrid";
 import OfferteSidebar from "./OfferteSidebar";
 import TrendingSidebar from "./TrendingSidebar";
+import MostReadSidebar from "./MostReadSidebar";
+import TrendingByPeriodSidebar from "./TrendingByPeriodSidebar";
 import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
 import type { PostWithMeta } from "@/lib/api";
 
@@ -17,6 +19,9 @@ interface HomeContentProps {
   initialPagesConsumed?: number;
   offertePosts: PostWithMeta[];
   trendingPosts: PostWithMeta[];
+  mostReadPosts: PostWithMeta[];
+  weekTrendingPosts: PostWithMeta[];
+  monthTrendingPosts: PostWithMeta[];
   categoryId?: number;
 }
 
@@ -26,34 +31,41 @@ export default function HomeContent({
   initialPagesConsumed = 1,
   offertePosts,
   trendingPosts,
+  mostReadPosts,
+  weekTrendingPosts,
+  monthTrendingPosts,
   categoryId,
 }: HomeContentProps) {
   const heroPosts = initialPosts.slice(0, 4);
   const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts.slice(4));
-  const [page, setPage] = useState(initialPagesConsumed);
   const [hasMore, setHasMore] = useState(initialPagesConsumed < initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
+  /** Prossima pagina da richiedere: il server ha già inviato initialPagesConsumed pagine da 10, quindi la prossima è initialPagesConsumed + 1. */
+  const nextPageRef = useRef(initialPagesConsumed + 1);
 
   const onLoadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
+    const pageToFetch = nextPageRef.current;
     setIsLoading(true);
     try {
-      const nextPage = page + 1;
-      const url = new URL("/api/posts", window.location.origin);
-      url.searchParams.set("page", String(nextPage));
-      url.searchParams.set("per_page", String(PER_PAGE));
-      if (categoryId) url.searchParams.set("category", String(categoryId));
-      const res = await fetch(url.toString());
-      const data = await res.json();
+      const url = `${window.location.origin}/api/posts/${pageToFetch}`;
+      const res = await fetch(url, { cache: "no-store" });
+      const data = res.ok ? await res.json() : { posts: [], totalPages: 0 };
       if (data.posts?.length) {
-        setGridPosts((prev) => [...prev, ...data.posts]);
-        setPage(nextPage);
+        setGridPosts((prev) => {
+          const existingIds = new Set([...heroPosts, ...prev].map((p) => p.id));
+          const newPosts = data.posts.filter((p: PostWithMeta) => !existingIds.has(p.id));
+          return newPosts.length > 0 ? [...prev, ...newPosts] : prev;
+        });
+        nextPageRef.current = pageToFetch + 1;
+        setHasMore(pageToFetch < (data.totalPages ?? 1));
+      } else {
+        setHasMore(false);
       }
-      setHasMore(nextPage < (data.totalPages ?? 1));
     } finally {
       setIsLoading(false);
     }
-  }, [page, hasMore, isLoading, categoryId]);
+  }, [heroPosts, hasMore, isLoading, categoryId]);
 
   return (
     <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-6">
@@ -97,6 +109,8 @@ export default function HomeContent({
           <OfferteSidebar posts={offertePosts} />
           {/* Banner sotto la colonna Offerte */}
           <InlineBannerPlaceholder width="100%" height={250} />
+          <MostReadSidebar posts={mostReadPosts} />
+          <TrendingByPeriodSidebar weekPosts={weekTrendingPosts} monthPosts={monthTrendingPosts} />
           <TrendingSidebar posts={trendingPosts} />
         </div>
       </div>
