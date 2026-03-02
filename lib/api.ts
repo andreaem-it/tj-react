@@ -47,6 +47,7 @@ export interface WPPost {
   featured_media: number;
   categories: number[];
   author?: number;
+  meta?: Record<string, unknown>;
   _embedded?: {
     "wp:featuredmedia"?: WPFeaturedMedia[];
     "wp:term"?: WPCategory[][];
@@ -360,6 +361,57 @@ export async function fetchPostsWithEmbed() {
   const res = await fetch(`${WP_BASE}/posts?_embed`, { next: { revalidate: 60 } });
   if (!res.ok) throw new Error("Errore fetch posts");
   return res.json();
+}
+
+/** Estrae il conteggio letture dal post. Supporta:
+ * - Post Views Counter: campo a livello post (post_views, pvc_views, views) se esposto via register_rest_field
+ * - Meta: post_views_count, views, jetpack_post_views, _post_views, post_views (plugin WP-PostViews, ecc.)
+ */
+export function getViewCountFromPost(post: WPPost | null): number | null {
+  if (!post) return null;
+  const raw = post as Record<string, unknown>;
+  const fromTopLevel = raw.post_views ?? raw.pvc_views ?? raw.views ?? raw.post_views_count;
+  const v =
+    fromTopLevel ??
+    (post.meta && typeof post.meta === "object"
+      ? (post.meta as Record<string, unknown>).post_views_count ??
+        (post.meta as Record<string, unknown>).views ??
+        (post.meta as Record<string, unknown>).pvc_views ??
+        (post.meta as Record<string, unknown>).post_views
+      : undefined);
+  if (typeof v === "number" && v >= 0) return v;
+  if (typeof v === "string") {
+    const n = parseInt(v, 10);
+    if (!Number.isNaN(n) && n >= 0) return n;
+  }
+  return null;
+}
+
+/**
+ * Ricerca articoli tramite API WordPress (parametro search).
+ */
+export async function fetchSearchPosts(params: {
+  query: string;
+  page?: number;
+  perPage?: number;
+}): Promise<{ posts: PostWithMeta[]; totalPages: number }> {
+  const { query, page = 1, perPage = 10 } = params;
+  const q = String(query).trim();
+  if (!q) return { posts: [], totalPages: 0 };
+  const searchParams = new URLSearchParams({
+    search: q,
+    per_page: String(perPage),
+    page: String(page),
+    _embed: "1",
+  });
+  const res = await fetch(`${WP_BASE}/posts?${searchParams.toString()}`, {
+    next: { revalidate: 60 },
+  });
+  if (!res.ok) return { posts: [], totalPages: 0 };
+  const totalPages = Number(res.headers.get("X-WP-TotalPages")) || 0;
+  const raw: WPPost[] = await res.json();
+  const posts = raw.map(postFromApi);
+  return { posts, totalPages };
 }
 
 /** Post singolo raw con _embed (per autore da _embedded.author). */

@@ -26,3 +26,62 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+/* Articoli: leggibilità (colore più vivo, interlinea, base +2pt) e controlli dimensione */
+:root {
+  --article-text: #c8ccd1;
+  --article-line-height: 1.75;
+}
+
+.article-body-wrapper .article-content {
+  color: var(--article-text);
+  line-height: var(--article-line-height);
+  margin-top: 1.5rem;
+  padding: 0 1rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .article-body-wrapper .article-content {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+}
+
+.article-body-wrapper .article-content p {
+  margin-bottom: 1.25em;
+}
+
+.article-body-wrapper .article-content h2 {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.article-body-wrapper .article-content a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.article-body-wrapper .article-content a:hover {
+  text-decoration: underline;
+}
+
+.article-body-wrapper .article-content strong {
+  color: #fff;
+}
+
+/* Livelli dimensione: 0 = 16px, 1 = 18px (+2pt base), 2 = 20px */
+.article-body-wrapper[data-font-size="0"] .article-content {
+  font-size: 1rem;
+}
+
+.article-body-wrapper[data-font-size="1"] .article-content {
+  font-size: 1.125rem;
+}
+
+.article-body-wrapper[data-font-size="2"] .article-content {
+  font-size: 1.25rem;
+}

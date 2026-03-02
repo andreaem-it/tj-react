@@ -56,7 +56,7 @@ export default function HomeContent({
   }, [page, hasMore, isLoading, categoryId]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-6">
       {/* Sezione in testa: tutta la larghezza, 4 articoli (1 grande + 3 a destra). La sidebar inizia sotto. */}
       <HeroSection posts={heroPosts} />
       <div className="flex flex-col lg:flex-row gap-8">

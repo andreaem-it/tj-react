@@ -8,7 +8,7 @@ interface OffertePageProps {
 
 export default function OffertePage({ posts }: OffertePageProps) {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
+    <div className="max-w-4xl mx-auto px-2.5 md:px-4 py-10">
       <header className="mb-10">
         <h1 className="text-white text-3xl md:text-4xl font-bold mb-2">Offerte</h1>
         <p className="text-muted text-lg">

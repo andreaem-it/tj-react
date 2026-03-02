@@ -6,10 +6,12 @@ import {
   fetchPostBySlugRaw,
   fetchPosts,
   getCategoryUrlSlugFromWpSlug,
+  getViewCountFromPost,
 } from "@/lib/api";
 import ShareButtons from "@/components/ShareButtons";
 import TrendingSidebar from "@/components/TrendingSidebar";
 import AuthorCard from "@/components/AuthorCard";
+import ArticleBody from "@/components/ArticleBody";
 
 export const revalidate = 60;
 
@@ -95,7 +97,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-8">
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0 bg-content-bg rounded-lg overflow-hidden">
           {post.imageUrl ? (
@@ -117,12 +119,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </header>
           )}
 
-          <div className="p-6 md:p-8 pt-4">
-          <div
-            className="article-content text-muted [&_h2]:text-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-2 [&_p]:mb-4 [&_a]:text-accent [&_a]:no-underline hover:[&_a]:underline [&_strong]:text-white"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
-
+          <div className="p-6 md:p-8 pt-6">
+            <ArticleBody html={post.content} viewCount={getViewCountFromPost(rawPost)} postId={post.id} />
           </div>
           <footer className="mt-8 pt-6 border-t border-white/10">
             {author ? (
