@@ -83,7 +83,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
             type="button"
             onClick={smaller}
             disabled={level === MIN_LEVEL}
-            className="w-8 h-8 rounded border border-white/20 bg-white/5 text-white hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-sm font-bold transition-colors"
+            className="w-8 h-8 rounded border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-sm font-bold transition-colors"
             aria-label="Riduci dimensione testo"
           >
             A−
@@ -92,7 +92,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
             type="button"
             onClick={larger}
             disabled={level === MAX_LEVEL}
-            className="w-8 h-8 rounded border border-white/20 bg-white/5 text-white hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-sm font-bold transition-colors"
+            className="w-8 h-8 rounded border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-sm font-bold transition-colors"
             aria-label="Aumenta dimensione testo"
           >
             A+

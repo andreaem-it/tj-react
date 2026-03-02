@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it" className={inter.variable}>
+    <html lang="it" className={`dark ${inter.variable}`}>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased font-sans">
         <Header />
         <main className="flex-1 flex w-full justify-center min-w-0 px-2.5 xl:px-12 gap-6 xl:gap-10">

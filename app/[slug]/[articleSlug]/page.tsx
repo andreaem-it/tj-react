@@ -69,7 +69,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       >
         {post.categoryName}
       </Link>
-      <h1 className="text-white text-2xl md:text-4xl font-bold mt-1 mb-2 max-w-3xl">
+      <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-1 mb-2 max-w-3xl">
         {post.title}
       </h1>
       <p className="text-muted text-base mb-6 max-w-2xl">{post.excerpt}</p>
@@ -83,12 +83,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             className="rounded-full object-cover shrink-0"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-muted text-sm font-medium shrink-0">
+          <div className="w-10 h-10 rounded-full bg-surface-overlay flex items-center justify-center text-muted text-sm font-medium shrink-0">
             {post.authorName.slice(0, 2).toUpperCase()}
           </div>
         )}
         <div className="text-left">
-          <p className="text-white text-sm font-medium">By {post.authorName}</p>
+          <p className="text-foreground text-sm font-medium">By {post.authorName}</p>
           <p className="text-muted text-sm">{formatDate(post.date)}</p>
         </div>
         <ShareButtons title={post.title} url={shareUrl} variant="light" />
@@ -122,7 +122,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="p-6 md:p-8 pt-6">
             <ArticleBody html={post.content} viewCount={getViewCountFromPost(rawPost)} postId={post.id} />
           </div>
-          <footer className="mt-8 pt-6 border-t border-white/10">
+          <footer className="mt-8 pt-6 border-t border-border">
             {author ? (
               <div className="p-4 rounded-lg bg-sidebar-bg/50">
                 <AuthorCard author={author} />
@@ -146,7 +146,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   <p className="text-muted text-sm font-semibold uppercase tracking-wide mb-1">
                     Scritto da
                   </p>
-                  <p className="text-white font-medium">{post.authorName}</p>
+                  <p className="text-foreground font-medium">{post.authorName}</p>
                   <p className="text-muted text-sm mt-2 leading-relaxed">
                     Andrea è uno sviluppatore PHP classe 1990. Appassionato di tecnologia fin da bambino, si evolve nel tempo come programmatore. Amo la tecnologia, è il mio lavoro, il mio pane quotidiano, sono appassionato dei prodotti Apple e di tutto ciò che ruota attorno all&apos;ecosistema.
                   </p>

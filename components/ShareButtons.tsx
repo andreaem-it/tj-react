@@ -44,8 +44,8 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
 
   const btnClass =
     variant === "dark"
-      ? "inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white hover:bg-accent transition-colors"
-      : "inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors";
+      ? "inline-flex items-center justify-center w-8 h-8 rounded-full bg-surface-overlay text-foreground hover:bg-accent hover:text-white transition-colors"
+      : "inline-flex items-center justify-center w-8 h-8 rounded-full bg-surface-overlay-strong text-foreground hover:bg-accent hover:text-white transition-colors";
 
   return (
     <div className="flex items-center gap-2 flex-wrap">

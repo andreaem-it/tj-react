@@ -50,14 +50,14 @@ function MegamenuPanel({
   const slice = padded.slice(0, MEGAMENU_COLUMNS);
 
   return (
-    <div className="bg-sidebar-bg border border-t-0 border-white/10 shadow-xl py-4 px-4 rounded-b-md w-full">
+    <div className="bg-sidebar-bg border border-t-0 border-border shadow-xl py-4 px-4 rounded-b-md w-full">
       <div className="grid grid-cols-5 gap-4">
         {slice.map((post, i) =>
           post.slug ? (
             <Link
               key={post.slug}
               href={`/${categorySlug}/${post.slug}`}
-              className="flex flex-col min-w-0 rounded overflow-hidden hover:bg-white/5 group"
+              className="flex flex-col min-w-0 rounded overflow-hidden hover:bg-surface-overlay group"
             >
               <div className="relative w-full aspect-4/3 rounded overflow-hidden bg-content-bg shrink-0">
                 {post.imageUrl ? (
@@ -72,7 +72,7 @@ function MegamenuPanel({
                   <div className="absolute inset-0 bg-sidebar-bg" />
                 )}
               </div>
-              <span className="text-sm text-white group-hover:text-accent line-clamp-3 mt-2 px-1">
+              <span className="text-sm text-foreground group-hover:text-accent line-clamp-3 mt-2 px-1">
                 {post.title}
               </span>
             </Link>
@@ -83,7 +83,7 @@ function MegamenuPanel({
       </div>
       <Link
         href={categoryHref}
-        className="inline-block mt-3 px-4 py-2 text-sm font-medium text-accent hover:bg-white/5 rounded"
+        className="inline-block mt-3 px-4 py-2 text-sm font-medium text-accent hover:bg-surface-overlay rounded"
       >
         Tutti gli articoli {label}
       </Link>
@@ -138,7 +138,7 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
         onMouseLeave={handleLeave}
       >
         {/* Nav desktop: nascosto su mobile */}
-        <nav className="hidden md:flex items-center gap-6 py-3 border-t border-white/10 flex-wrap">
+        <nav className="hidden md:flex items-center gap-6 py-3 border-t border-border flex-wrap">
           {NAV_ITEMS.map((item) => {
             const href =
               "href" in item ? item.href : `/${item.slug}`;
@@ -152,7 +152,7 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
                 <Link
                   key={slug}
                   href={categoryHref}
-                  className="text-white hover:text-accent transition-colors text-base font-medium flex items-center gap-0.5 py-1"
+                  className="text-foreground hover:text-accent transition-colors text-base font-medium flex items-center gap-0.5 py-1"
                   onMouseEnter={() => handleEnter(slug)}
                 >
                   {item.label}
@@ -167,7 +167,7 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-white hover:text-accent transition-colors text-base font-medium py-1"
+                className="text-foreground hover:text-accent transition-colors text-base font-medium py-1"
               >
                 {item.label}
               </Link>
@@ -175,7 +175,7 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
           })}
           <Link
             href="/search"
-            className="ml-auto text-white hover:text-accent transition-colors p-1"
+            className="ml-auto text-foreground hover:text-accent transition-colors p-1"
             aria-label="Cerca"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,17 +204,17 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
       {/* Popup menu a tutto schermo (mobile) */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[100] bg-background flex flex-col md:hidden"
+          className="fixed inset-0 z-100 bg-background flex flex-col md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Menu di navigazione"
         >
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
-            <span className="text-white font-semibold">Menu</span>
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <span className="text-foreground font-semibold">Menu</span>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-2 text-white hover:text-accent transition-colors rounded-lg hover:bg-white/5"
+              className="p-2 text-foreground hover:text-accent transition-colors rounded-lg hover:bg-surface-overlay"
               aria-label="Chiudi menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +230,7 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
                   <li key={"href" in item ? item.href : item.slug}>
                     <Link
                       href={href}
-                      className="block py-3 px-4 text-white hover:text-accent hover:bg-white/5 rounded-lg transition-colors text-lg font-medium"
+                      className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}
@@ -238,10 +238,10 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
                   </li>
                 );
               })}
-              <li className="border-t border-white/10 mt-2 pt-2">
+              <li className="border-t border-border mt-2 pt-2">
                 <Link
                   href="/search"
-                  className="block py-3 px-4 text-white hover:text-accent hover:bg-white/5 rounded-lg transition-colors text-lg font-medium"
+                  className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Cerca

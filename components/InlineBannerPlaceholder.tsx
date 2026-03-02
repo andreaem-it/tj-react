@@ -15,7 +15,7 @@ export default function InlineBannerPlaceholder({
 
   return (
     <div
-      className={`rounded border border-dashed border-white/20 bg-white/5 flex items-center justify-center text-muted text-xs shrink-0 ${className}`}
+      className={`rounded border border-dashed border-border bg-surface-overlay flex items-center justify-center text-muted text-xs shrink-0 ${className}`}
       style={{ width: widthStyle, height: `${height}px` }}
       aria-label="Banner pubblicitario"
     >

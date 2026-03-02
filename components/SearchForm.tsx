@@ -26,7 +26,7 @@ export default function SearchForm({ defaultQuery = "" }: { defaultQuery?: strin
           name="q"
           defaultValue={q}
           placeholder="Cerca articoli..."
-          className="flex-1 rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          className="flex-1 rounded-lg border border-border bg-surface-overlay px-4 py-3 text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           aria-label="Cerca articoli"
           autoFocus={!q}
         />

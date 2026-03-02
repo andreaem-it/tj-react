@@ -45,7 +45,7 @@ export default function ArticleCard({ post, variant = "default", size }: Article
             />
           )}
         </div>
-        <h2 className="text-white font-semibold text-sm line-clamp-2 group-hover:text-accent transition-colors">
+        <h2 className="text-foreground font-semibold text-sm line-clamp-2 group-hover:text-accent transition-colors">
           {post.title}
         </h2>
       </Link>

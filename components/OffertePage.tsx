@@ -10,7 +10,7 @@ export default function OffertePage({ posts }: OffertePageProps) {
   return (
     <div className="max-w-4xl mx-auto px-2.5 md:px-4 py-10">
       <header className="mb-10">
-        <h1 className="text-white text-3xl md:text-4xl font-bold mb-2">Offerte</h1>
+        <h1 className="text-foreground text-3xl md:text-4xl font-bold mb-2">Offerte</h1>
         <p className="text-muted text-lg">
           Le migliori offerte selezionate per te, con link diretti per acquistare su Amazon.
         </p>
@@ -23,7 +23,7 @@ export default function OffertePage({ posts }: OffertePageProps) {
           posts.map((post) => (
             <article
               key={post.id}
-              className="bg-content-bg rounded-xl overflow-hidden border border-white/5 hover:border-accent/30 transition-colors"
+              className="bg-content-bg rounded-xl overflow-hidden border border-border hover:border-accent/30 transition-colors"
             >
               <Link href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`} className="block group">
                 <div className="flex flex-col md:flex-row">
@@ -39,7 +39,7 @@ export default function OffertePage({ posts }: OffertePageProps) {
                     </div>
                   )}
                   <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
-                    <h2 className="text-white text-xl md:text-2xl font-bold mb-2 group-hover:text-accent transition-colors">
+                    <h2 className="text-foreground text-xl md:text-2xl font-bold mb-2 group-hover:text-accent transition-colors">
                       {post.title}
                     </h2>
                     <p className="text-muted text-base mb-4 line-clamp-3">{post.excerpt}</p>

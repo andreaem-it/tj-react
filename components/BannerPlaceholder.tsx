@@ -18,7 +18,7 @@ export default function BannerPlaceholder({
       aria-label={`Banner pubblicitario ${side === "left" ? "sinistro" : "destro"}`}
     >
       <div
-        className="w-full rounded border border-dashed border-white/20 bg-white/5 flex items-center justify-center text-muted text-xs"
+        className="w-full rounded border border-dashed border-border bg-surface-overlay flex items-center justify-center text-muted text-xs"
         style={{ minHeight: `${Math.min(minHeight, 600)}px` }}
       >
         <span className="text-center px-2">

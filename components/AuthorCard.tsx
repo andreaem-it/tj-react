@@ -39,7 +39,7 @@ export default function AuthorCard({ author }: { author: unknown }) {
       )}
       <div className="min-w-0">
         <p className="text-muted text-sm font-semibold uppercase tracking-wide mb-1">Scritto da</p>
-        <h4 className="text-white font-medium">{author.name}</h4>
+        <h4 className="text-foreground font-medium">{author.name}</h4>
         {author.description && (
           <div
             className="text-muted text-sm mt-2 leading-relaxed [&_p]:mb-2 last:[&_p]:mb-0"

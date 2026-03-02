@@ -5,7 +5,7 @@ const LOGO_URL = "https://static.techjournal.it/2024/01/logo-techjournal-250.png
 
 export default function Footer() {
   return (
-    <footer className="bg-header-bg border-t border-white/10 mt-auto">
+    <footer className="bg-header-bg border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center shrink-0">
