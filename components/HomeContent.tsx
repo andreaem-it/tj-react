@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFacebookF, faInstagram } from "@fortawesome/free-brands-svg-icons";
 import HeroSection from "./HeroSection";
 import PostsGrid from "./PostsGrid";
 import OfferteSidebar from "./OfferteSidebar";
@@ -42,6 +44,32 @@ export default function HomeContent({
   const [isLoading, setIsLoading] = useState(false);
   /** Prossima pagina da richiedere: il server ha già inviato initialPagesConsumed pagine da 10, quindi la prossima è initialPagesConsumed + 1. */
   const nextPageRef = useRef(initialPagesConsumed + 1);
+
+  const [socialStats, setSocialStats] = useState<{
+    facebook: number | null;
+    instagram: number | null;
+  }>({ facebook: null, instagram: null });
+
+  useEffect(() => {
+    let cancelled = false;
+    const url = `${window.location.origin}/api/social-stats?t=${Date.now()}`;
+    fetch(url, { cache: "no-store", credentials: "same-origin" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { facebook?: { followers: number } | null; instagram?: { followers: number } | null } | null) => {
+        if (cancelled || !data) return;
+        setSocialStats({
+          facebook: data.facebook?.followers ?? null,
+          instagram: data.instagram?.followers ?? null,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const formatCount = (n: number) =>
+    n >= 1000 ? `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K` : n.toLocaleString("it-IT");
 
   const onLoadMore = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -89,21 +117,29 @@ export default function HomeContent({
               href="https://www.facebook.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Facebook"
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded bg-[#3b5998] text-white text-sm font-medium hover:opacity-90"
             >
-              <span className="font-bold">f</span>
-              <span>9 Seguono</span>
+              <FontAwesomeIcon icon={faFacebookF} className="w-5 h-5" />
+              <span>
+                {socialStats.facebook != null
+                  ? `${formatCount(socialStats.facebook)} Seguono`
+                  : "9 Seguono"}
+              </span>
             </a>
             <a
               href="https://www.instagram.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Instagram"
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded bg-[#E4405F] text-white text-sm font-medium hover:opacity-90"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
-              </svg>
-              <span>38 Followers</span>
+              <FontAwesomeIcon icon={faInstagram} className="w-5 h-5" />
+              <span>
+                {socialStats.instagram != null
+                  ? `${formatCount(socialStats.instagram)} Followers`
+                  : "38 Followers"}
+              </span>
             </a>
           </div>
           <OfferteSidebar posts={offertePosts} />
