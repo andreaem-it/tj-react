@@ -12,7 +12,7 @@ export default async function PostListWithEmbed() {
         return (
           <div key={post.id}>
             <h2 dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
-            {author && <AuthorCard author={author} />}
+            {author ? <AuthorCard author={author} /> : null}
           </div>
         );
       })}

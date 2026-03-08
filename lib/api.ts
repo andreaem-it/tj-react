@@ -429,7 +429,7 @@ export async function fetchPostsWithEmbed() {
  */
 export function getViewCountFromPost(post: WPPost | null): number | null {
   if (!post) return null;
-  const raw = post as Record<string, unknown>;
+  const raw = post as unknown as Record<string, unknown>;
   const fromTopLevel = raw.post_views ?? raw.pvc_views ?? raw.views ?? raw.post_views_count;
   const v =
     fromTopLevel ??

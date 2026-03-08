@@ -156,7 +156,7 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
                   key={slug}
                   href={categoryHref}
                   className="text-foreground hover:text-accent transition-colors text-base font-medium flex items-center gap-0.5 py-1"
-                  onMouseEnter={() => handleEnter(slug)}
+                  onMouseEnter={() => slug != null && handleEnter(slug)}
                 >
                   {item.label}
                   <svg className="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
@@ -228,9 +228,10 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
           <nav className="flex-1 overflow-auto py-6 px-4">
             <ul className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
-                const href = "href" in item ? item.href : `/${item.slug}`;
+                const href =
+                  "href" in item && item.href ? item.href : item.slug ? `/${item.slug}` : "/";
                 return (
-                  <li key={"href" in item ? item.href : item.slug}>
+                  <li key={"href" in item ? item.href : item.slug ?? ""}>
                     <Link
                       href={href}
                       className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"

@@ -52,7 +52,7 @@ export default function HomeContent({
 
   useEffect(() => {
     let cancelled = false;
-    const url = `${window.location.origin}/api/social-stats?t=${Date.now()}`;
+    const url = `${window.location.origin}/api/social-stats?refresh=1&t=${Date.now()}`;
     fetch(url, { cache: "no-store", credentials: "same-origin" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { facebook?: { followers: number } | null; instagram?: { followers: number } | null } | null) => {
@@ -102,7 +102,12 @@ export default function HomeContent({
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">
           {/* Banner nella colonna articoli, sopra la griglia */}
-          <InlineBannerPlaceholder width="100%" height={90} className="mb-6" />
+          <InlineBannerPlaceholder
+            width="100%"
+            height={90}
+            className="mb-6"
+            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME_TOP}
+          />
           <PostsGrid
             posts={gridPosts}
             hasMore={hasMore}
@@ -144,7 +149,11 @@ export default function HomeContent({
           </div>
           <OfferteSidebar posts={offertePosts} />
           {/* Banner sotto la colonna Offerte */}
-          <InlineBannerPlaceholder width="100%" height={250} />
+          <InlineBannerPlaceholder
+            width="100%"
+            height={250}
+            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME_SIDEBAR}
+          />
           <MostReadSidebar posts={mostReadPosts} />
           <TrendingByPeriodSidebar weekPosts={weekTrendingPosts} monthPosts={monthTrendingPosts} />
           <TrendingSidebar posts={trendingPosts} />

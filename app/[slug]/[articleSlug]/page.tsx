@@ -16,8 +16,9 @@ import ArticleBody from "@/components/ArticleBody";
 import RelatedArticlesSlider from "@/components/RelatedArticlesSlider";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ArticleStructuredData from "@/components/ArticleStructuredData";
-import { BLUR_DATA_URL } from "@/lib/constants";
+import { BLUR_DATA_URL, SITE_URL } from "@/lib/constants";
 import InlineBannerPlaceholder from "@/components/InlineBannerPlaceholder";
+import type { Metadata } from "next";
 
 export const revalidate = 60;
 
@@ -34,11 +35,37 @@ function formatDate(dateStr: string): string {
   return `Pubblicato il ${d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}`;
 }
 
-export async function generateMetadata({ params }: ArticlePageProps) {
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { articleSlug } = await params;
   const post = await fetchPostBySlug(articleSlug);
-  if (post) return { title: `${post.title} | TechJournal` };
-  return { title: "Pagina non trovata" };
+  if (!post) return { title: "Pagina non trovata" };
+
+  const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
+  const canonical = `${SITE_URL.replace(/\/$/, "")}${path}`;
+  const description = post.excerpt?.slice(0, 160) || post.title;
+  const image = post.imageUrl || `${SITE_URL}/og-default.png`;
+
+  return {
+    title: `${post.title} | TechJournal`,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: post.title,
+      description,
+      url: canonical,
+      siteName: "TechJournal",
+      images: [{ url: image, width: 1200, height: 630, alt: post.imageAlt || post.title }],
+      type: "article",
+      publishedTime: post.date,
+      authors: [post.authorName],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: [image],
+    },
+  };
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
@@ -173,7 +200,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           <div className="p-6 md:p-8 pt-6">
             <ArticleBody html={post.content} viewCount={getViewCountFromPost(rawPost)} postId={post.id} />
-            <InlineBannerPlaceholder width="100%" height={90} className="mb-0" />
+            <InlineBannerPlaceholder
+              width="100%"
+              height={90}
+              className="mb-0"
+              adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP}
+            />
           </div>
           <footer className="mt-8 pt-6 pb-6 border-t border-border px-6 md:px-8">
             {author ? (
@@ -212,7 +244,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </footer>
         </article>
         <aside className="w-full lg:w-[320px] shrink-0">
-          <InlineBannerPlaceholder width="100%" height={250} className="mb-4 mx-auto block text-center" />
+          <InlineBannerPlaceholder
+            width="100%"
+            height={250}
+            className="mb-4 mx-auto block text-center"
+            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_SIDEBAR}
+          />
           <TrendingSidebar
             posts={allPosts}
             currentSlug={articleSlug}

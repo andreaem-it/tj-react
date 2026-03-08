@@ -14,7 +14,22 @@ export default function Footer() {
           <p className="text-muted text-sm">
             © {new Date().getFullYear()} TechJournal. Tutti i diritti riservati.
           </p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+            <Link href="/chi-siamo" className="text-muted hover:text-accent transition-colors text-sm">
+              Chi siamo
+            </Link>
+            <Link href="/contatti" className="text-muted hover:text-accent transition-colors text-sm">
+              Contatti
+            </Link>
+            <Link href="/privacy" className="text-muted hover:text-accent transition-colors text-sm">
+              Privacy
+            </Link>
+            <Link href="/cookie-policy" className="text-muted hover:text-accent transition-colors text-sm">
+              Cookie
+            </Link>
+            <Link href="/termini" className="text-muted hover:text-accent transition-colors text-sm">
+              Termini
+            </Link>
             <a
               href="https://www.facebook.com/techjournal.it"
               target="_blank"

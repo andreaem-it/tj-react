@@ -1,0 +1,38 @@
+import Link from "next/link";
+
+export const metadata = {
+  title: "Contatti",
+  description: "Contatta TechJournal per collaborazioni e informazioni.",
+};
+
+export default function ContattiPage() {
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-12">
+      <h1 className="text-2xl font-bold text-foreground mb-6">Contatti</h1>
+      <div className="prose prose-invert max-w-none text-muted space-y-4">
+        <p>
+          Per questioni legali, commerciali o di collaborazione puoi contattare il titolare di
+          TechJournal.
+        </p>
+        {contactEmail ? (
+          <p>
+            Email:{" "}
+            <a href={`mailto:${contactEmail}`} className="text-accent hover:underline">
+              {contactEmail}
+            </a>
+          </p>
+        ) : (
+          <p>
+            Configura <code className="text-foreground">NEXT_PUBLIC_CONTACT_EMAIL</code> in
+            .env.local per mostrare qui l’indirizzo email di contatto.
+          </p>
+        )}
+      </div>
+      <Link href="/" className="inline-block mt-6 text-accent hover:underline text-sm">
+        ← Torna alla home
+      </Link>
+    </div>
+  );
+}
