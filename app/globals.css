@@ -103,3 +103,35 @@ body {
 .article-body-wrapper[data-font-size="2"] .article-content {
   font-size: 1.25rem;
 }
+
+/* Widget preferenze iubenda: stile allineato al design (come pulsante Torna su) e posizione sopra di esso */
+.iubenda-tp-btn[data-tp-float="bottom-right"],
+.iubenda-uspr-btn[data-tp-float="bottom-right"] {
+  /* Posizione: sopra il pulsante Torna su, stesso right */
+  bottom: 5.5rem !important;
+  right: 1.5rem !important;
+  /* Dimensioni come Torna su (w-12 h-12) */
+  width: 3rem !important;
+  height: 3rem !important;
+  min-width: 3rem !important;
+  min-height: 3rem !important;
+  /* Stile in linea con sidebar-bg, border, rounded-lg, shadow-lg */
+  background-color: var(--sidebar-bg) !important;
+  background-size: 1.25rem 1.25rem !important;
+  background-position: center !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s !important;
+}
+.iubenda-tp-btn[data-tp-float="bottom-right"]:hover,
+.iubenda-uspr-btn[data-tp-float="bottom-right"]:hover {
+  background-color: var(--content-bg) !important;
+  color: var(--accent) !important;
+}
+/* Icona iubenda: non applicare filter al pulsante (l’icona è background-image, deve restare visibile) */
+.iubenda-tp-btn[data-tp-float="bottom-right"],
+.iubenda-uspr-btn[data-tp-float="bottom-right"] {
+  filter: none !important;
+}
