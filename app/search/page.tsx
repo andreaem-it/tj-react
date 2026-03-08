@@ -51,7 +51,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <div className="mt-8 flex justify-center">
                   <Link
                     href={`/search?q=${encodeURIComponent(query.trim())}&page=${page + 1}`}
-                    className="px-6 py-3 bg-accent text-white font-semibold rounded hover:opacity-90 transition-opacity"
+                    className="px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 transition-opacity"
                   >
                     Altri risultati
                   </Link>

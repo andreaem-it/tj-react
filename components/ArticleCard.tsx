@@ -81,7 +81,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" aria-hidden />
         {/* In basso: label categoria (arancione); sotto, titolo con sfondo nero che segue ogni riga del testo */}
         <div className="absolute bottom-0 left-0 right-0 p-2 md:p-3 max-w-full z-[1]">
-          <span className="block bg-accent text-white text-[10px] md:text-xs font-semibold uppercase tracking-wide px-2 py-0.5 mb-1 w-fit">
+          <span className="block bg-accent text-gray-900 text-[10px] md:text-xs font-semibold uppercase tracking-wide px-2 py-0.5 mb-1 w-fit">
             {post.categoryName}
           </span>
           {/* box-decoration-clone: lo sfondo nero viene applicato a ogni riga del testo, non a un contenitore */}

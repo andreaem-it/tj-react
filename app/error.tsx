@@ -24,7 +24,7 @@ export default function Error({
         <button
           type="button"
           onClick={reset}
-          className="px-4 py-2 bg-accent text-white font-medium rounded hover:opacity-90"
+          className="px-4 py-2 bg-accent text-gray-900 font-medium rounded hover:opacity-90"
         >
           Riprova
         </button>

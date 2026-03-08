@@ -61,10 +61,13 @@ export default function NewsletterModal() {
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-2.5 pb-4 sm:pb-6 pointer-events-none">
+    <div
+      className={`fixed inset-x-0 bottom-0 z-50 flex justify-center px-2.5 pb-4 sm:pb-6 transition-opacity duration-300 ${
+        open ? "opacity-100 pointer-events-none" : "opacity-0 pointer-events-none"
+      }`}
+      aria-hidden={!open}
+    >
       <div className="pointer-events-auto max-w-xl w-full rounded-2xl bg-sidebar-bg border border-border shadow-xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 items-start">
         <div className="flex-1 min-w-0">
           <h2 className="text-foreground font-semibold text-base sm:text-lg mb-1">
@@ -85,7 +88,7 @@ export default function NewsletterModal() {
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity whitespace-nowrap"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-accent text-gray-900 text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity whitespace-nowrap"
             >
               {submitting ? "Invio..." : "Iscriviti"}
             </button>

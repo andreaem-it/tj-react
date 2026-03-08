@@ -53,7 +53,7 @@ export default function RootLayout({
         <GoogleAnalyticsPageView />
         <AdSenseScript />
         <Header />
-        <main className="flex-1 flex w-full justify-center min-w-0 px-2.5 xl:px-12 gap-6 xl:gap-10">
+        <main className="flex-1 flex w-full justify-center min-w-0 min-h-0 px-2.5 xl:px-12 gap-6 xl:gap-10">
           <BannerPlaceholder
             side="left"
             width={160}

@@ -32,7 +32,7 @@ export default function SearchForm({ defaultQuery = "" }: { defaultQuery?: strin
         />
         <button
           type="submit"
-          className="shrink-0 rounded-lg bg-accent px-5 py-3 font-medium text-white hover:opacity-90 transition-opacity"
+          className="shrink-0 rounded-lg bg-accent px-5 py-3 font-medium text-gray-900 hover:opacity-90 transition-opacity"
         >
           Cerca
         </button>

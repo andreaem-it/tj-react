@@ -122,10 +122,10 @@ export default function HomeContent({
               href="https://www.facebook.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Facebook"
+              aria-label={`Facebook, ${socialStats.facebook != null ? `${formatCount(socialStats.facebook)} Seguono` : "9 Seguono"}`}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded bg-[#3b5998] text-white text-sm font-medium hover:opacity-90"
             >
-              <FontAwesomeIcon icon={faFacebookF} className="w-5 h-5" />
+              <FontAwesomeIcon icon={faFacebookF} className="w-5 h-5" aria-hidden />
               <span>
                 {socialStats.facebook != null
                   ? `${formatCount(socialStats.facebook)} Seguono`
@@ -136,10 +136,10 @@ export default function HomeContent({
               href="https://www.instagram.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram"
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded bg-[#E4405F] text-white text-sm font-medium hover:opacity-90"
+              aria-label={`Instagram, ${socialStats.instagram != null ? `${formatCount(socialStats.instagram)} Followers` : "38 Followers"}`}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded bg-[#c13584] text-white text-sm font-medium hover:opacity-90"
             >
-              <FontAwesomeIcon icon={faInstagram} className="w-5 h-5" />
+              <FontAwesomeIcon icon={faInstagram} className="w-5 h-5" aria-hidden />
               <span>
                 {socialStats.instagram != null
                   ? `${formatCount(socialStats.instagram)} Followers`

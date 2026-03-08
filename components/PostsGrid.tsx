@@ -35,7 +35,7 @@ export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, empty
             type="button"
             onClick={onLoadMore}
             disabled={isLoading}
-            className="px-6 py-3 bg-accent text-white font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity"
+            className="px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity"
           >
             {isLoading ? "Caricamento..." : "More Posts"}
           </button>
