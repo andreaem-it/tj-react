@@ -10,6 +10,7 @@ import AdSenseScript from "@/components/AdSenseScript";
 import IubendaCookieBanner from "@/components/IubendaCookieBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -73,6 +74,7 @@ export default function RootLayout({
         <Footer />
         <NewsletterModal />
         <ScrollToTop />
+        <Analytics />
       </body>
     </html>
   );
