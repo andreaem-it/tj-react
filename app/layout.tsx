@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
+import HeaderSkeleton from "@/components/HeaderSkeleton";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import BannerPlaceholder from "@/components/BannerPlaceholder";
@@ -53,7 +55,9 @@ export default function RootLayout({
         <GoogleAnalytics />
         <GoogleAnalyticsPageView />
         <AdSenseScript />
-        <Header />
+        <Suspense fallback={<HeaderSkeleton />}>
+          <Header />
+        </Suspense>
         <main className="flex-1 flex w-full justify-center min-w-0 min-h-0 px-2.5 xl:px-12 gap-6 xl:gap-10">
           <BannerPlaceholder
             side="left"

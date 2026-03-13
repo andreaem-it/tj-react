@@ -361,7 +361,6 @@ export async function fetchPostsForInitialDisplay(params: {
       perPage: PER_PAGE,
       page,
       categoryIds: categoryIds ?? (categoryId != null ? [categoryId] : undefined),
-      requestCache: "no-store",
     });
     totalPages = tp;
     if (posts.length === 0) break;
@@ -455,9 +454,8 @@ export async function fetchMostReadPosts(params: {
   limit?: number;
 }): Promise<PostWithMeta[]> {
   const { categoryId, limit = 5 } = params;
-  // Prendiamo un buon numero di articoli recenti e li ordiniamo per viewCount.
   const { posts } = await fetchPosts({
-    perPage: 40,
+    perPage: 25,
     page: 1,
     categoryId,
   });
@@ -537,7 +535,7 @@ export async function fetchTrendingByPeriod(params: {
   const afterIso = after.toISOString();
   const searchParams = new URLSearchParams({
     after: afterIso,
-    per_page: "60",
+    per_page: "40",
     _embed: "1",
     ...(categoryId != null && categoryId > 0 ? { categories: String(categoryId) } : {}),
   });

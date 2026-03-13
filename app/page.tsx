@@ -1,7 +1,8 @@
 import { fetchPosts, fetchPostsForInitialDisplay, fetchPostsByCategorySlug, fetchMostReadPosts, fetchTrendingByPeriod } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 
-export const dynamic = "force-dynamic";
+/** ISR: cache 60s per ridurre latenza (WordPress API è il collo di bottiglia). */
+export const revalidate = 60;
 
 /** Dimensione pagina usata dal client (Load more) e dall'API /api/posts. */
 const CLIENT_PAGE_SIZE = 10;
