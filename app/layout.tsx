@@ -13,6 +13,7 @@ import IubendaCookieBanner from "@/components/IubendaCookieBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -79,6 +80,7 @@ export default function RootLayout({
         <NewsletterModal />
         <ScrollToTop />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
