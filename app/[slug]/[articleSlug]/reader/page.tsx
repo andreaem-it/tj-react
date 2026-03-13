@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { fetchPostBySlug, fetchPostBySlugRaw, getCategoryUrlSlugFromWpSlug, getViewCountFromPost } from "@/lib/api";
+import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import ArticleBody from "@/components/ArticleBody";
 
 export const revalidate = 60;
@@ -31,7 +31,6 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
     redirect(`/${postCategoryUrlSlug}/${articleSlug}/reader`);
   }
 
-  const rawPost = await fetchPostBySlugRaw(articleSlug);
   const articleHref = `/${postCategoryUrlSlug}/${post.slug}`;
 
   return (
@@ -63,7 +62,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
         <div className="article-body-wrapper" data-font-size="1">
           <ArticleBody
             html={post.content}
-            viewCount={getViewCountFromPost(rawPost)}
+            viewCount={post.viewCount}
             postId={post.id}
           />
         </div>

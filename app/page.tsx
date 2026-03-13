@@ -1,13 +1,10 @@
-import { fetchPosts, fetchPostsForInitialDisplay, fetchPostsByCategorySlug, fetchMostReadPosts, fetchTrendingByPeriod } from "@/lib/api";
+import { fetchHome, type PostWithMeta } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 
-/** ISR: cache 60s per ridurre latenza (WordPress API è il collo di bottiglia). */
-export const revalidate = 60;
+/** ISR: cache 5 min per ridurre carico su WordPress (lsphp). */
+export const revalidate = 300;
 
-/** Dimensione pagina usata dal client (Load more) e dall'API /api/posts. */
-const CLIENT_PAGE_SIZE = 10;
-
-const emptyPosts: Awaited<ReturnType<typeof fetchPosts>>["posts"] = [];
+const emptyPosts: PostWithMeta[] = [];
 const emptyInitial = { posts: [] as typeof emptyPosts, totalPages: 1, pagesConsumed: 0 };
 
 export default async function HomePage() {
@@ -21,24 +18,17 @@ export default async function HomePage() {
   let monthTrendingPosts = emptyPosts;
 
   try {
-    const [initial, offerte, trending, mostRead, week, month] = await Promise.all([
-      fetchPostsForInitialDisplay({}).catch(() => emptyInitial),
-      fetchPostsByCategorySlug("offerte", 5).catch(() => emptyPosts),
-      fetchPosts({ perPage: 20, page: 1 }).then((r) => r.posts).catch(() => emptyPosts),
-      fetchMostReadPosts({ limit: 5 }).catch(() => emptyPosts),
-      fetchTrendingByPeriod({ period: "week", limit: 5 }).catch(() => emptyPosts),
-      fetchTrendingByPeriod({ period: "month", limit: 5 }).catch(() => emptyPosts),
-    ]);
-    if (initial.posts.length > 0) {
-      initialPosts = initial.posts;
-      totalPages = initial.totalPages;
-      pagesConsumed = Math.ceil(initialPosts.length / CLIENT_PAGE_SIZE);
+    const home = await fetchHome();
+    if (home?.initial?.posts?.length) {
+      initialPosts = home.initial.posts;
+      totalPages = home.initial.totalPages ?? 1;
+      pagesConsumed = home.initial.pagesConsumed ?? 1;
     }
-    offertePosts = offerte;
-    trendingPosts = trending;
-    mostReadPosts = mostRead;
-    weekTrendingPosts = week;
-    monthTrendingPosts = month;
+    offertePosts = home?.offerte ?? emptyPosts;
+    trendingPosts = home?.trending ?? emptyPosts;
+    mostReadPosts = home?.mostRead ?? emptyPosts;
+    weekTrendingPosts = home?.weekTrending ?? emptyPosts;
+    monthTrendingPosts = home?.monthTrending ?? emptyPosts;
   } catch {
     // API irraggiungibile: layout con dati vuoti
   }

@@ -6,7 +6,7 @@ import {
   fetchPostsByCategorySlug,
   fetchPostsForInitialDisplay,
   fetchMostReadPosts,
-  fetchTrendingByPeriod,
+  fetchTrendingWeekAndMonth,
   resolveCategoryByUrlSlug,
   getCategoryUrlSlugFromWpSlug,
   getCategoryUrlSlug,
@@ -16,7 +16,7 @@ import OffertePage from "@/components/OffertePage";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -76,15 +76,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     offertePosts,
     trendingPosts,
     mostReadPosts,
-    weekTrendingPosts,
-    monthTrendingPosts,
+    { week: weekTrendingPosts, month: monthTrendingPosts },
   ] = await Promise.all([
     fetchPostsForInitialDisplay({ categoryId: cat.id, categories }),
     fetchPostsByCategorySlug("offerte", 5),
     fetchPosts({ perPage: 20, page: 1 }).then((r) => r.posts),
     fetchMostReadPosts({ categoryId: cat.id, limit: 5 }),
-    fetchTrendingByPeriod({ period: "week", categoryId: cat.id, limit: 5 }),
-    fetchTrendingByPeriod({ period: "month", categoryId: cat.id, limit: 5 }),
+    fetchTrendingWeekAndMonth({ categoryId: cat.id, limit: 5 }),
   ]);
 
   return (

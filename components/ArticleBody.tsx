@@ -6,7 +6,7 @@ const STORAGE_KEY = "article-font-size";
 const MIN_LEVEL = 0;
 const MAX_LEVEL = 2;
 
-const PVC_API = "https://www.techjournal.it/wp-json";
+const WP_BASE = process.env.NEXT_PUBLIC_WP_BASE ?? "https://www.techjournal.it/wp-json/tj/v1";
 
 interface ArticleBodyProps {
   html: string;
@@ -46,8 +46,10 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
       }
     };
     (async () => {
-      const n = await tryFetch(`${PVC_API}/pvc/v1/posts/${postId}`)
-        ?? await tryFetch(`${PVC_API}/post-views-counter/v1/views/${postId}`);
+      const n =
+        (await tryFetch(`${WP_BASE}/views/${postId}`)) ??
+        (await tryFetch(`https://www.techjournal.it/wp-json/pvc/v1/posts/${postId}`)) ??
+        (await tryFetch(`https://www.techjournal.it/wp-json/post-views-counter/v1/views/${postId}`));
       if (n != null) setViewCountFetched(n);
     })();
     return () => ctrl.abort();

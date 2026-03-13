@@ -76,7 +76,7 @@ export default function HomeContent({
     const pageToFetch = nextPageRef.current;
     setIsLoading(true);
     try {
-      const url = `${window.location.origin}/api/posts/${pageToFetch}`;
+      const url = `${window.location.origin}/api/posts/${pageToFetch}${categoryId ? `?category=${categoryId}` : ""}`;
       const res = await fetch(url, { cache: "no-store" });
       const data = res.ok ? await res.json() : { posts: [], totalPages: 0 };
       if (data.posts?.length) {

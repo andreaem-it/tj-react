@@ -38,17 +38,34 @@ function MegamenuPanel({
   categoryHref,
   categorySlug,
   posts,
+  loading,
 }: {
   label: string;
   categoryHref: string;
   categorySlug: string;
   posts: MegamenuPost[];
+  loading?: boolean;
 }) {
   const padded = [...posts];
   while (padded.length < MEGAMENU_COLUMNS) {
     padded.push({ slug: "", title: "", imageUrl: null, imageAlt: "" });
   }
   const slice = padded.slice(0, MEGAMENU_COLUMNS);
+
+  if (loading) {
+    return (
+      <div className="bg-sidebar-bg border border-t-0 border-border shadow-xl py-4 px-4 rounded-b-md w-full animate-pulse">
+        <div className="grid grid-cols-5 gap-4">
+          {Array.from({ length: MEGAMENU_COLUMNS }).map((_, i) => (
+            <div key={i} className="flex flex-col min-w-0 rounded overflow-hidden">
+              <div className="w-full aspect-4/3 rounded bg-content-bg/50" />
+              <div className="h-12 mt-2 rounded bg-content-bg/30" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-sidebar-bg border border-t-0 border-border shadow-xl py-4 px-4 rounded-b-md w-full">
@@ -94,10 +111,14 @@ function MegamenuPanel({
   );
 }
 
-export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlledOpen, setMobileMenuOpen: setControlledOpen }: NavBarProps) {
+export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMenuOpen: controlledOpen, setMobileMenuOpen: setControlledOpen }: NavBarProps) {
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [internalOpen, setInternalOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [megamenuBySlug, setMegamenuBySlug] = useState<Record<string, MegamenuPost[]>>(initialMegamenu);
+  const [loadingSlug, setLoadingSlug] = useState<string | null>(null);
+  const loadingSlugsRef = useRef<Set<string>>(new Set());
+  const loadedSlugsRef = useRef<Set<string>>(new Set());
 
   const mobileMenuOpen = setControlledOpen !== undefined ? (controlledOpen ?? false) : internalOpen;
   const setMobileMenuOpen = setControlledOpen ?? setInternalOpen;
@@ -125,10 +146,26 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
     closeTimeoutRef.current = setTimeout(() => setActiveSlug(null), 120);
   }, [clearCloseTimeout]);
 
+  const fetchMegamenu = useCallback(async (slug: string) => {
+    if (loadedSlugsRef.current.has(slug) || loadingSlugsRef.current.has(slug)) return;
+    loadingSlugsRef.current.add(slug);
+    setLoadingSlug(slug);
+    try {
+      const res = await fetch(`/api/megamenu/${encodeURIComponent(slug)}`);
+      const posts: MegamenuPost[] = res.ok ? await res.json() : [];
+      loadedSlugsRef.current.add(slug);
+      setMegamenuBySlug((prev) => ({ ...prev, [slug]: posts }));
+    } finally {
+      loadingSlugsRef.current.delete(slug);
+      setLoadingSlug((prev) => (prev === slug ? null : prev));
+    }
+  }, []);
+
   const handleEnter = useCallback((slug: string) => {
     clearCloseTimeout();
     setActiveSlug(slug);
-  }, [clearCloseTimeout]);
+    fetchMegamenu(slug);
+  }, [clearCloseTimeout, fetchMegamenu]);
 
   const handleLeave = useCallback(() => {
     scheduleClose();
@@ -198,7 +235,7 @@ export default function NavBar({ megamenuBySlug = {}, mobileMenuOpen: controlled
               className="absolute top-full left-0 right-0 z-50 pt-0"
               onMouseEnter={handleEnter.bind(null, activeSlug)}
             >
-              <MegamenuPanel label={label} categoryHref={categoryHref} categorySlug={activeSlug} posts={posts} />
+              <MegamenuPanel label={label} categoryHref={categoryHref} categorySlug={activeSlug} posts={posts} loading={loadingSlug === activeSlug} />
             </div>
           );
         })()}

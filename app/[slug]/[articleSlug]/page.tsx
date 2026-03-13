@@ -3,11 +3,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
   fetchPostBySlug,
-  fetchPostBySlugRaw,
   fetchPosts,
   fetchRelatedPosts,
   getCategoryUrlSlugFromWpSlug,
-  getViewCountFromPost,
 } from "@/lib/api";
 import ShareButtons from "@/components/ShareButtons";
 import TrendingSidebar from "@/components/TrendingSidebar";
@@ -78,20 +76,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     redirect(`/${postCategoryUrlSlug}/${articleSlug}`);
   }
 
-  const [allPosts, rawPost, relatedPosts] = await Promise.all([
+  const [allPosts, relatedPosts] = await Promise.all([
     fetchPosts({ perPage: 15 }).then((r) => r.posts),
-    fetchPostBySlugRaw(articleSlug),
     fetchRelatedPosts({ baseSlug: articleSlug, categoryId: post.categoryId, limit: 12 }),
   ]);
-  const authorRaw = rawPost?._embedded?.author?.[0];
   const author =
-    authorRaw &&
-    typeof authorRaw === "object" &&
-    "name" in authorRaw &&
-    typeof (authorRaw as { name?: string }).name === "string" &&
-    (authorRaw as { avatar_urls?: Record<string, string> }).avatar_urls?.["96"]
-      ? authorRaw
-      : null;
+    post.authorName && post.authorAvatarUrl
+      ? { name: post.authorName, avatar_urls: { 96: post.authorAvatarUrl } as Record<string, string> }
+      : post.authorName
+        ? { name: post.authorName, avatar_urls: {} as Record<string, string> }
+        : null;
   const articleHref = `/${postCategoryUrlSlug}/${post.slug}`;
   const shareUrl = `https://www.techjournal.it${articleHref}/`;
 
@@ -199,7 +193,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           )}
 
           <div className="p-6 md:p-8 pt-6">
-            <ArticleBody html={post.content} viewCount={getViewCountFromPost(rawPost)} postId={post.id} />
+            <ArticleBody html={post.content} viewCount={post.viewCount} postId={post.id} />
             <InlineBannerPlaceholder
               width="100%"
               height={90}

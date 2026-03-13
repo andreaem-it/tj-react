@@ -15,7 +15,13 @@ function escapeXml(s: string): string {
 
 export async function GET() {
   const base = SITE_URL.replace(/\/$/, "");
-  const { posts } = await fetchPosts({ perPage: 50, page: 1 });
+  let posts: Awaited<ReturnType<typeof fetchPosts>>["posts"] = [];
+  try {
+    const result = await fetchPosts({ perPage: 50, page: 1 });
+    posts = result.posts;
+  } catch {
+    // API irraggiungibile: feed vuoto
+  }
   const lastBuild = posts.length > 0 ? new Date(posts[0].date) : new Date();
 
   const items = posts
