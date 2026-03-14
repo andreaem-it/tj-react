@@ -12,7 +12,6 @@ import {
   getCategoryUrlSlug,
 } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
-import OffertePage from "@/components/OffertePage";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -56,6 +55,11 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
+
+  if (slug === "offerte") {
+    redirect("/price-radar");
+  }
+
   const post = await fetchPostBySlug(slug);
 
   if (post) {
@@ -65,11 +69,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const categories = await fetchCategories();
   const cat = resolveCategoryByUrlSlug(categories, slug);
   if (!cat) notFound();
-
-  if (slug === "offerte") {
-    const offertePosts = await fetchPostsByCategorySlug("offerte", 10);
-    return <OffertePage posts={offertePosts} />;
-  }
 
   const [
     { posts: initialPosts, totalPages, pagesConsumed },

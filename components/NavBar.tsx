@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { label: "Gaming", slug: "gaming" },
   { label: "Smart Home", slug: "smart-home" },
   { label: "IA", slug: "ia" },
-  { label: "Offerte", slug: "offerte" },
+  { label: "Price Radar", href: "/price-radar" },
 ];
 
 export interface MegamenuPost {

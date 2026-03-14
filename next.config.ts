@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "0.gravatar.com", pathname: "/**" },
       { protocol: "https", hostname: "1.gravatar.com", pathname: "/**" },
       { protocol: "https", hostname: "2.gravatar.com", pathname: "/**" },
+      { protocol: "https", hostname: "images-na.ssl-images-amazon.com", pathname: "/**" },
+      { protocol: "https", hostname: "m.media-amazon.com", pathname: "/**" },
+      { protocol: "https", hostname: "images-eu.ssl-images-amazon.com", pathname: "/**" },
     ],
   },
 };

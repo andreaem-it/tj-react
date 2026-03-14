@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
     { url: `${base}/search`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.5 },
+    { url: `${base}/price-radar`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
   ];
 
   let categories: Awaited<ReturnType<typeof fetchCategories>> = [];
