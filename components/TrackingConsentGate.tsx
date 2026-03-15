@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import Script from "next/script";
 import { useIubenda } from "@mep-agency/next-iubenda";
 
@@ -9,8 +9,8 @@ const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
 /**
  * Integrazione next-iubenda con script di tracciamento:
  * - GA: __iubendaGaConsentUpdate quando l'utente accetta cookie "measurement".
- * - AdSense: lo script viene caricato per tutti. Senza consenso marketing = annunci
- *   non personalizzati (NPA, GDPR‑ok). Con consenso = annunci personalizzati.
+ * - AdSense: script caricato subito (così i banner laterali trovano la coda pronta).
+ *   NPA in base al consenso; senza consenso = annunci non personalizzati (GDPR‑ok).
  */
 export default function TrackingConsentGate() {
   const { userPreferences } = useIubenda();
@@ -18,8 +18,7 @@ export default function TrackingConsentGate() {
   const gdprPurposes = userPreferences?.gdprPurposes ?? {};
   const allowMeasurement = hasBeenLoaded && gdprPurposes.measurement;
   const allowMarketing = hasBeenLoaded && gdprPurposes.marketing;
-  const hasProvider = userPreferences != null;
-  const shouldLoadAdSense = clientId?.trim() && (hasBeenLoaded || !hasProvider);
+  const shouldLoadAdSense = Boolean(clientId?.trim());
 
   useEffect(() => {
     if (allowMeasurement && typeof window !== "undefined" && (window as any).__iubendaGaConsentUpdate) {
@@ -27,7 +26,7 @@ export default function TrackingConsentGate() {
     }
   }, [allowMeasurement]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!shouldLoadAdSense || typeof window === "undefined") return;
     const w = window as any;
     w.adsbygoogle = w.adsbygoogle || [];
