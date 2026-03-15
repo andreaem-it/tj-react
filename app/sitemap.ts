@@ -55,8 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/contatti`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
     { url: `${base}/lavora-con-noi`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
     { url: `${base}/politica-editoriale`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
-    { url: `${base}/privacy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.3 },
-    { url: `${base}/cookie-policy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.3 }
+    { url: `${base}/privacy`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.3 }
   );
 
   return entries;

@@ -28,10 +28,7 @@ export default function Footer() {
               Politica editoriale
             </a>
             <a href="/privacy" className="text-muted hover:text-accent transition-colors text-sm">
-              Privacy
-            </a>
-            <a href="/cookie-policy" className="text-muted hover:text-accent transition-colors text-sm">
-              Cookie policy
+              Privacy e Cookie policy
             </a>
             <a
               href="https://www.facebook.com/techjournal.it"
