@@ -1,8 +1,9 @@
 import { fetchHome, fetchPosts, type PostWithMeta } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 
-/** ISR: cache 5 min per ridurre carico su WordPress (lsphp). */
-export const revalidate = 300;
+/** Rendering a ogni richiesta per evitare homepage vuota da cache/build. */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const emptyPosts: PostWithMeta[] = [];
 const INITIAL_POSTS_TARGET = 20;
@@ -17,6 +18,16 @@ export default async function HomePage() {
   let weekTrendingPosts = emptyPosts;
   let monthTrendingPosts = emptyPosts;
 
+  const loadFromPostsFallback = async () => {
+    const { posts, totalPages: tp } = await fetchPosts({
+      perPage: INITIAL_POSTS_TARGET,
+      page: 1,
+    });
+    initialPosts = posts;
+    totalPages = tp;
+    pagesConsumed = posts.length > 0 ? 1 : 0;
+  };
+
   try {
     const home = await fetchHome();
     if (home?.initial?.posts?.length) {
@@ -29,17 +40,14 @@ export default async function HomePage() {
       weekTrendingPosts = home.weekTrending ?? emptyPosts;
       monthTrendingPosts = home.monthTrending ?? emptyPosts;
     } else {
-      // Fallback se /home non esiste o non restituisce dati (es. api.techjournal.it senza endpoint home)
-      const { posts, totalPages: tp } = await fetchPosts({
-        perPage: INITIAL_POSTS_TARGET,
-        page: 1,
-      });
-      initialPosts = posts;
-      totalPages = tp;
-      pagesConsumed = posts.length > 0 ? 1 : 0;
+      await loadFromPostsFallback();
     }
   } catch {
-    // API irraggiungibile: layout con dati vuoti
+    try {
+      await loadFromPostsFallback();
+    } catch {
+      // API irraggiungibile: layout con dati vuoti
+    }
   }
 
   return (
