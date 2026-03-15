@@ -49,7 +49,7 @@ export default function Footer() {
             >
               Instagram
             </a>
-          </div>
+          </nav>
         </div>
         <p className="text-muted text-xs mt-6 pt-6 border-t border-border w-full text-center">
           <strong>TechJournal</strong> è un blog personale e non è iscritto
