@@ -1,10 +1,11 @@
+import { API_BASE } from "@/lib/constants";
+
 /**
  * TechRadar API - Price Radar backend
- * Base URL: https://api.techjournal.it/techradar/api
+ * Usa API_BASE (api.techjournal.it) per le chiamate dati.
  */
-
 export const TECHRADAR_API_BASE =
-  process.env.NEXT_PUBLIC_TECHRADAR_API_BASE ?? "https://api.techjournal.it/techradar/api";
+  process.env.NEXT_PUBLIC_TECHRADAR_API_BASE ?? `${API_BASE}/techradar/api`;
 
 export interface TechRadarOffer {
   title: string;

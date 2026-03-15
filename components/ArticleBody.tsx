@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { API_BASE } from "@/lib/constants";
 
 const STORAGE_KEY = "article-font-size";
 const MIN_LEVEL = 0;
 const MAX_LEVEL = 2;
 
-const WP_BASE = process.env.NEXT_PUBLIC_WP_BASE ?? "https://api.techjournal.it/wp-json/tj/v1";
-const API_ORIGIN = typeof process.env.NEXT_PUBLIC_WP_BASE === "string"
-  ? new URL(process.env.NEXT_PUBLIC_WP_BASE).origin
-  : "https://api.techjournal.it";
+const WP_BASE = process.env.NEXT_PUBLIC_WP_BASE ?? `${API_BASE}/wp-json/tj/v1`;
+const API_ORIGIN = typeof process.env.NEXT_PUBLIC_API_BASE === "string"
+  ? process.env.NEXT_PUBLIC_API_BASE.replace(/\/$/, "")
+  : typeof process.env.NEXT_PUBLIC_WP_BASE === "string"
+    ? new URL(process.env.NEXT_PUBLIC_WP_BASE).origin
+    : API_BASE;
 
 interface ArticleBodyProps {
   html: string;
