@@ -66,7 +66,7 @@ export default function RootLayout({
           <Header />
         </Suspense>
         <main className="flex-1 flex w-full justify-center min-w-0 min-h-0 px-2.5 xl:px-12 gap-6 xl:gap-10">
-          <ConsentAwareAdSlot>
+          <ConsentAwareAdSlot width={160} minHeight={600}>
             <BannerPlaceholder
               side="left"
               width={160}
@@ -77,7 +77,7 @@ export default function RootLayout({
           <div className="flex-1 min-w-0 flex justify-center">
             {children}
           </div>
-          <ConsentAwareAdSlot>
+          <ConsentAwareAdSlot width={160} minHeight={600}>
             <BannerPlaceholder
               side="right"
               width={160}
