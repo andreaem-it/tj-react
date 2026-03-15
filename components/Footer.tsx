@@ -5,7 +5,7 @@ const LOGO_URL = "https://static.techjournal.it/2024/01/logo-techjournal-250.png
 
 export default function Footer() {
   return (
-    <footer className="bg-header-bg border-t border-border mt-auto">
+    <footer className="relative z-10 bg-header-bg border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center shrink-0">
@@ -15,37 +15,21 @@ export default function Footer() {
             © {new Date().getFullYear()} TechJournal. Tutti i diritti riservati.
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6" aria-label="Link utili">
-            <a href="/chi-siamo" className="text-muted hover:text-accent transition-colors text-sm">
+            <Link href="/chi-siamo" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Chi siamo
-            </a>
-            <a href="/contatti" className="text-muted hover:text-accent transition-colors text-sm">
+            </Link>
+            <Link href="/contatti" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Contatti
-            </a>
-            <a href="/lavora-con-noi" className="text-muted hover:text-accent transition-colors text-sm">
+            </Link>
+            <Link href="/lavora-con-noi" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Lavora con noi
-            </a>
-            <a href="/politica-editoriale" className="text-muted hover:text-accent transition-colors text-sm">
+            </Link>
+            <Link href="/politica-editoriale" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Politica editoriale
-            </a>
-            <a href="/privacy" className="text-muted hover:text-accent transition-colors text-sm">
+            </Link>
+            <Link href="/privacy" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Privacy e Cookie policy
-            </a>
-            <a
-              href="https://www.facebook.com/techjournal.it"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted hover:text-accent transition-colors text-sm"
-            >
-              Facebook
-            </a>
-            <a
-              href="https://www.instagram.com/techjournal.it"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted hover:text-accent transition-colors text-sm"
-            >
-              Instagram
-            </a>
+            </Link>
           </nav>
         </div>
         <p className="text-muted text-xs mt-6 pt-6 border-t border-border w-full text-center">
