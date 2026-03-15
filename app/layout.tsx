@@ -48,6 +48,10 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
+  icons: {
+    icon: "https://static.techjournal.it/2025/02/techjournal-ico-new-removebg-preview.png",
+    apple: "https://static.techjournal.it/2025/02/techjournal-ico-new-removebg-preview.png",
+  },
 };
 
 export default function RootLayout({
