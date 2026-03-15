@@ -21,14 +21,17 @@ export default function Footer() {
             <Link href="/contatti" className="text-muted hover:text-accent transition-colors text-sm">
               Contatti
             </Link>
+            <Link href="/lavora-con-noi" className="text-muted hover:text-accent transition-colors text-sm">
+              Lavora con noi
+            </Link>
+            <Link href="/politica-editoriale" className="text-muted hover:text-accent transition-colors text-sm">
+              Politica editoriale
+            </Link>
             <Link href="/privacy" className="text-muted hover:text-accent transition-colors text-sm">
               Privacy
             </Link>
             <Link href="/cookie-policy" className="text-muted hover:text-accent transition-colors text-sm">
-              Cookie
-            </Link>
-            <Link href="/termini" className="text-muted hover:text-accent transition-colors text-sm">
-              Termini
+              Cookie policy
             </Link>
             <a
               href="https://www.facebook.com/techjournal.it"
