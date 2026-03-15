@@ -1,10 +1,7 @@
 "use client";
 
-import Script from "next/script";
-
-const IUBENDA_SCRIPT = "https://cdn.iubenda.com/iubenda.js";
 const EMBED_CLASSES =
-  "iubenda-white no-brand iubenda-noiframe iubenda-embed iub-body-embed text-accent hover:underline";
+  "iubenda-white no-brand iubenda-noiframe iubenda-embed iubenda-noiframe iub-body-embed text-accent hover:underline";
 
 interface IubendaPolicyEmbedProps {
   /** URL completo della policy (es. https://www.iubenda.com/privacy-policy/40447530) */
@@ -21,17 +18,8 @@ interface IubendaPolicyEmbedProps {
  */
 export default function IubendaPolicyEmbed({ href, title, children }: IubendaPolicyEmbedProps) {
   return (
-    <>
-      <Script id="iubenda-embed-js" src={IUBENDA_SCRIPT} strategy="afterInteractive" />
-      <a
-        href={href}
-        className={EMBED_CLASSES}
-        title={title}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {children ?? title}
-      </a>
-    </>
+    <a href={href} className={EMBED_CLASSES} title={title}>
+      {children ?? title}
+    </a>
   );
 }

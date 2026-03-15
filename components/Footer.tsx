@@ -14,25 +14,25 @@ export default function Footer() {
           <p className="text-muted text-sm">
             © {new Date().getFullYear()} TechJournal. Tutti i diritti riservati.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-            <Link href="/chi-siamo" className="text-muted hover:text-accent transition-colors text-sm">
+          <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6" aria-label="Link utili">
+            <a href="/chi-siamo" className="text-muted hover:text-accent transition-colors text-sm">
               Chi siamo
-            </Link>
-            <Link href="/contatti" className="text-muted hover:text-accent transition-colors text-sm">
+            </a>
+            <a href="/contatti" className="text-muted hover:text-accent transition-colors text-sm">
               Contatti
-            </Link>
-            <Link href="/lavora-con-noi" className="text-muted hover:text-accent transition-colors text-sm">
+            </a>
+            <a href="/lavora-con-noi" className="text-muted hover:text-accent transition-colors text-sm">
               Lavora con noi
-            </Link>
-            <Link href="/politica-editoriale" className="text-muted hover:text-accent transition-colors text-sm">
+            </a>
+            <a href="/politica-editoriale" className="text-muted hover:text-accent transition-colors text-sm">
               Politica editoriale
-            </Link>
-            <Link href="/privacy" className="text-muted hover:text-accent transition-colors text-sm">
+            </a>
+            <a href="/privacy" className="text-muted hover:text-accent transition-colors text-sm">
               Privacy
-            </Link>
-            <Link href="/cookie-policy" className="text-muted hover:text-accent transition-colors text-sm">
+            </a>
+            <a href="/cookie-policy" className="text-muted hover:text-accent transition-colors text-sm">
               Cookie policy
-            </Link>
+            </a>
             <a
               href="https://www.facebook.com/techjournal.it"
               target="_blank"

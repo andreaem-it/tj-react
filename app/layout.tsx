@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Script from "next/script";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -53,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="it" className={`dark ${inter.variable}`}>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased font-sans">
+        <Script id="iubenda-embed-js" src="https://cdn.iubenda.com/iubenda.js" strategy="afterInteractive" />
         <SiteStructuredData />
         <IubendaCookieBanner />
         <GoogleAnalytics />
