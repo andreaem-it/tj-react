@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useIubenda } from "@mep-agency/next-iubenda";
 
 declare global {
   interface Window {
@@ -26,7 +27,7 @@ const placeholderClassName =
 /**
  * Unità pubblicitaria Google AdSense. Richiede che AdSenseScript sia caricato nel layout
  * e che NEXT_PUBLIC_ADSENSE_CLIENT_ID sia impostato. Su localhost mostra solo un placeholder
- * (Google risponde 403 per domini non verificati).
+ * Annunci sempre visibili; senza consenso marketing = non personalizzati (NPA).
  */
 export default function AdSenseUnit({
   adSlot,
@@ -35,9 +36,14 @@ export default function AdSenseUnit({
   style,
   className = "",
 }: AdSenseUnitProps) {
+  const { userPreferences } = useIubenda();
   const insRef = useRef<HTMLModElement>(null);
   const pushedRef = useRef(false);
   const [useRealAd, setUseRealAd] = useState(false);
+
+  const hasBeenLoaded = userPreferences?.hasBeenLoaded ?? false;
+  const marketing = userPreferences?.gdprPurposes?.marketing ?? false;
+  const npa = !hasBeenLoaded || !marketing;
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
@@ -49,9 +55,11 @@ export default function AdSenseUnit({
     if (!useRealAd || !adSlot || !insRef.current) return;
     const push = () => {
       if (typeof window === "undefined" || pushedRef.current) return;
-      if (!(window as any).adsbygoogle) return false;
+      const w = window as any;
+      if (!w.adsbygoogle) return false;
       try {
-        (window as any).adsbygoogle.push({});
+        w.adsbygoogle.requestNonPersonalizedAds = npa ? 1 : 0;
+        w.adsbygoogle.push({});
         pushedRef.current = true;
         return true;
       } catch {
@@ -70,7 +78,7 @@ export default function AdSenseUnit({
       if (push()) clearInterval(interval);
     }, 200);
     return () => clearInterval(interval);
-  }, [adSlot, useRealAd]);
+  }, [adSlot, useRealAd, npa]);
 
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
   if (!clientId?.trim() || !adSlot?.trim()) return null;
