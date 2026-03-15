@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@mep-agency/next-iubenda"],
+  async rewrites() {
+    return [
+      {
+        source: "/embed.json",
+        destination: "/api/iubenda-embed",
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "www.techjournal.it", pathname: "/**" },
