@@ -1,11 +1,11 @@
-import { fetchHome, type PostWithMeta } from "@/lib/api";
+import { fetchHome, fetchPosts, type PostWithMeta } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 
 /** ISR: cache 5 min per ridurre carico su WordPress (lsphp). */
 export const revalidate = 300;
 
 const emptyPosts: PostWithMeta[] = [];
-const emptyInitial = { posts: [] as typeof emptyPosts, totalPages: 1, pagesConsumed: 0 };
+const INITIAL_POSTS_TARGET = 20;
 
 export default async function HomePage() {
   let initialPosts = emptyPosts;
@@ -23,12 +23,21 @@ export default async function HomePage() {
       initialPosts = home.initial.posts;
       totalPages = home.initial.totalPages ?? 1;
       pagesConsumed = home.initial.pagesConsumed ?? 1;
+      offertePosts = home.offerte ?? emptyPosts;
+      trendingPosts = home.trending ?? emptyPosts;
+      mostReadPosts = home.mostRead ?? emptyPosts;
+      weekTrendingPosts = home.weekTrending ?? emptyPosts;
+      monthTrendingPosts = home.monthTrending ?? emptyPosts;
+    } else {
+      // Fallback se /home non esiste o non restituisce dati (es. api.techjournal.it senza endpoint home)
+      const { posts, totalPages: tp } = await fetchPosts({
+        perPage: INITIAL_POSTS_TARGET,
+        page: 1,
+      });
+      initialPosts = posts;
+      totalPages = tp;
+      pagesConsumed = posts.length > 0 ? 1 : 0;
     }
-    offertePosts = home?.offerte ?? emptyPosts;
-    trendingPosts = home?.trending ?? emptyPosts;
-    mostReadPosts = home?.mostRead ?? emptyPosts;
-    weekTrendingPosts = home?.weekTrending ?? emptyPosts;
-    monthTrendingPosts = home?.monthTrending ?? emptyPosts;
   } catch {
     // API irraggiungibile: layout con dati vuoti
   }
