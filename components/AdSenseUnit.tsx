@@ -46,21 +46,30 @@ export default function AdSenseUnit({
   }, []);
 
   useEffect(() => {
-    if (!useRealAd || !adSlot || pushedRef.current || !insRef.current) return;
+    if (!useRealAd || !adSlot || !insRef.current) return;
     const push = () => {
-      if (typeof window === "undefined" || !window.adsbygoogle || pushedRef.current) return;
+      if (typeof window === "undefined" || pushedRef.current) return;
+      if (!(window as any).adsbygoogle) return false;
       try {
-        window.adsbygoogle.push({});
+        (window as any).adsbygoogle.push({});
         pushedRef.current = true;
+        return true;
       } catch {
-        // ignore
+        return false;
       }
     };
-    push();
-    if (!pushedRef.current) {
-      const t = setTimeout(push, 500);
-      return () => clearTimeout(t);
-    }
+    if (push()) return;
+    let attempts = 0;
+    const maxAttempts = 50;
+    const interval = setInterval(() => {
+      if (pushedRef.current || attempts >= maxAttempts) {
+        clearInterval(interval);
+        return;
+      }
+      attempts += 1;
+      if (push()) clearInterval(interval);
+    }, 200);
+    return () => clearInterval(interval);
   }, [adSlot, useRealAd]);
 
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
