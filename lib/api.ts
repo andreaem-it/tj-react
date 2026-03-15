@@ -1,6 +1,6 @@
 import https from "node:https";
 import { unstable_cache } from "next/cache";
-import { API_BASE, logApiUrl } from "@/lib/constants";
+import { API_BASE, API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
 
 const WP_BASE =
   process.env.NEXT_PUBLIC_WP_BASE ?? `${API_BASE}/wp-json/tj/v1`;
@@ -57,7 +57,11 @@ function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
       hostname: u.hostname,
       path: u.pathname + u.search,
       method: "GET",
-      headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        ...API_REQUEST_HEADERS,
+      },
     };
     https
       .get(opts, (res) => {
@@ -160,6 +164,7 @@ async function fetchTjPosts(params: {
   const url = `${WP_BASE}/posts?${searchParams.toString()}`;
   logApiUrl(url);
   const res = await fetch(url, {
+    headers: API_REQUEST_HEADERS,
     ...(requestCache !== undefined && { cache: requestCache }),
     ...(requestCache === undefined && { next: { revalidate: 60 } }),
   });
@@ -270,6 +275,7 @@ export async function fetchMegamenuFromTj(slug: string): Promise<
   const url = `${WP_BASE}/megamenu/${encodeURIComponent(slug)}`;
   logApiUrl(url);
   const res = await fetch(url, {
+    headers: API_REQUEST_HEADERS,
     next: { revalidate: 300 },
   });
   if (!res.ok) return [];
@@ -388,6 +394,7 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null
   const url = `${WP_BASE}/post/${encodeURIComponent(slug)}`;
   logApiUrl(url);
   const res = await fetch(url, {
+    headers: API_REQUEST_HEADERS,
     next: { revalidate: 60 },
   });
   if (!res.ok) return null;
@@ -399,6 +406,7 @@ async function fetchCategoriesRaw(): Promise<WPCategory[]> {
   const url = `${WP_BASE}/categories`;
   logApiUrl(url);
   const res = await fetch(url, {
+    headers: API_REQUEST_HEADERS,
     next: { revalidate: 300 },
   });
   if (!res.ok) return [];
@@ -462,7 +470,10 @@ export async function fetchHome(): Promise<TjHomeResponse | null> {
   try {
     const url = `${WP_BASE}/home`;
     logApiUrl(url);
-    const res = await fetch(url, { next: { revalidate: 300 } });
+    const res = await fetch(url, {
+      headers: API_REQUEST_HEADERS,
+      next: { revalidate: 300 },
+    });
     if (!res.ok) return null;
     return (await res.json()) as TjHomeResponse;
   } catch {

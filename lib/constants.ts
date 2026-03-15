@@ -5,6 +5,12 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.techjou
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "https://api.techjournal.it";
 
+/** Header per le chiamate a api.techjournal.it (evita blocchi da backend/firewall su Vercel). */
+export const API_REQUEST_HEADERS: Record<string, string> = {
+  "User-Agent": "TechJournal-Frontend/1.0 (+https://www.techjournal.it)",
+  Accept: "application/json",
+};
+
 /** Log in console ogni chiamata all’API (utile per verificare che si usi api.techjournal.it). */
 export function logApiUrl(url: string): void {
   console.log("[API]", url);

@@ -24,7 +24,8 @@ export async function GET(
     res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
     return res;
   } catch (err) {
-    console.error("[api/posts/[page]]", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[api/posts/[page]]", message, err instanceof Error ? err.stack : "");
     return NextResponse.json(
       { error: "Errore caricamento post", posts: [], totalPages: 0 },
       { status: 500 }

@@ -26,7 +26,9 @@ export async function GET(
         "Cache-Control": `public, s-maxage=${CACHE_SECONDS}, stale-while-revalidate=60`,
       },
     });
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[api/megamenu]", slug, message, err instanceof Error ? err.stack : "");
     return NextResponse.json([], { status: 200 });
   }
 }

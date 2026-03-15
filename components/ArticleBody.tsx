@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { API_BASE, logApiUrl } from "@/lib/constants";
+import { API_BASE, API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
 
 const STORAGE_KEY = "article-font-size";
 const MIN_LEVEL = 0;
@@ -43,7 +43,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
     const tryFetch = async (url: string) => {
       logApiUrl(url);
       try {
-        const res = await fetch(url, { signal: ctrl.signal });
+        const res = await fetch(url, { signal: ctrl.signal, headers: API_REQUEST_HEADERS });
         if (!res.ok) return null;
         const data = await res.json();
         const n = typeof data?.views === "number" ? data.views : typeof data?.count === "number" ? data.count : Number(data?.post_views);
