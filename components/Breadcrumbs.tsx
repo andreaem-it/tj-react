@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { SITE_URL } from "@/lib/constants";
 
 export type BreadcrumbItem = { label: string; href?: string };
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
 }
+
+const BASE = SITE_URL.replace(/\/$/, "");
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
@@ -18,7 +21,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
       "@type": "ListItem",
       position: index + 1,
       name: stripHtml(item.label),
-      ...(item.href && { item: `https://www.techjournal.it${item.href}` }),
+      ...(item.href && { item: `${BASE}${item.href.startsWith("/") ? "" : "/"}${item.href}` }),
     })),
   };
 

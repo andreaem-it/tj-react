@@ -87,7 +87,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         ? { name: post.authorName, avatar_urls: {} as Record<string, string> }
         : null;
   const articleHref = `/${postCategoryUrlSlug}/${post.slug}`;
-  const shareUrl = `https://www.techjournal.it${articleHref}/`;
+  const shareUrl = `${SITE_URL.replace(/\/$/, "")}${articleHref}/`;
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },

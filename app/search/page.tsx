@@ -1,9 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { fetchSearchPosts } from "@/lib/api";
 import ArticleCard from "@/components/ArticleCard";
 import SearchForm from "@/components/SearchForm";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Cerca",
+  description: "Cerca articoli su TechJournal.",
+  robots: { index: false, follow: true },
+};
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string; page?: string }>;

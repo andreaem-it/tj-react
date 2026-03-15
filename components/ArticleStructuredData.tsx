@@ -1,3 +1,8 @@
+import { SITE_URL } from "@/lib/constants";
+
+const BASE = SITE_URL.replace(/\/$/, "");
+const LOGO_URL = "https://static.techjournal.it/2024/01/logo-techjournal-250.png";
+
 interface ArticleStructuredDataProps {
   headline: string;
   description?: string;
@@ -17,7 +22,7 @@ export default function ArticleStructuredData({
   authorName,
   url,
 }: ArticleStructuredDataProps) {
-  const fullUrl = url.startsWith("http") ? url : `https://www.techjournal.it${url}`;
+  const fullUrl = url.startsWith("http") ? url : `${BASE}${url.startsWith("/") ? "" : "/"}${url}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -40,7 +45,7 @@ export default function ArticleStructuredData({
       name: "TechJournal",
       logo: {
         "@type": "ImageObject",
-        url: "https://static.techjournal.it/2024/01/logo-techjournal-250.png",
+        url: LOGO_URL,
       },
     },
     mainEntityOfPage: {

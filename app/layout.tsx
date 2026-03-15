@@ -11,6 +11,7 @@ import NewsletterModal from "@/components/NewsletterModal";
 import AdSenseScript from "@/components/AdSenseScript";
 import IubendaCookieBanner from "@/components/IubendaCookieBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import SiteStructuredData from "@/components/SiteStructuredData";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -52,6 +53,7 @@ export default function RootLayout({
   return (
     <html lang="it" className={`dark ${inter.variable}`}>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased font-sans">
+        <SiteStructuredData />
         <IubendaCookieBanner />
         <GoogleAnalytics />
         <GoogleAnalyticsPageView />
