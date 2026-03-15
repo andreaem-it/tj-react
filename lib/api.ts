@@ -2,7 +2,7 @@ import https from "node:https";
 import { unstable_cache } from "next/cache";
 
 const WP_BASE =
-  process.env.NEXT_PUBLIC_WP_BASE ?? "https://www.techjournal.it/wp-json/tj/v1";
+  process.env.NEXT_PUBLIC_WP_BASE ?? "https://api.techjournal.it/wp-json/tj/v1";
 
 export interface WPCategory {
   id: number;

@@ -1,10 +1,10 @@
 /**
  * TechRadar API - Price Radar backend
- * Base URL: https://www.techjournal.it/techradar/api
+ * Base URL: https://api.techjournal.it/techradar/api
  */
 
 export const TECHRADAR_API_BASE =
-  process.env.NEXT_PUBLIC_TECHRADAR_API_BASE ?? "https://www.techjournal.it/techradar/api";
+  process.env.NEXT_PUBLIC_TECHRADAR_API_BASE ?? "https://api.techjournal.it/techradar/api";
 
 export interface TechRadarOffer {
   title: string;
