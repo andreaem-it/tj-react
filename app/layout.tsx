@@ -8,9 +8,10 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import BannerPlaceholder from "@/components/BannerPlaceholder";
 import NewsletterModal from "@/components/NewsletterModal";
-import AdSenseScript from "@/components/AdSenseScript";
-import IubendaCookieBanner from "@/components/IubendaCookieBanner";
+import IubendaProviderWrapper from "@/components/IubendaProviderWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import TrackingConsentGate from "@/components/TrackingConsentGate";
+import ConsentAwareAdSlot from "@/components/ConsentAwareAdSlot";
 import SiteStructuredData from "@/components/SiteStructuredData";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import { Analytics } from "@vercel/analytics/next";
@@ -36,9 +37,12 @@ export const metadata: Metadata = {
       "application/rss+xml": `${siteUrl.replace(/\/$/, "")}/feed.xml`,
     },
   },
+  // Open Graph: solo siteName e locale in layout. Ogni pagina definisce titolo, descrizione e url
+  // per evitare meta og:description duplicati (un solo set per pagina).
   openGraph: {
     siteName: "TechJournal",
     locale: "it_IT",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
@@ -53,36 +57,41 @@ export default function RootLayout({
   return (
     <html lang="it" className={`dark ${inter.variable}`}>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased font-sans">
-        <SiteStructuredData />
-        <IubendaCookieBanner />
-        <GoogleAnalytics />
-        <GoogleAnalyticsPageView />
-        <AdSenseScript />
+        <IubendaProviderWrapper>
+          <SiteStructuredData />
+          <GoogleAnalytics />
+          <GoogleAnalyticsPageView />
+          <TrackingConsentGate />
         <Suspense fallback={<HeaderSkeleton />}>
           <Header />
         </Suspense>
         <main className="flex-1 flex w-full justify-center min-w-0 min-h-0 px-2.5 xl:px-12 gap-6 xl:gap-10">
-          <BannerPlaceholder
-            side="left"
-            width={160}
-            minHeight={600}
-            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_LEFT}
-          />
+          <ConsentAwareAdSlot>
+            <BannerPlaceholder
+              side="left"
+              width={160}
+              minHeight={600}
+              adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_LEFT}
+            />
+          </ConsentAwareAdSlot>
           <div className="flex-1 min-w-0 flex justify-center">
             {children}
           </div>
-          <BannerPlaceholder
-            side="right"
-            width={160}
-            minHeight={600}
-            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_RIGHT}
-          />
+          <ConsentAwareAdSlot>
+            <BannerPlaceholder
+              side="right"
+              width={160}
+              minHeight={600}
+              adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_RIGHT}
+            />
+          </ConsentAwareAdSlot>
         </main>
         <Footer />
         <NewsletterModal />
         <ScrollToTop />
-        <Analytics />
-        <SpeedInsights />
+          <Analytics />
+          <SpeedInsights />
+        </IubendaProviderWrapper>
       </body>
     </html>
   );

@@ -1,8 +1,21 @@
 import Link from "next/link";
+import { SITE_URL } from "@/lib/constants";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Contatti",
-  description: "Contatta TechJournal per collaborazioni e informazioni.",
+const canonical = `${SITE_URL.replace(/\/$/, "")}/contatti`;
+
+export const metadata: Metadata = {
+  title: "Contatti - Collaborazioni e informazioni TechJournal",
+  description: "Contatta TechJournal per collaborazioni, informazioni e partnership. Apple, tech e gadget.",
+  alternates: { canonical },
+  openGraph: {
+    title: "Contatti - Collaborazioni | TechJournal",
+    description: "Contatta TechJournal per collaborazioni e informazioni.",
+    url: canonical,
+    siteName: "TechJournal",
+    type: "website",
+  },
+  twitter: { card: "summary", title: "Contatti | TechJournal", description: "Contatti TechJournal per collaborazioni." },
 };
 
 export default function ContattiPage() {

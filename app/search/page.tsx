@@ -6,10 +6,22 @@ import SearchForm from "@/components/SearchForm";
 
 export const revalidate = 60;
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.techjournal.it";
+const searchCanonical = `${siteUrl.replace(/\/$/, "")}/search`;
+
 export const metadata: Metadata = {
-  title: "Cerca",
-  description: "Cerca articoli su TechJournal.",
+  title: "Cerca articoli - Apple, Tech e Gadget",
+  description: "Cerca articoli e notizie su Apple, iPhone, Mac, tech e gadget su TechJournal.",
   robots: { index: false, follow: true },
+  alternates: { canonical: searchCanonical },
+  openGraph: {
+    title: "Cerca articoli | TechJournal",
+    description: "Cerca articoli e notizie su Apple, tech e gadget su TechJournal.",
+    url: searchCanonical,
+    siteName: "TechJournal",
+    type: "website",
+  },
+  twitter: { card: "summary", title: "Cerca | TechJournal", description: "Cerca articoli TechJournal." },
 };
 
 interface SearchPageProps {

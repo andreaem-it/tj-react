@@ -1,9 +1,23 @@
 import Link from "next/link";
+import { SITE_URL } from "@/lib/constants";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Chi siamo",
+const canonical = `${SITE_URL.replace(/\/$/, "")}/chi-siamo`;
+
+export const metadata: Metadata = {
+  title: "Chi siamo - Redazione Apple, Tech e Gadget",
   description:
     "TechJournal è un progetto indipendente su Apple, tech e gadget. Chi siamo, come lavoriamo e come collaborare.",
+  alternates: { canonical },
+  openGraph: {
+    title: "Chi siamo - Redazione Apple, Tech e Gadget | TechJournal",
+    description:
+      "TechJournal è un progetto indipendente su Apple, tech e gadget. Chi siamo, come lavoriamo e come collaborare.",
+    url: canonical,
+    siteName: "TechJournal",
+    type: "website",
+  },
+  twitter: { card: "summary", title: "Chi siamo | TechJournal", description: "TechJournal: progetto indipendente su Apple, tech e gadget." },
 };
 
 export default function ChiSiamoPage() {
@@ -46,17 +60,6 @@ export default function ChiSiamoPage() {
           Per proposte commerciali, collaborazioni o semplicemente per scriverci, puoi usare la
           pagina <Link href="/contatti" className="text-accent hover:underline">Contatti</Link>.
         </p>
-      </div>
-      <div className="mt-8 flex flex-wrap gap-4">
-        <Link href="/lavora-con-noi" className="text-accent hover:underline text-sm font-medium">
-          Lavora con noi →
-        </Link>
-        <Link href="/contatti" className="text-accent hover:underline text-sm font-medium">
-          Contatti →
-        </Link>
-        <Link href="/" className="text-accent hover:underline text-sm">
-          ← Torna alla home
-        </Link>
       </div>
     </div>
   );

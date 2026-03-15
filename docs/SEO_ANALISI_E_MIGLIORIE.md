@@ -97,3 +97,12 @@ RankMath ottimizza in particolare:
 5. **Bassa**: Immagine e categoria nel **RSS**; verificare **og-default.png**; eventuale **FAQ/HowTo** schema solo se usi blocchi dedicati in futuro.
 
 Se vuoi, il passo successivo è implementare le voci 1 e 2 (Organization/WebSite e SITE_URL ovunque) e, se l’API ha il campo, la 3 (modified).
+
+---
+
+## Audit SEO applicati (titoli, www, Open Graph, performance)
+
+- **Titoli e descrizioni con keyword**: tutte le pagine (home, chi-siamo, lavora-con-noi, politica-editoriale, privacy, contatti, search, price-radar) hanno titolo e meta description con parole chiave naturali (Apple, tech, gadget, notizie, ecc.). Template layout: `%s | TechJournal`.
+- **Redirect www/non-www**: in Next.js 16 il middleware è deprecato (Turbopack), quindi il redirect 301 da `techjournal.it` a `www.techjournal.it` va configurato a livello hosting: in **Vercel** → Project → Settings → Domains, aggiungi entrambi i domini e imposta il redirect da `techjournal.it` verso `www.techjournal.it` (o scegli un solo dominio canonico e reindirizza l’altro). In alternativa, configura un redirect 301 nel proxy/CDN che sta davanti all’app.
+- **Open Graph senza duplicati**: il layout definisce solo `openGraph.siteName`, `locale` e `type`. Ogni pagina importante espone un proprio set completo (title, description, url, eventuali images) così da avere un solo `og:description` (e un solo `og:title`) per pagina.
+- **Prestazioni (richieste)**: le pagine con molte card generano molte richieste immagini (next/image già usa lazy loading e `sizes` responsive). Per ridurre ulteriormente: limitare il numero di card above-the-fold, usare `priority` solo per hero, verificare che non ci siano iframe/embed non necessari.

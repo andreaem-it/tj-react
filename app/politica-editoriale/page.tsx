@@ -1,9 +1,23 @@
 import Link from "next/link";
+import { SITE_URL } from "@/lib/constants";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Politica editoriale",
+const canonical = `${SITE_URL.replace(/\/$/, "")}/politica-editoriale`;
+
+export const metadata: Metadata = {
+  title: "Politica editoriale - Qualità e trasparenza tech",
   description:
-    "Missione, qualità dei contenuti, fonti e trasparenza: come lavora la redazione di TechJournal.",
+    "Missione, qualità dei contenuti, fonti e trasparenza: come lavora la redazione di TechJournal su notizie Apple e tecnologia.",
+  alternates: { canonical },
+  openGraph: {
+    title: "Politica editoriale - Qualità e trasparenza | TechJournal",
+    description:
+      "Missione, qualità dei contenuti, fonti e trasparenza: come lavora la redazione di TechJournal.",
+    url: canonical,
+    siteName: "TechJournal",
+    type: "website",
+  },
+  twitter: { card: "summary", title: "Politica editoriale | TechJournal", description: "Come lavora la redazione TechJournal." },
 };
 
 export default function PoliticaEditorialePage() {
@@ -106,15 +120,6 @@ export default function PoliticaEditorialePage() {
             quando appropriato.
           </p>
         </section>
-      </div>
-
-      <div className="mt-8 flex flex-wrap gap-4">
-        <Link href="/chi-siamo" className="text-accent hover:underline text-sm font-medium">
-          Chi siamo
-        </Link>
-        <Link href="/" className="text-accent hover:underline text-sm">
-          ← Torna alla home
-        </Link>
       </div>
     </div>
   );

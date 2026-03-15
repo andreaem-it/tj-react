@@ -1,9 +1,32 @@
 import { fetchHome, fetchPosts, type PostWithMeta } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
+import { SITE_URL } from "@/lib/constants";
+import type { Metadata } from "next";
 
 /** Rendering a ogni richiesta per evitare homepage vuota da cache/build. */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+const siteUrl = SITE_URL.replace(/\/$/, "");
+
+export const metadata: Metadata = {
+  title: "TechJournal - Notizie Apple, iPhone, Mac, Tech e Gadget",
+  description: "Ultime notizie su Apple, iPhone, Mac, app, tech e gadget. Recensioni, guide e offerte.",
+  alternates: { canonical: siteUrl },
+  openGraph: {
+    title: "TechJournal - Notizie Apple, Tech e Gadget",
+    description: "Ultime notizie su Apple, iPhone, Mac, app e tecnologia. Recensioni, guide e offerte.",
+    url: siteUrl,
+    siteName: "TechJournal",
+    type: "website",
+    images: [{ url: `${siteUrl}/og-default.png`, width: 1200, height: 630, alt: "TechJournal" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TechJournal - Notizie Apple, Tech e Gadget",
+    description: "Ultime notizie su Apple, iPhone, Mac, app e tecnologia.",
+  },
+};
 
 const emptyPosts: PostWithMeta[] = [];
 const INITIAL_POSTS_TARGET = 20;

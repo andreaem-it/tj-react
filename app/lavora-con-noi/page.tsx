@@ -1,9 +1,23 @@
 import Link from "next/link";
+import { SITE_URL } from "@/lib/constants";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Lavora con noi",
+const canonical = `${SITE_URL.replace(/\/$/, "")}/lavora-con-noi`;
+
+export const metadata: Metadata = {
+  title: "Lavora con noi - Scrivi di Apple, Tech e Gaming",
   description:
     "TechJournal cerca autori. Retribuzione a parola, validazione redazionale e possibilità di crescita. Candidati per scrivere di tech, Apple e gaming.",
+  alternates: { canonical },
+  openGraph: {
+    title: "Lavora con noi - Scrivi di Apple, Tech e Gaming | TechJournal",
+    description:
+      "TechJournal cerca autori. Retribuzione a parola, validazione redazionale. Candidati per scrivere di tech, Apple e gaming.",
+    url: canonical,
+    siteName: "TechJournal",
+    type: "website",
+  },
+  twitter: { card: "summary", title: "Lavora con noi | TechJournal", description: "Candidati per scrivere di tech, Apple e gaming." },
 };
 
 export default function LavoraConNoiPage() {
@@ -122,17 +136,6 @@ export default function LavoraConNoiPage() {
         </p>
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-4">
-        <Link href="/contatti" className="text-accent hover:underline text-sm font-medium">
-          Candidati tramite Contatti →
-        </Link>
-        <Link href="/chi-siamo" className="text-accent hover:underline text-sm">
-          Chi siamo
-        </Link>
-        <Link href="/" className="text-accent hover:underline text-sm">
-          ← Torna alla home
-        </Link>
-      </div>
     </div>
   );
 }
