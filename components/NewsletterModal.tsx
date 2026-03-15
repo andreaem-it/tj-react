@@ -61,16 +61,18 @@ export default function NewsletterModal() {
     }
   };
 
+  if (!open) return null;
+
   return (
     <div
-      className={`fixed inset-x-0 bottom-0 z-50 flex justify-center px-2.5 pb-4 sm:pb-6 transition-opacity duration-300 ${
-        open ? "opacity-100 pointer-events-none" : "opacity-0 pointer-events-none"
-      }`}
-      aria-hidden={!open}
+      className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-2.5 pb-4 sm:pb-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="newsletter-title"
     >
-      <div className="pointer-events-auto max-w-xl w-full rounded-2xl bg-sidebar-bg border border-border shadow-xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 items-start">
+      <div className="max-w-xl w-full rounded-2xl bg-sidebar-bg border border-border shadow-xl p-4 sm:p-6 flex flex-col sm:flex-row gap-4 items-start">
         <div className="flex-1 min-w-0">
-          <h2 className="text-foreground font-semibold text-base sm:text-lg mb-1">
+          <h2 id="newsletter-title" className="text-foreground font-semibold text-base sm:text-lg mb-1">
             Iscriviti alla newsletter di TechJournal
           </h2>
           <p className="text-muted text-sm mb-3">
