@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { TechRadarOffer, SortOption } from "@/lib/techradar";
 import { TECHRADAR_API_BASE, PRICE_RADAR_ENABLED } from "@/lib/techradar";
+import { logApiUrl } from "@/lib/constants";
 import PriceRadarCard from "./PriceRadarCard";
 
 const TECHRADAR_OFFERS_URL = `${TECHRADAR_API_BASE}/offers.php`;
@@ -19,6 +20,7 @@ async function fetchOffers(): Promise<TechRadarOffer[]> {
   if (memoryCache && Date.now() - memoryCache.fetchedAt < CACHE_TTL_MS) {
     return memoryCache.offers;
   }
+  logApiUrl(TECHRADAR_OFFERS_URL);
   const res = await fetch(TECHRADAR_OFFERS_URL);
   if (!res.ok) throw new Error("Errore nel caricamento delle offerte");
   const data = await res.json();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { API_BASE } from "@/lib/constants";
+import { API_BASE, logApiUrl } from "@/lib/constants";
 
 const STORAGE_KEY = "article-font-size";
 const MIN_LEVEL = 0;
@@ -41,6 +41,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
     if (viewCountProp != null || !postId) return;
     const ctrl = new AbortController();
     const tryFetch = async (url: string) => {
+      logApiUrl(url);
       try {
         const res = await fetch(url, { signal: ctrl.signal });
         if (!res.ok) return null;

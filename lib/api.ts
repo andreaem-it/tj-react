@@ -1,6 +1,6 @@
 import https from "node:https";
 import { unstable_cache } from "next/cache";
-import { API_BASE } from "@/lib/constants";
+import { API_BASE, logApiUrl } from "@/lib/constants";
 
 const WP_BASE =
   process.env.NEXT_PUBLIC_WP_BASE ?? `${API_BASE}/wp-json/tj/v1`;
@@ -50,6 +50,7 @@ interface TjHomeResponse {
 
 /** Fetch tj/v1 via Node https (bypass cache Next.js, per Load more). */
 function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
+  logApiUrl(url);
   return new Promise((resolve, reject) => {
     const u = new URL(url);
     const opts = {
@@ -157,6 +158,7 @@ async function fetchTjPosts(params: {
   if (search) searchParams.set("search", search);
 
   const url = `${WP_BASE}/posts?${searchParams.toString()}`;
+  logApiUrl(url);
   const res = await fetch(url, {
     ...(requestCache !== undefined && { cache: requestCache }),
     ...(requestCache === undefined && { next: { revalidate: 60 } }),
@@ -265,7 +267,9 @@ export async function fetchPostsForMegamenu(params: {
 export async function fetchMegamenuFromTj(slug: string): Promise<
   Array<{ slug: string; title: string; imageUrl: string | null; imageAlt: string }>
 > {
-  const res = await fetch(`${WP_BASE}/megamenu/${encodeURIComponent(slug)}`, {
+  const url = `${WP_BASE}/megamenu/${encodeURIComponent(slug)}`;
+  logApiUrl(url);
+  const res = await fetch(url, {
     next: { revalidate: 300 },
   });
   if (!res.ok) return [];
@@ -381,7 +385,9 @@ export async function fetchTrendingWeekAndMonth(params: {
 }
 
 export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null> {
-  const res = await fetch(`${WP_BASE}/post/${encodeURIComponent(slug)}`, {
+  const url = `${WP_BASE}/post/${encodeURIComponent(slug)}`;
+  logApiUrl(url);
+  const res = await fetch(url, {
     next: { revalidate: 60 },
   });
   if (!res.ok) return null;
@@ -390,7 +396,9 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null
 }
 
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {
-  const res = await fetch(`${WP_BASE}/categories`, {
+  const url = `${WP_BASE}/categories`;
+  logApiUrl(url);
+  const res = await fetch(url, {
     next: { revalidate: 300 },
   });
   if (!res.ok) return [];
@@ -452,7 +460,9 @@ export async function fetchPostsByCategorySlug(
 /** Batch home: tutti i dati in una sola chiamata tj/v1/home. */
 export async function fetchHome(): Promise<TjHomeResponse | null> {
   try {
-    const res = await fetch(`${WP_BASE}/home`, { next: { revalidate: 300 } });
+    const url = `${WP_BASE}/home`;
+    logApiUrl(url);
+    const res = await fetch(url, { next: { revalidate: 300 } });
     if (!res.ok) return null;
     return (await res.json()) as TjHomeResponse;
   } catch {
