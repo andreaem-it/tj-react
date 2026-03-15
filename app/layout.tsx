@@ -11,7 +11,6 @@ import NewsletterModal from "@/components/NewsletterModal";
 import IubendaProviderWrapper from "@/components/IubendaProviderWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import TrackingConsentGate from "@/components/TrackingConsentGate";
-import ConsentAwareAdSlot from "@/components/ConsentAwareAdSlot";
 import SiteStructuredData from "@/components/SiteStructuredData";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import { Analytics } from "@vercel/analytics/next";
@@ -66,25 +65,21 @@ export default function RootLayout({
           <Header />
         </Suspense>
         <main className="flex-1 flex w-full justify-center min-w-0 min-h-0 px-2.5 xl:px-12 gap-6 xl:gap-10">
-          <ConsentAwareAdSlot>
-            <BannerPlaceholder
-              side="left"
-              width={160}
-              minHeight={600}
-              adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_LEFT}
-            />
-          </ConsentAwareAdSlot>
+          <BannerPlaceholder
+            side="left"
+            width={160}
+            minHeight={600}
+            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_LEFT}
+          />
           <div className="flex-1 min-w-0 flex justify-center">
             {children}
           </div>
-          <ConsentAwareAdSlot>
-            <BannerPlaceholder
-              side="right"
-              width={160}
-              minHeight={600}
-              adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_RIGHT}
-            />
-          </ConsentAwareAdSlot>
+          <BannerPlaceholder
+            side="right"
+            width={160}
+            minHeight={600}
+            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_RIGHT}
+          />
         </main>
         <Footer />
         <NewsletterModal />
