@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { ConsentAwareWrapper } from "@mep-agency/next-iubenda";
+import { useIubenda } from "@mep-agency/next-iubenda";
 
 const SKYSCRAPER_WIDTH = 160;
 const SKYSCRAPER_MIN_HEIGHT = 600;
@@ -39,20 +39,22 @@ interface ConsentAwareAdSlotProps {
 
 /**
  * Mostra i blocchi pubblicitari (AdSense) solo se l'utente ha accettato i cookie "marketing".
- * Senza consenso mostra uno slot vuoto con le stesse dimensioni del banner, senza card che invadono il layout.
+ * Usa useIubenda() come TrackingConsentGate così script e slot sono allineati.
  */
 export default function ConsentAwareAdSlot({
   children,
   width = SKYSCRAPER_WIDTH,
   minHeight = SKYSCRAPER_MIN_HEIGHT,
 }: ConsentAwareAdSlotProps) {
-  return (
-    <ConsentAwareWrapper
-      requiredGdprPurposes={["marketing"]}
-      useDefaultStyles={false}
-      customConsentNotGrantedNodes={<AdConsentPlaceholder width={width} minHeight={minHeight} />}
-    >
-      {children}
-    </ConsentAwareWrapper>
-  );
+  const { userPreferences } = useIubenda();
+  const hasProvider = userPreferences != null;
+  const hasConsent =
+    !hasProvider ||
+    (userPreferences.hasBeenLoaded && userPreferences.gdprPurposes.marketing === true);
+
+  if (hasConsent) {
+    return <>{children}</>;
+  }
+
+  return <AdConsentPlaceholder width={width} minHeight={minHeight} />;
 }
