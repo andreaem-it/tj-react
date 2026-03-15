@@ -1,0 +1,17 @@
+# Cloudflare D1 per TechJournal (admin + articoli)
+# Creare il database: npx wrangler d1 create techjournal-db
+# Poi sostituire database_id sotto con l'UUID restituito.
+#
+# Applicare schema in locale:
+#   npx wrangler d1 execute techjournal-db --local --file=./schema/d1/001_initial.sql
+# In remoto (dopo deploy):
+#   npx wrangler d1 execute techjournal-db --remote --file=./schema/d1/001_initial.sql
+
+name = "techjournal-d1"
+compatibility_date = "2024-12-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "techjournal-db"
+# Sostituire con l'ID restituito da: npx wrangler d1 create techjournal-db
+database_id = "00000000-0000-0000-0000-000000000000"
