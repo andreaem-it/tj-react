@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { TechRadarOffer, SortOption } from "@/lib/techradar";
-import { TECHRADAR_API_BASE, PRICE_RADAR_ENABLED } from "@/lib/techradar";
+import { TECHRADAR_API_BASE, PRICE_RADAR_ENABLED, PRICE_RADAR_BETA_ENABLED } from "@/lib/techradar";
 import { API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
 import PriceRadarCard from "./PriceRadarCard";
+import { getBetaOffers } from "@/lib/priceRadarBetaData";
 
 const TECHRADAR_OFFERS_URL = `${TECHRADAR_API_BASE}/offers.php`;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minuti
@@ -16,15 +17,25 @@ interface CachedData {
 
 let memoryCache: CachedData | null = null;
 
-async function fetchOffers(): Promise<TechRadarOffer[]> {
+async function fetchLiveOffers(): Promise<TechRadarOffer[]> {
   if (memoryCache && Date.now() - memoryCache.fetchedAt < CACHE_TTL_MS) {
     return memoryCache.offers;
   }
   logApiUrl(TECHRADAR_OFFERS_URL);
   const res = await fetch(TECHRADAR_OFFERS_URL, { headers: API_REQUEST_HEADERS });
-  if (!res.ok) throw new Error("Errore nel caricamento delle offerte");
+  if (!res.ok) throw new Error("Errore nel caricamento delle offerte live");
   const data = await res.json();
   const offers = Array.isArray(data) ? data : [];
+  memoryCache = { offers, fetchedAt: Date.now() };
+  return offers;
+}
+
+async function fetchBetaOffers(): Promise<TechRadarOffer[]> {
+  // Dataset statico in memoria: nessuna chiamata di rete.
+  if (memoryCache && Date.now() - memoryCache.fetchedAt < CACHE_TTL_MS) {
+    return memoryCache.offers;
+  }
+  const offers = getBetaOffers();
   memoryCache = { offers, fetchedAt: Date.now() };
   return offers;
 }
@@ -85,7 +96,7 @@ export default function PriceRadarContent() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchOffers();
+      const data = PRICE_RADAR_ENABLED ? await fetchLiveOffers() : await fetchBetaOffers();
       setOffers(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Errore nel caricamento");
@@ -96,7 +107,7 @@ export default function PriceRadarContent() {
   }, []);
 
   useEffect(() => {
-    if (PRICE_RADAR_ENABLED) {
+    if (PRICE_RADAR_ENABLED || PRICE_RADAR_BETA_ENABLED) {
       loadOffers();
     } else {
       setLoading(false);
@@ -116,7 +127,7 @@ export default function PriceRadarContent() {
     return sortOffers(result, sort);
   }, [offers, search, sort]);
 
-  if (!PRICE_RADAR_ENABLED) {
+  if (!PRICE_RADAR_ENABLED && !PRICE_RADAR_BETA_ENABLED) {
     return <PriceRadarComingSoon />;
   }
 
@@ -163,10 +174,23 @@ export default function PriceRadarContent() {
   return (
     <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-10">
       <header className="mb-10">
-        <h1 className="text-foreground text-3xl md:text-4xl font-bold mb-2">Price Radar</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-foreground text-3xl md:text-4xl font-bold">Price Radar</h1>
+          {PRICE_RADAR_BETA_ENABLED && !PRICE_RADAR_ENABLED && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-accent/15 text-accent border border-accent/40">
+              Beta
+            </span>
+          )}
+        </div>
         <p className="text-muted text-lg">
           Monitoraggio automatico dei prezzi su Amazon per tecnologia, gaming e domotica.
         </p>
+        {PRICE_RADAR_BETA_ENABLED && !PRICE_RADAR_ENABLED && (
+          <p className="text-muted text-sm mt-2">
+            Versione beta con dataset statico interno. L&apos;integrazione completa con Amazon PA-API
+            sarà attivata appena disponibile.
+          </p>
+        )}
       </header>
 
       {/* Barra filtri */}
