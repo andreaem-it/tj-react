@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import type { TechRadarOffer } from "@/lib/techradar";
 import { BLUR_DATA_URL } from "@/lib/constants";
 
@@ -37,11 +36,6 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
 
   return (
     <article className="group relative flex flex-col h-full bg-content-bg rounded-xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-accent/40 transition-all duration-300">
-      <Link
-        href={`/price-radar/${offer.asin}`}
-        className="absolute inset-0 z-10"
-        aria-label={`Dettagli prezzo per ${offer.title}`}
-      />
       <div className="relative aspect-square bg-sidebar-bg overflow-hidden">
         {offer.image ? (
           useNextImage ? (
