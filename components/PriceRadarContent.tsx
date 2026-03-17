@@ -183,14 +183,8 @@ export default function PriceRadarContent() {
           )}
         </div>
         <p className="text-muted text-lg">
-          Monitoraggio automatico dei prezzi su Amazon per tecnologia, gaming e domotica.
+          Offerte selezionate di prodotti tech su Amazon, aggiornate periodicamente.
         </p>
-        {PRICE_RADAR_BETA_ENABLED && !PRICE_RADAR_ENABLED && (
-          <p className="text-muted text-sm mt-2">
-            Versione beta con dataset statico interno. L&apos;integrazione completa con Amazon PA-API
-            sarà attivata appena disponibile.
-          </p>
-        )}
       </header>
 
       {/* Barra filtri */}
