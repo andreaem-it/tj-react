@@ -1,9 +1,6 @@
 import { API_BASE } from "@/lib/constants";
 
-/**
- * TechRadar API - Price Radar backend
- * Usa API_BASE (api.techjournal.it) per le chiamate dati.
- */
+/** TechRadar API - Price Radar backend (quando PA-API è attiva). */
 export const TECHRADAR_API_BASE =
   process.env.NEXT_PUBLIC_TECHRADAR_API_BASE ?? `${API_BASE}/techradar/api`;
 
@@ -20,7 +17,16 @@ export interface TechRadarOffer {
 
 export type SortOption = "discount" | "newest" | "price";
 
-/** Abilita Price Radar quando PA-API Amazon è attiva. Default: false (Coming Soon) */
+/**
+ * Abilita Price Radar con dati live (PA-API / backend TechRadar).
+ * Quando è false e PRICE_RADAR_BETA_ENABLED è true, viene usato il connettore JSON beta.
+ */
 export const PRICE_RADAR_ENABLED =
   process.env.NEXT_PUBLIC_PRICE_RADAR_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_PRICE_RADAR_ENABLED === "1";
+
+/** Abilita la versione Beta che usa il dataset JSON interno. */
+export const PRICE_RADAR_BETA_ENABLED =
+  process.env.NEXT_PUBLIC_PRICE_RADAR_BETA_ENABLED === "true" ||
+  process.env.NEXT_PUBLIC_PRICE_RADAR_BETA_ENABLED === "1";
+

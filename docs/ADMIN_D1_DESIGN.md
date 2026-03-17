@@ -2,6 +2,7 @@
 
 ## Obiettivo
 
+- **Costo zero**: hosting Vercel Hobby (gratuito) + D1 free tier; traffico basso (~50 visite/mese, obiettivo crescita). Nessun costo finché resti nei limiti free.
 - **Parallelamento**: il sito continua a leggere da WordPress (tj/v1); l’admin e il DB locale sono in affiancamento.
 - **Import**: importare tutti gli articoli da WordPress nel nuovo database (idempotente, aggiornabile).
 - **Dashboard admin**: gestione completa articoli (lista, creazione, modifica, eliminazione, pubblicazione).
@@ -20,11 +21,12 @@
 | Ottimo per read-heavy (liste, singolo articolo, filtri) | Scritture meno frequenti (admin): più che sufficienti |
 | Costi contenuti, scaling automatico | |
 
-**Raccomandazione**:  
-- Se il piano è **deploy su Cloudflare Pages** (con `@cloudflare/next-on-pages` o simile): D1 è la scelta naturale, binding diretto e latenza bassa.  
-- Se resti su **Vercel**: si può comunque usare D1 tramite [D1 HTTP API](https://developers.cloudflare.com/d1/api/request/) (autenticazione con API token) oppure valutare **Vercel Postgres** / **Neon** / **Turso** (SQLite compatibile) per restare su stack Vercel.
+**Raccomandazione (costo zero)**:  
+- **Vercel Hobby + D1 via HTTP API**: Next.js resta su Vercel (gratuito), il DB è D1 (free: 5M read/giorno, 100k write/giorno, 5 GB). Con traffico basso resti a 0 €. Le route API Next chiamano D1 tramite [D1 HTTP API](https://developers.cloudflare.com/d1/api/request/) (env: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `D1_DATABASE_ID`).  
+- Alternativa ugualmente a costo zero: **Cloudflare Pages + D1** (binding diretto, nessun “non commercial” come su Hobby).  
+- Se in futuro il traffico o l’uso commerciale crescono, si può passare a Vercel Pro o restare su Cloudflare free.
 
-In questo design assumiamo **D1** come nel tuo intento; lo schema SQL resta riutilizzabile anche per un altro SQLite/Postgres.
+In questo design assumiamo **D1**; lo schema SQL resta riutilizzabile anche per Neon/Turso.
 
 ---
 
@@ -113,6 +115,60 @@ Dopo l’import, la dashboard mostrerà tutti gli articoli (filtrabili per sourc
 4. **API interne**: route tipo `GET/POST /api/admin/articles`, `GET/PUT/DELETE /api/admin/articles/[id]` che leggono/scrivono D1; opzionale `GET /api/admin/import-wordpress` che avvia l’import.
 5. **UI dashboard**: app route `/admin` (e sotto-routes), lista articoli, form creazione/modifica, pulsante import.
 6. **Switch lettura (futuro)**: feature flag o env che sceglie la sorgente (WordPress vs D1); le stesse API pubbliche (es. `/api/posts/[page]`) leggono da D1 quando il flag è attivo, mantenendo il formato `PostWithMeta`.
+
+---
+
+## Failover Vercel → Cloudflare (raddoppio limiti)
+
+Obiettivo: evitare blocchi quando si sforano i limiti Vercel Hobby (1M invocations, 100 GB). Se la risposta da Vercel fallisce (429, 5xx, timeout), la richiesta viene soddisfatta da Cloudflare, raddoppiando di fatto i limiti di *hosting*.
+
+### Due architetture possibili
+
+**A) Un solo database (D1), due deploy (Vercel + Cloudflare Pages)**  
+- Vercel e Cloudflare eseguono la stessa app Next.js; entrambi leggono/scrivono sullo **stesso D1** (Vercel via HTTP API, Cloudflare via binding).  
+- **Nessuna sincronizzazione**: un solo source of truth.  
+- Failover = solo “dove arriva la richiesta”: prima si prova Vercel, in caso di errore si usa l’URL della deployment su Cloudflare (stesso dato).  
+- **Carico**: nessun carico aggiuntivo da sync; al massimo un po’ di letture in più su D1 quando il traffico va su Cloudflare dopo un failover. Rischio di carichi eccessivi da sync: **nullo**.
+
+**B) Due database (es. Neon/Turso su Vercel + D1 su Cloudflare)**  
+- Ogni deploy ha il suo DB. Serve **sincronizzazione** tra i due.  
+- Failover = prima Vercel (DB1), in fallimento Cloudflare (DB2).  
+- Pro: nessun single point of failure sul DB. Contro: logica di sync e possibile ritardo/consistenza eventuale.
+
+### Raccomandazione: architettura A (un solo D1)
+
+Per costo zero e semplicità conviene **un solo D1** e due deploy:
+
+1. **Vercel** (primario): Next.js che usa D1 via HTTP API.  
+2. **Cloudflare Pages** (secondario): stesso codice Next.js che usa D1 via binding.  
+3. **Failover lato client o DNS**:
+   - **Opzione client**: l’app (o un piccolo script) prova prima l’origine Vercel; in caso di `fetch` fallito (429, 5xx, timeout) ritenta verso l’URL della deployment Cloudflare (es. `failover.techjournal.it` o path dedicato).  
+   - **Opzione edge**: un proxy (es. Cloudflare in front a entrambi, o un Worker) che fa “try Vercel, on failure forward to Cloudflare Pages”.  
+4. Nessuna sync: **non si raddoppia il carico sul DB** e non ci sono rischi di carichi eccessivi da sincronizzazione.
+
+Se in futuro volessi due DB separati (architettura B), la sync andrebbe fatta in modo “leggero” (v. sotto) per non rischiare picchi.
+
+---
+
+## Sincronizzazione (solo se si adotta due DB – architettura B)
+
+Se un giorno si usano **due database** (es. Neon + D1), la sincronizzazione va tenuta leggera per **evitare carichi eccessivi**.
+
+### Strategie a basso carico
+
+| Strategia | Carico | Consistenza | Quando usarla |
+|-----------|--------|-------------|----------------|
+| **Sync on write** | Solo in fase di scrittura (admin/import). Scritture sono rare (ordine di decine/giorno al massimo). | Quasi immediata | Sempre: ogni create/update/delete in admin scrive su **entrambi** i DB (o scrivi su primary e invii evento a job che aggiorna il secondario). |
+| **Sync periodica (batch)** | Una full sync ogni N minuti (es. 15–30). Con migliaia di righe è qualche centinaio di read + write ogni 15 min. | Ritardo fino a N minuti | Solo se serve “riallineamento” dopo guasti; non indispensabile se on-write è affidabile. |
+| **Evitare** | Full dump ogni pochi secondi; polling continuo su tabelle grandi. | — | Causerebbe carico inutile e rischio di hit limiti (D1/Neon) o costi. |
+
+### Rischio carichi eccessivi
+
+- **Con sync on write**: il carico aggiuntivo è **solo in fase di modifica contenuti** (pubblicazione, modifica, import). Con 50 visite/mese e poche modifiche al giorno, siamo nell’ordine di **decine di write al giorno** al secondo DB. Nessun rischio di picchi.  
+- **Con sync periodica** (es. ogni 15 min): una full scan di `articles` + `categories` ogni 15 min è nell’ordine di poche migliaia di read + write ogni ora. Per D1/Neon in free tier è ancora **ben dentro i limiti**.  
+- **Rischio alto** solo se si facesse: sync completa molto frequente (es. ogni 10 s) o retry aggressivi senza backoff. Da evitare.
+
+In sintesi: con **un solo D1 e due deploy (A)** non c’è sync e **zero rischio**. Con **due DB (B)** una sync on-write (+ eventuale batch ogni 15–30 min per sicurezza) **non** porta carichi eccessivi per il tuo volume.
 
 ---
 
