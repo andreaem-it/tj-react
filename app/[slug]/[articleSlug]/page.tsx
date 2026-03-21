@@ -96,22 +96,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   ];
 
   const heroContent = (
-    <div className="relative z-10 flex flex-col items-center text-center px-4 py-8 md:py-12 w-full">
-      <div className="w-full flex justify-center mb-4">
+    <div className="relative z-10 flex flex-col items-center text-center px-[10px] sm:px-4 py-8 md:py-12 w-full max-w-full min-w-0 box-border">
+      <div className="w-full max-w-full min-w-0 flex justify-center mb-4">
         <Breadcrumbs items={breadcrumbItems} />
       </div>
       <Link
         href={`/${postCategoryUrlSlug}`}
-        className="text-muted text-sm font-semibold uppercase tracking-wide hover:underline"
+        className="text-muted text-sm font-semibold uppercase tracking-wide hover:underline wrap-anywhere max-w-full px-1"
       >
         {post.categoryName}
       </Link>
-      <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-1 mb-2 max-w-3xl">
+      <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-1 mb-2 max-w-3xl w-full wrap-anywhere hyphens-auto">
         {post.title}
       </h1>
-      <p className="text-muted text-base max-w-2xl">{post.excerpt}</p>
+      <p className="text-muted text-base max-w-2xl w-full wrap-anywhere hyphens-auto px-0.5">
+        {post.excerpt}
+      </p>
 
-      <div className="mt-6 w-full flex flex-wrap items-center justify-between gap-4 px-2">
+      <div className="mt-6 w-full max-w-full min-w-0 flex flex-wrap items-center justify-between gap-4 px-0 sm:px-1">
         <div className="flex flex-wrap items-center gap-3 min-w-0">
           {post.authorAvatarUrl ? (
             <Image
@@ -159,7 +161,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-0 md:px-4 py-8">
+    <div className="max-w-7xl mx-auto px-[10px] md:px-4 py-8">
       <ArticleStructuredData
         headline={post.title}
         description={post.excerpt}
@@ -170,9 +172,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         url={articleHref}
       />
       <div className="flex flex-col lg:flex-row gap-8">
-        <article className="flex-1 min-w-0 bg-content-bg rounded-lg overflow-hidden">
+        <article className="flex-1 min-w-0 max-w-full bg-content-bg rounded-lg overflow-hidden">
           {post.imageUrl ? (
-            <header className="relative min-h-[340px] md:min-h-[400px] flex flex-col justify-end rounded-t-lg overflow-hidden pb-6">
+            <header className="relative min-h-[340px] md:min-h-[400px] flex flex-col justify-end rounded-t-lg overflow-hidden pb-6 min-w-0">
               <Image
                 src={post.imageUrl}
                 alt=""
@@ -187,7 +189,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               {heroContent}
             </header>
           ) : (
-            <header className="p-6 md:p-8 pb-4">
+            <header className="p-6 md:p-8 pb-4 min-w-0">
               {heroContent}
             </header>
           )}

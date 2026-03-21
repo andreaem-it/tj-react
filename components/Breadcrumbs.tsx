@@ -31,17 +31,24 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav aria-label="Breadcrumb" className="text-sm text-muted mb-4">
-        <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <nav aria-label="Breadcrumb" className="text-sm text-muted mb-4 w-full max-w-full min-w-0">
+        <ol className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 w-full max-w-full min-w-0">
           {items.map((item, i) => (
-            <li key={i} className="flex items-center gap-x-2">
-              {i > 0 && <span aria-hidden>/</span>}
+            <li key={i} className="flex items-center gap-x-2 min-w-0 max-w-full">
+              {i > 0 && <span aria-hidden className="shrink-0">
+                /
+              </span>}
               {item.href ? (
-                <Link href={item.href} className="hover:text-accent transition-colors">
+                <Link
+                  href={item.href}
+                  className="hover:text-accent transition-colors wrap-anywhere text-center min-w-0 max-w-full"
+                >
                   {item.label}
                 </Link>
               ) : (
-                <span className="text-foreground">{item.label}</span>
+                <span className="text-foreground wrap-anywhere text-center min-w-0 max-w-full">
+                  {item.label}
+                </span>
               )}
             </li>
           ))}

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/Skeleton";
 
 export default function ArticleLoading() {
   return (
-    <div className="max-w-7xl mx-auto px-0 md:px-4 py-8 w-full">
+    <div className="max-w-7xl mx-auto px-[10px] md:px-4 py-8 w-full">
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0 bg-content-bg rounded-lg overflow-hidden">
           <Skeleton className="w-full h-[340px] md:h-[400px] rounded-t-lg" />
