@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function LavoraConNoiPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="max-w-3xl mx-auto px-0 md:px-4 py-12">
       <h1 className="text-2xl font-bold text-foreground mb-2">Lavora con noi</h1>
       <p className="text-muted text-lg mb-8">
         TechJournal sta cercando nuovi autori. Se la tecnologia è la tua passione e hai sempre

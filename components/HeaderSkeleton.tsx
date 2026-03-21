@@ -8,7 +8,7 @@ const LOGO_URL = "https://static.techjournal.it/2024/01/logo-techjournal-250.png
 export default function HeaderSkeleton() {
   return (
     <header className="sticky top-0 z-50 bg-header-bg border-b border-border">
-      <div className="max-w-7xl mx-auto px-2.5 md:px-4">
+      <div className="max-w-7xl mx-auto px-[10px] sm:px-4 xl:px-12">
         <div className="flex items-center justify-between py-3 gap-2">
           <div className="md:hidden w-10 h-10 shrink-0">
             <Skeleton className="w-full h-full rounded" />

@@ -159,7 +159,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-8">
+    <div className="max-w-7xl mx-auto px-0 md:px-4 py-8">
       <ArticleStructuredData
         headline={post.title}
         description={post.excerpt}

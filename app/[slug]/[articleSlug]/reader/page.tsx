@@ -44,7 +44,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
         </Link>
         <span className="text-muted text-xs">Modalità lettura</span>
       </div>
-      <article className="flex-1 w-full max-w-2xl mx-auto px-4 py-8 md:py-12">
+      <article className="flex-1 w-full max-w-2xl mx-auto px-0 md:px-4 py-8 md:py-12">
         <header className="mb-8">
           <Link
             href={`/${postCategoryUrlSlug}`}

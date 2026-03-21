@@ -1,7 +1,8 @@
 import { SITE_URL } from "@/lib/constants";
 
-const LOGO_URL = "https://static.techjournal.it/2024/01/logo-techjournal-250.png";
 const base = SITE_URL.replace(/\/$/, "");
+/** Immagine ≥112px consigliata da Google per Organization in Search; distinta dalla favicon SVG. */
+const LOGO_URL = "https://static.techjournal.it/2024/01/logo-techjournal-250.png";
 
 /**
  * Schema.org Organization + WebSite (JSON-LD) per SEO.

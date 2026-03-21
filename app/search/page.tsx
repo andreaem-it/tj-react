@@ -41,7 +41,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const hasQuery = query.trim().length > 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-8">
+    <div className="max-w-7xl mx-auto px-0 md:px-4 py-8">
       <div className="mb-8">
         <h1 className="text-foreground text-2xl md:text-3xl font-bold mb-4">Cerca articoli</h1>
         <SearchForm defaultQuery={query} />

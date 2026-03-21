@@ -27,11 +27,22 @@ const inter = Inter({
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.techjournal.it";
 
 export const metadata: Metadata = {
+  applicationName: "TechJournal",
   title: {
     default: "TechJournal - Notizie su Apple, Tech e Gadget",
     template: "%s | TechJournal",
   },
   description: "Ultime notizie su Apple, iPhone, Mac, app e tecnologia.",
+  keywords: [
+    "Apple",
+    "iPhone",
+    "Mac",
+    "tech",
+    "notizie",
+    "gadget",
+    "app",
+    "TechJournal",
+  ],
   metadataBase: new URL(siteUrl),
   alternates: {
     types: {
@@ -48,10 +59,27 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
+  /** Icone servite da /public (affidabili, niente dipendenze da domini esterni). */
   icons: {
-    icon: "https://static.techjournal.it/2025/02/techjournal-ico-new-removebg-preview.png",
-    apple: "https://static.techjournal.it/2025/02/techjournal-ico-new-removebg-preview.png",
+    icon: [{ url: "/techjournal-ico.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/techjournal-ico.svg", type: "image/svg+xml" }],
   },
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f9fafb" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1a1a" },
+  ],
+  appleWebApp: {
+    capable: true,
+    title: "TechJournal",
+    statusBarStyle: "black-translucent",
+  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? {
+        verification: {
+          google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+        },
+      }
+    : {}),
 };
 
 export default function RootLayout({

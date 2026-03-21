@@ -48,7 +48,7 @@ export default function PrivacyPage() {
   const hasAny = policyId || privacyUrl || cookieUrl;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="max-w-3xl mx-auto px-0 md:px-4 py-12">
       <h1 className="text-2xl font-bold text-foreground mb-8">Privacy e Cookie policy</h1>
       {hasAny ? (
         <div className="space-y-10 text-muted">

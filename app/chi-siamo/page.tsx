@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function ChiSiamoPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="max-w-3xl mx-auto px-0 md:px-4 py-12">
       <h1 className="text-2xl font-bold text-foreground mb-6">Chi siamo</h1>
       <div className="prose prose-invert max-w-none text-muted space-y-5">
         <p>

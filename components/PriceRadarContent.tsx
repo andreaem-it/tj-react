@@ -62,7 +62,7 @@ function sortOffers(offers: TechRadarOffer[], sort: SortOption): TechRadarOffer[
 
 function PriceRadarComingSoon() {
   return (
-    <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-10">
+    <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
       <header className="mb-10">
         <h1 className="text-foreground text-3xl md:text-4xl font-bold mb-2">Price Radar</h1>
         <p className="text-muted text-lg mb-8">
@@ -133,7 +133,7 @@ export default function PriceRadarContent() {
 
   if (loading && offers.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-10">
+      <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
         <div className="mb-8 animate-pulse">
           <div className="h-10 w-64 bg-content-bg rounded mb-2" />
           <div className="h-5 w-96 bg-content-bg/60 rounded" />
@@ -156,7 +156,7 @@ export default function PriceRadarContent() {
 
   if (error && offers.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-10">
+      <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
         <div className="text-center py-16">
           <p className="text-muted text-lg mb-4">{error}</p>
           <button
@@ -172,7 +172,7 @@ export default function PriceRadarContent() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-2.5 md:px-4 py-10">
+    <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
       <header className="mb-10">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-foreground text-3xl md:text-4xl font-bold">Price Radar</h1>

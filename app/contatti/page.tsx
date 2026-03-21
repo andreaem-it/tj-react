@@ -22,7 +22,7 @@ export default function ContattiPage() {
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="max-w-3xl mx-auto px-0 md:px-4 py-12">
       <h1 className="text-2xl font-bold text-foreground mb-6">Contatti</h1>
       <div className="prose prose-invert max-w-none text-muted space-y-4">
         <p>

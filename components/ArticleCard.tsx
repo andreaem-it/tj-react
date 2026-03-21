@@ -61,7 +61,10 @@ export default function ArticleCard({ post, variant = "default", size, priority 
     const titleLines = size === "large" ? 2 : size === "medium" ? 3 : 2;
     const titleSize = size === "large" ? "text-base md:text-xl" : size === "medium" ? "text-sm md:text-base" : "text-xs md:text-sm";
     return (
-      <Link href={href} className="group block relative overflow-hidden rounded-lg h-full min-h-[120px] w-full bg-sidebar-bg">
+      <Link
+        href={href}
+        className="group block absolute inset-0 overflow-hidden rounded-lg w-full bg-sidebar-bg lg:min-h-0"
+      >
         {showHeroImage ? (
           <Image
             src={post.imageUrl!}
@@ -127,7 +130,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
           {post.categoryName}
         </Link>
         <Link href={href}>
-          <h2 className="text-foreground font-bold text-base mt-1 line-clamp-2 hover:text-accent transition-colors">
+          <h2 className="text-foreground font-bold text-base mt-1 line-clamp-2 min-h-11 hover:text-accent transition-colors">
             {post.title}
           </h2>
         </Link>
