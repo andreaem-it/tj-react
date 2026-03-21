@@ -17,12 +17,18 @@ import type { Metadata } from "next";
 
 export const revalidate = 300;
 
+/** Slug che sembrano file statici: non chiamare l'API post (es. richieste errate / bot). */
+const LOOKS_LIKE_STATIC_FILE = /\.(png|jpe?g|gif|webp|svg|ico|txt|xml|json|woff2?|webmanifest)$/i;
+
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
+  if (LOOKS_LIKE_STATIC_FILE.test(slug)) {
+    notFound();
+  }
   const post = await fetchPostBySlug(slug);
   if (post) {
     const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
@@ -55,6 +61,10 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
+
+  if (LOOKS_LIKE_STATIC_FILE.test(slug)) {
+    notFound();
+  }
 
   if (slug === "offerte") {
     redirect("/price-radar");

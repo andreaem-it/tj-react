@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -25,6 +25,14 @@ const inter = Inter({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.techjournal.it";
+
+/** Next.js 14+: themeColor va in viewport, non in metadata (evita warning in runtime). */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f9fafb" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1a1a" },
+  ],
+};
 
 export const metadata: Metadata = {
   applicationName: "TechJournal",
@@ -64,10 +72,6 @@ export const metadata: Metadata = {
     icon: [{ url: "/techjournal-ico.svg", type: "image/svg+xml" }],
     apple: [{ url: "/techjournal-ico.svg", type: "image/svg+xml" }],
   },
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f9fafb" },
-    { media: "(prefers-color-scheme: dark)", color: "#1a1a1a" },
-  ],
   appleWebApp: {
     capable: true,
     title: "TechJournal",
