@@ -11,7 +11,9 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    unoptimized: true,
+    /** Evita 402 su Vercel: nessuna richiesta a `/_next/image` (loader restituisce URL diretto). */
+    loader: "custom",
+    loaderFile: "./lib/passthrough-image-loader.ts",
     remotePatterns: [
       { protocol: "https", hostname: "www.techjournal.it", pathname: "/**" },
       { protocol: "https", hostname: "api.techjournal.it", pathname: "/**" },
