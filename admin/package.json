@@ -2,6 +2,14 @@
   "name": "techjournal-admin",
   "version": "0.1.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreaem-it/tj-react-admin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/andreaem-it/tj-react-admin/issues"
+  },
+  "homepage": "https://github.com/andreaem-it/tj-react-admin#readme",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",

@@ -1,4 +1,6 @@
-TechJournal: **frontend pubblico** (Next.js) + **admin** in cartella separata `admin/` (stesso repo, deploy separabile).
+TechJournal: **frontend pubblico** (Next.js) + cartella **`admin/`** nel monorepo per sviluppo locale.
+
+**Admin in produzione / repo dedicato:** [github.com/andreaem-it/tj-react-admin](https://github.com/andreaem-it/tj-react-admin) — Vercel e CI vanno puntati lì. Dettagli e sync da monorepo in `admin/README.md`.
 
 ## Frontend (sito)
 
