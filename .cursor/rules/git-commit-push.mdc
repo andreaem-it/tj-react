@@ -16,20 +16,9 @@ Dopo aver modificato file del progetto (codice, config, documentazione):
 - Push sul **branch di lavoro** indicato dall’utente (es. feature), **mai** `git push origin main` senza **richiesta esplicita** (la `main` è il frontend in produzione).
 - `git branch --show-current` prima del push.
 
-## Admin (app in `admin/`, deploy su **tj-react-admin**)
+## Admin (repo separato **tj-react-admin**)
 
-Il progetto Vercel dell’admin è collegato al repo **`https://github.com/andreaem-it/tj-react-admin`**, branch **`main`** (non usare `origin/feature/admin-d1` su `tj-react` per quel deploy).
-
-Dopo commit che toccano `admin/` nel monorepo:
-
-```bash
-cd /path/to/techjournal-clone   # root monorepo, branch che contiene i commit aggiornati su admin/
-git subtree split --prefix=admin -b tmp-admin-split
-git push tj-react-admin tmp-admin-split:main
-git branch -D tmp-admin-split
-```
-
-Remote `tj-react-admin` deve esistere (`git remote -v`). Se il push non è fast-forward, valutare `--force-with-lease` solo se consapevoli di sovrascrivere `main` del repo admin.
+L’app admin **non** è più sotto questa root: si lavora nel clone / cartella dedicata (es. accanto al frontend). Il deploy Vercel punta a **`https://github.com/andreaem-it/tj-react-admin`**. Commit e push si fanno da quel repository (`git branch --show-current`, branch concordato con l’utente; per `main` solo se esplicitamente richiesto).
 
 Non fare commit di:
 - `.env.local` o file con segreti
