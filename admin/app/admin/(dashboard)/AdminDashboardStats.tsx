@@ -96,8 +96,9 @@ type Ga4Response =
               clicks: number;
               impressions: number;
             }>;
+            warning?: string;
           }
-        | { configured: false };
+        | { configured: false; error?: string };
     }
   | { configured: false; message: string };
 
@@ -668,6 +669,11 @@ export default function AdminDashboardStats() {
       <div className="space-y-6">
         {adSense?.configured === true ? (
           <>
+          {"warning" in adSense && adSense.warning ? (
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 text-amber-100/95 text-sm">
+              {adSense.warning}
+            </div>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <p className="text-2xl font-semibold text-white">
@@ -748,9 +754,14 @@ export default function AdminDashboardStats() {
           )}
           </>
         ) : (
-          <div className="rounded-xl bg-white/5 border border-white/10 p-6 text-white/80 text-sm">
-            <p className="font-medium text-white/90 mb-2">Dati non disponibili</p>
-            <p className="mb-2">Per vedere AdSense qui: abilita &quot;AdSense Management API&quot; in Google Cloud (stesso progetto di GA4). In AdSense vai in Impostazioni → Accesso e autorizzazione → Aggiungi utente e inserisci l’email del service account (la stessa di <code className="bg-white/10 px-1 rounded">GOOGLE_SERVICE_ACCOUNT_EMAIL</code>) con accesso &quot;Solo report&quot;. Opzionale: imposta <code className="bg-white/10 px-1 rounded">ADSENSE_ACCOUNT_ID</code> in <code className="bg-white/10 px-1 rounded">.env.local</code> (solo numero account).</p>
+          <div className="rounded-xl bg-white/5 border border-white/10 p-6 text-white/80 text-sm space-y-3">
+            <p className="font-medium text-white/90">Dati non disponibili</p>
+            {adSense && "error" in adSense && adSense.error ? (
+              <p className="rounded-lg bg-red-500/10 border border-red-500/20 text-red-100/95 px-3 py-2 text-sm">
+                {adSense.error}
+              </p>
+            ) : null}
+            <p>Per vedere AdSense qui: abilita &quot;AdSense Management API&quot; in Google Cloud (stesso progetto di GA4). In AdSense vai in Impostazioni → Accesso e autorizzazione → Aggiungi utente e inserisci l’email del service account (la stessa di <code className="bg-white/10 px-1 rounded">GOOGLE_SERVICE_ACCOUNT_EMAIL</code>) con accesso &quot;Solo report&quot;. Opzionale: imposta <code className="bg-white/10 px-1 rounded">ADSENSE_ACCOUNT_ID</code> in <code className="bg-white/10 px-1 rounded">.env.local</code> (formato <code className="bg-white/10 px-1 rounded">pub-…</code>).</p>
           </div>
         )}
       </div>

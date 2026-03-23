@@ -17,7 +17,7 @@ import {
   fetchGscByQuery,
   fetchGscByDate,
 } from "@/lib/searchconsole";
-import { fetchAdSenseOverview, fetchAdSenseByDate } from "@/lib/adsense";
+import { fetchAdSenseAll } from "@/lib/adsense";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,8 +45,7 @@ export async function GET(request: Request) {
     gscByPage,
     gscByQuery,
     gscByDate,
-    adsenseOverview,
-    adsenseByDate,
+    adSenseBundle,
   ] = await Promise.all([
     fetchGa4Stats(days),
     fetchRealtimeByMinute(),
@@ -61,8 +60,7 @@ export async function GET(request: Request) {
     fetchGscByPage(days, 100),
     fetchGscByQuery(days, 50),
     fetchGscByDate(days),
-    fetchAdSenseOverview(days),
-    fetchAdSenseByDate(days),
+    fetchAdSenseAll(days),
   ]);
 
   if (overview === null) {
@@ -110,13 +108,17 @@ export async function GET(request: Request) {
           }
         : { configured: false },
     adSense:
-      adsenseOverview !== null
+      adSenseBundle.overview !== null
         ? {
             configured: true,
-            overview: adsenseOverview,
-            byDate: adsenseByDate ?? [],
+            overview: adSenseBundle.overview,
+            byDate: adSenseBundle.byDate ?? [],
+            ...(adSenseBundle.error ? { warning: adSenseBundle.error } : {}),
           }
-        : { configured: false },
+        : {
+            configured: false,
+            ...(adSenseBundle.error ? { error: adSenseBundle.error } : {}),
+          },
   });
 }
 
