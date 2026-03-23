@@ -10,7 +10,7 @@ Dopo aver modificato file del progetto (codice, config, documentazione):
 1. **Verifica** lo stato: `git status`
 2. **Aggiungi** solo i file rilevanti (escludi `.env.local` e file sensibili): `git add <file>...` o `git add -A` se appropriato
 3. **Commit** con messaggio chiaro e conciso (preferibilmente convenzione conventional commits: `tipo(scope): messaggio`)
-4. **Push** su `origin`: `git push`
+4. **Push** su `origin`: `git push` — necessario affinché **Vercel** (o altre CI collegate al repo) eseguano il deploy automatico dopo ogni modifica.
 
 Non fare commit di:
 - `.env.local` o file con segreti
