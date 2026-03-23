@@ -10,7 +10,10 @@ Dopo aver modificato file del progetto (codice, config, documentazione):
 1. **Verifica** lo stato: `git status`
 2. **Aggiungi** solo i file rilevanti (escludi `.env.local` e file sensibili): `git add <file>...` o `git add -A` se appropriato
 3. **Commit** con messaggio chiaro e conciso (preferibilmente convenzione conventional commits: `tipo(scope): messaggio`)
-4. **Push** su `origin`: `git push` — necessario affinché **Vercel** (o altre CI collegate al repo) eseguano il deploy automatico dopo ogni modifica.
+4. **Controlla il branch** prima del push: `git branch --show-current`. Lavoro admin/monorepo: di solito **`feature/admin-d1`** (o altro branch feature indicato dall’utente), **mai** assumere `main`.
+5. **Push** esplicito sul branch corrente: `git push origin HEAD` oppure `git push origin <nome-branch>` — così **non** si rischia di pushare su `main` per errore. Serve affinché **Vercel** (o CI) faccia deploy dal branch configurato nel progetto.
+
+**Non pushare su `origin/main`** (frontend produzione nel monorepo `tj-react`) salvo **richiesta esplicita** dell’utente (merge/release). Non fare merge su `main` in autonomia.
 
 Non fare commit di:
 - `.env.local` o file con segreti
