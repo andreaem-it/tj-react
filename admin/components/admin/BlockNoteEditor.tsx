@@ -8,8 +8,19 @@ import {
 } from "react";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
+import { it } from "@blocknote/core/locales";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
+
+/** Italiano + placeholder più esplicito per chi non conosce gli editor a blocchi */
+const dictionaryIt = {
+  ...it,
+  placeholders: {
+    ...it.placeholders,
+    default:
+      "Scrivi qui… Premi / (slash) per titoli, elenchi, citazione, immagine e altro. Puoi trascinare qui un file immagine.",
+  },
+};
 
 type BlockNoteEditorProps = {
   /** Contenuto iniziale: JSON string di blocchi (editor.document) */
@@ -69,6 +80,7 @@ function InnerBlockNoteEditor(
     {
       initialContent: initialBlocks,
       uploadFile,
+      dictionary: dictionaryIt,
     },
     [initialBlocks, uploadFile]
   );
@@ -111,14 +123,13 @@ function InnerBlockNoteEditor(
   return (
     <div
       style={{ minHeight }}
-      className="bn-editor-admin w-full min-w-0 [&_.bn-editor]:w-full! [&_.bn-block-outer]:max-w-none! [&_.bn-block-content]:max-w-none!"
+      className="bn-editor-admin w-full min-w-0 [&_.bn-editor]:w-full! [&_.bn-block-outer]:max-w-none! [&_.bn-block-content]:max-w-none! [&_.bn-root]:rounded-b-lg"
     >
       <BlockNoteView
         editor={editor}
         onChange={handleChange}
         editable={!disabled}
         theme="dark"
-        data-theming-css-variables-demo
       />
     </div>
   );

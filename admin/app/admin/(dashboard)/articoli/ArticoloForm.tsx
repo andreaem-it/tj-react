@@ -282,26 +282,36 @@ export default function ArticoloForm({ articleId }: ArticleFormProps) {
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">
-            Contenuto
-          </label>
-          <div className="flex items-center justify-between mb-2">
+        <div className="rounded-xl border border-white/10 bg-white/3 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-white/90">Corpo dell&apos;articolo</h2>
+              <p className="text-xs text-white/50 mt-0.5">
+                Editor a blocchi (stile Notion): comandi in italiano, menu con <kbd className="px-1 py-0.5 rounded bg-white/10 text-white/70 font-mono text-[10px]">/</kbd>{" "}
+                sulla riga vuota.
+              </p>
+            </div>
             <button
               type="button"
               onClick={() => handleOpenMediaPicker("inline")}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/10 border border-white/15 text-xs text-white/80 hover:bg-white/15 hover:border-[#f5a623]/60 transition-colors"
+              className="shrink-0 inline-flex items-center justify-center px-3 py-2 rounded-lg bg-[#f5a623]/15 border border-[#f5a623]/35 text-sm text-[#f5d48a] hover:bg-[#f5a623]/25 transition-colors"
             >
-              Inserisci immagine dalla libreria
+              Immagine dalla libreria
             </button>
           </div>
-          <div className="rounded-lg border border-white/10 overflow-hidden bg-[#252525] w-full">
+          <div className="px-4 py-3 bg-[#1e1e1e]/80 border-b border-white/5">
+            <p className="text-xs text-white/55 leading-relaxed">
+              <span className="text-white/70 font-medium">Suggerimenti:</span> trascina i blocchi dal menu a sinistra del paragrafo;
+              seleziona testo per grassetto e link; incolla da Word o Google Docs; trascina un file immagine nell&apos;area sotto per caricarlo.
+            </p>
+          </div>
+          <div className="p-1 sm:p-2 bg-[#252525] w-full">
             <BlockNoteEditor
               key={articleId ?? "new"}
               ref={editorRef}
               initialContent={initialEditorContent || undefined}
               onChange={setContent}
-              minHeight="420px"
+              minHeight="min(70vh, 560px)"
             />
           </div>
         </div>
@@ -418,30 +428,46 @@ export default function ArticoloForm({ articleId }: ArticleFormProps) {
             <h4 className="text-sm font-medium text-white/80 mb-2">SEO</h4>
             <div className="space-y-3">
               <div>
-                <label htmlFor="meta_title" className="block text-xs text-white/60 mb-0.5">
-                  Meta title
-                </label>
+                <div className="flex items-center justify-between gap-2 mb-0.5">
+                  <label htmlFor="meta_title" className="block text-xs text-white/60">
+                    Meta title
+                  </label>
+                  <span
+                    className={`text-[10px] tabular-nums ${metaTitle.length > 60 ? "text-amber-400/90" : "text-white/40"}`}
+                  >
+                    {metaTitle.length}/60
+                  </span>
+                </div>
                 <input
                   id="meta_title"
                   type="text"
                   value={metaTitle}
                   onChange={(e) => setMetaTitle(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f5a623]"
-                  placeholder="Titolo per i motori di ricerca"
+                  placeholder="Lascia vuoto per usare il titolo articolo"
                 />
+                <p className="text-[10px] text-white/35 mt-1">Circa 50–60 caratteri vanno bene nei risultati di ricerca.</p>
               </div>
               <div>
-                <label htmlFor="meta_description" className="block text-xs text-white/60 mb-0.5">
-                  Meta description
-                </label>
+                <div className="flex items-center justify-between gap-2 mb-0.5">
+                  <label htmlFor="meta_description" className="block text-xs text-white/60">
+                    Meta description
+                  </label>
+                  <span
+                    className={`text-[10px] tabular-nums ${metaDescription.length > 160 ? "text-amber-400/90" : "text-white/40"}`}
+                  >
+                    {metaDescription.length}/160
+                  </span>
+                </div>
                 <textarea
                   id="meta_description"
                   value={metaDescription}
                   onChange={(e) => setMetaDescription(e.target.value)}
-                  rows={2}
-                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f5a623] resize-none"
-                  placeholder="Descrizione per i motori di ricerca"
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#f5a623] resize-y min-h-18"
+                  placeholder="Breve riassunto che invita al clic nei risultati di ricerca"
                 />
+                <p className="text-[10px] text-white/35 mt-1">Circa 120–160 caratteri è l&apos;intervallo più usato.</p>
               </div>
             </div>
           </div>
