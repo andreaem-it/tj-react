@@ -30,6 +30,8 @@ Collega il progetto al repo **tj-react-admin** (root del repository = root di qu
 - `/`, `/articoli`, `/media`, … – dashboard e sezioni
 - `/api/auth/*`, `/api/admin/*` – API protette da sessione
 
+Le vecchie URL `/admin`, `/admin/login`, `/admin/articoli/…` reindirizzano (308) alle nuove path.
+
 ## Allineare monorepo → repo admin
 
 Dal repository **tj-react** (con cartella `admin/` aggiornata):
