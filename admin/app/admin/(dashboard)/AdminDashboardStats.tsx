@@ -761,7 +761,15 @@ export default function AdminDashboardStats() {
                 {adSense.error}
               </p>
             ) : null}
-            <p>Per vedere AdSense qui: abilita &quot;AdSense Management API&quot; in Google Cloud (stesso progetto di GA4). In AdSense vai in Impostazioni → Accesso e autorizzazione → Aggiungi utente e inserisci l’email del service account (la stessa di <code className="bg-white/10 px-1 rounded">GOOGLE_SERVICE_ACCOUNT_EMAIL</code>) con accesso &quot;Solo report&quot;. Opzionale: imposta <code className="bg-white/10 px-1 rounded">ADSENSE_ACCOUNT_ID</code> in <code className="bg-white/10 px-1 rounded">.env.local</code> (formato <code className="bg-white/10 px-1 rounded">pub-…</code>).</p>
+            <p className="text-white/70">
+              <strong className="text-white/90">Metodo consigliato (OAuth):</strong> Google si aspetta un utente reale con accesso AdSense. Imposta in <code className="bg-white/10 px-1 rounded">.env.local</code>{" "}
+              <code className="bg-white/10 px-1 rounded">ADSENSE_OAUTH_CLIENT_ID</code>,{" "}
+              <code className="bg-white/10 px-1 rounded">ADSENSE_OAUTH_CLIENT_SECRET</code>,{" "}
+              <code className="bg-white/10 px-1 rounded">ADSENSE_OAUTH_REFRESH_TOKEN</code> (genera il refresh token dalla cartella admin con{" "}
+              <code className="bg-white/10 px-1 rounded">npm run adsense-oauth</code>
+              ). Abilita &quot;Google AdSense Management API&quot; nel progetto Cloud dell’OAuth client. Un service account invitato in AdSense resta spesso in &quot;In attesa&quot; perché non può accettare l’email d’invito.
+            </p>
+            <p className="text-white/60 text-xs mt-2">Opzionale: <code className="bg-white/10 px-1 rounded">ADSENSE_ACCOUNT_ID</code> (formato <code className="bg-white/10 px-1 rounded">pub-…</code>) se hai più account.</p>
           </div>
         )}
       </div>

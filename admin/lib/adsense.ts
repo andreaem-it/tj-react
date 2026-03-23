@@ -1,11 +1,16 @@
 /**
  * Google AdSense Management API – report guadagni e performance.
- * Stesse credenziali GA4/GSC (service account). In AdSense: Impostazioni → Accesso e autorizzazione
- * → Aggiungi l’email del service account come utente con accesso “Solo report”.
- * In Google Cloud abilita "AdSense Management API".
+ *
+ * Consigliato: OAuth con refresh token (stesso Account Google che ha accesso AdSense, es. info@…).
+ * Google indica il flusso “installed app” / OAuth utente; un service account non può accettare
+ * l’invito email in AdSense e resta “In attesa” → 403 permanente.
+ * Vedi: https://developers.google.com/adsense/management/direct_requests (Authorizing requests)
+ *
+ * Opzionale: JWT service account (solo se Google/AdSense lo attiva davvero come “Attivo”).
+ * Abilita "AdSense Management API" nel progetto Cloud dell’OAuth client o della chiave JWT.
  */
 
-import { JWT } from "google-auth-library";
+import { JWT, OAuth2Client } from "google-auth-library";
 
 const SCOPE = "https://www.googleapis.com/auth/adsense.readonly";
 const BASE = "https://adsense.googleapis.com/v2";
@@ -45,7 +50,32 @@ type ParsedReport = {
   warnings?: string[];
 };
 
-async function getAccessToken(): Promise<string | null> {
+function adsenseOAuthConfigured(): boolean {
+  return Boolean(
+    process.env.ADSENSE_OAUTH_CLIENT_ID?.trim() &&
+      process.env.ADSENSE_OAUTH_CLIENT_SECRET?.trim() &&
+      process.env.ADSENSE_OAUTH_REFRESH_TOKEN?.trim()
+  );
+}
+
+async function getAccessTokenViaOAuth(): Promise<string | null> {
+  const clientId = process.env.ADSENSE_OAUTH_CLIENT_ID?.trim();
+  const clientSecret = process.env.ADSENSE_OAUTH_CLIENT_SECRET?.trim();
+  const refreshToken = process.env.ADSENSE_OAUTH_REFRESH_TOKEN?.trim();
+  if (!clientId || !clientSecret || !refreshToken) return null;
+  try {
+    const client = new OAuth2Client(clientId, clientSecret);
+    client.setCredentials({ refresh_token: refreshToken });
+    const res = await client.getAccessToken();
+    const token = res?.token ?? null;
+    return token ?? null;
+  } catch (e) {
+    console.error("[adsense oauth]", e);
+    return null;
+  }
+}
+
+async function getAccessTokenViaJwt(): Promise<string | null> {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim();
   const key = process.env.GOOGLE_PRIVATE_KEY?.trim();
   if (!email || !key) return null;
@@ -59,9 +89,16 @@ async function getAccessToken(): Promise<string | null> {
     const credentials = await jwt.authorize();
     return credentials?.access_token ?? null;
   } catch (e) {
-    console.error("[adsense auth]", e);
+    console.error("[adsense jwt]", e);
     return null;
   }
+}
+
+async function getAccessToken(): Promise<string | null> {
+  if (adsenseOAuthConfigured()) {
+    return getAccessTokenViaOAuth();
+  }
+  return getAccessTokenViaJwt();
 }
 
 function normalizeAdsenseAccountId(raw: string): string {
@@ -111,7 +148,7 @@ function adsenseApiErrorMessage(status: number, body: string): string {
   const base = compactApiError(status, body);
   if (status !== 403) return base;
   const hint =
-    " — Di solito: abilita «Google AdSense Management API» nel progetto Google Cloud da cui proviene la chiave JSON del service account (deve coincidere con GA4). In AdSense (account editore corretto) vai in Account → Accesso e autorizzazione → Invita utente e aggiungi l’email completa del service account (quella in GOOGLE_SERVICE_ACCOUNT_EMAIL, formato …@….iam.gserviceaccount.com) con accesso «Solo report» o «Amministratore»; salva e attendi qualche minuto. Se usi ADSENSE_ACCOUNT_ID, deve essere il pub-… dello stesso account AdSense.";
+    " — Se usi il service account: in AdSense l’invito resta spesso «In attesa» perché quell’identità non può aprire l’email e accettare l’invito (lo richiede la guida AdSense per gli utenti). In quel caso usa OAuth: imposta ADSENSE_OAUTH_CLIENT_ID, ADSENSE_OAUTH_CLIENT_SECRET e ADSENSE_OAUTH_REFRESH_TOKEN (account Google già attivo su AdSense, es. l’admin). Altrimenti: API «Google AdSense Management API» abilitata nel progetto Cloud delle credenziali; ADSENSE_ACCOUNT_ID = pub-… corretto se impostato.";
   return base + hint;
 }
 
@@ -277,7 +314,9 @@ export async function fetchAdSenseAll(days: number): Promise<AdSenseFetchResult>
     return {
       overview: null,
       byDate: null,
-      error: "Credenziali Google mancanti: GOOGLE_SERVICE_ACCOUNT_EMAIL e GOOGLE_PRIVATE_KEY (come per GA4).",
+      error: adsenseOAuthConfigured()
+        ? "OAuth AdSense non valido o refresh token revocato: verifica ADSENSE_OAUTH_CLIENT_ID, ADSENSE_OAUTH_CLIENT_SECRET e ADSENSE_OAUTH_REFRESH_TOKEN (rigenera con npm run adsense-oauth nella cartella admin)."
+        : "Credenziali AdSense mancanti o incomplete: preferisci OAuth (ADSENSE_OAUTH_CLIENT_ID, ADSENSE_OAUTH_CLIENT_SECRET, ADSENSE_OAUTH_REFRESH_TOKEN) con l’Account Google già attivo in AdSense; in alternativa GOOGLE_SERVICE_ACCOUNT_EMAIL e GOOGLE_PRIVATE_KEY se l’accesso API risulta davvero «Attivo» in AdSense.",
     };
   }
 
