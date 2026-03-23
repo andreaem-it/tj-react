@@ -1,17 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+TechJournal: **frontend pubblico** (Next.js) + **admin** in cartella separata `admin/` (stesso repo, deploy separabile).
 
-## Getting Started
+## Frontend (sito)
+
+```bash
+npm install
+npm run dev
+```
+
+Apri [http://localhost:3000](http://localhost:3000).
+
+## Admin (dashboard)
+
+Applicazione Next dedicata (porta **3001** in dev):
+
+```bash
+npm run install:admin   # prima volta
+npm run dev:admin
+```
+
+Apri [http://localhost:3001/admin/login](http://localhost:3001/admin/login). Variabili: `admin/.env.example`.
+
+Build produzione admin: `npm run build:admin`.
+
+---
+
+Questo progetto usa [Next.js](https://nextjs.org).
+
+## Getting Started (dettagli)
 
 First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

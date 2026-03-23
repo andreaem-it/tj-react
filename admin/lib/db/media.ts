@@ -60,29 +60,29 @@ export async function listMedia(params?: {
   let countRows: any[];
 
   if (month) {
-    itemsRows = await sql/* sql */`
+    itemsRows = (await sql/* sql */`
       SELECT *
       FROM media
       WHERE to_char(created_at, 'YYYY-MM') = ${month}
       ORDER BY created_at DESC
       LIMIT ${perPage} OFFSET ${offset}
-    `;
-    countRows = await sql/* sql */`
+    `) as any[];
+    countRows = (await sql/* sql */`
       SELECT COUNT(*)::int AS count
       FROM media
       WHERE to_char(created_at, 'YYYY-MM') = ${month}
-    `;
+    `) as any[];
   } else {
-    itemsRows = await sql/* sql */`
+    itemsRows = (await sql/* sql */`
       SELECT *
       FROM media
       ORDER BY created_at DESC
       LIMIT ${perPage} OFFSET ${offset}
-    `;
-    countRows = await sql/* sql */`
+    `) as any[];
+    countRows = (await sql/* sql */`
       SELECT COUNT(*)::int AS count
       FROM media
-    `;
+    `) as any[];
   }
 
   const items: MediaItem[] = itemsRows.map((r: any) => ({

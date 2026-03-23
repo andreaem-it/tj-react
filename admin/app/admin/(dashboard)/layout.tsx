@@ -5,7 +5,7 @@ import {
   getSessionFromToken,
   getSessionCookieName,
 } from "@/lib/auth";
-import AdminLogout from "../AdminLogout";
+import AdminLogout from "@/components/AdminLogout";
 
 export const dynamic = "force-dynamic";
 

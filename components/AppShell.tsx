@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import Header from "@/components/Header";
 import HeaderSkeleton from "@/components/HeaderSkeleton";
@@ -14,13 +13,6 @@ export default function AppShell({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin") ?? false;
-
-  if (isAdmin) {
-    return <>{children}</>;
-  }
-
   return (
     <>
       <Suspense fallback={<HeaderSkeleton />}>
