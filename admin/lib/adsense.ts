@@ -82,7 +82,7 @@ async function listAccountIds(token: string): Promise<{ ok: true; ids: string[] 
   const text = await res.text();
   if (!res.ok) {
     console.error("[adsense list]", res.status, text);
-    return { ok: false, message: compactApiError(res.status, text) };
+    return { ok: false, message: adsenseApiErrorMessage(res.status, text) };
   }
   try {
     const data = JSON.parse(text) as { accounts?: Array<{ name: string }> };
@@ -104,6 +104,15 @@ function compactApiError(status: number, body: string, max = 280): string {
   }
   const t = body.replace(/\s+/g, " ").trim();
   return t.length <= max ? `${status}: ${t || "Errore sconosciuto"}` : `${status}: ${t.slice(0, max)}…`;
+}
+
+/** Spiegazione operativa per il 403 tipico (service account / API / account sbagliato). */
+function adsenseApiErrorMessage(status: number, body: string): string {
+  const base = compactApiError(status, body);
+  if (status !== 403) return base;
+  const hint =
+    " — Di solito: abilita «Google AdSense Management API» nel progetto Google Cloud da cui proviene la chiave JSON del service account (deve coincidere con GA4). In AdSense (account editore corretto) vai in Account → Accesso e autorizzazione → Invita utente e aggiungi l’email completa del service account (quella in GOOGLE_SERVICE_ACCOUNT_EMAIL, formato …@….iam.gserviceaccount.com) con accesso «Solo report» o «Amministratore»; salva e attendi qualche minuto. Se usi ADSENSE_ACCOUNT_ID, deve essere il pub-… dello stesso account AdSense.";
+  return base + hint;
 }
 
 async function resolveAccountId(token: string): Promise<{ ok: true; id: string } | { ok: false; message: string }> {
@@ -153,7 +162,7 @@ async function generateReport(
   const text = await res.text();
   if (!res.ok) {
     console.error("[adsense report]", res.status, text);
-    return { ok: false, message: compactApiError(res.status, text) };
+    return { ok: false, message: adsenseApiErrorMessage(res.status, text) };
   }
   try {
     const data = JSON.parse(text) as {
