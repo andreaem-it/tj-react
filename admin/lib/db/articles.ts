@@ -12,7 +12,7 @@ export interface Article {
   slug: string;
   title: string;
   excerpt: string;
-  content: string; // HTML o JSON blocchi BlockNote
+  content: string; // HTML (articoli admin); eventuale JSON BlockNote legacy convertito in apertura editor
   category_id: number | null;
   category_name: string;
   category_slug: string;

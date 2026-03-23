@@ -7,11 +7,6 @@ const adminRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   turbopack: { root: adminRoot },
-  transpilePackages: [
-    "@blocknote/core",
-    "@blocknote/react",
-    "@blocknote/mantine",
-  ],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "static.techjournal.it", pathname: "/**" },

@@ -23,11 +23,40 @@ body {
   font-family: var(--font-sans);
 }
 
-/* BlockNote (admin articoli): allinea accento e sfondo al tema TechJournal */
-.bn-editor-admin {
-  --bn-colors-menu-background: #2a2a2a;
-  --bn-colors-tooltip-background: #2a2a2a;
-  --bn-colors-hovered-background: rgba(245, 166, 35, 0.12);
-  --bn-colors-selected-background: rgba(245, 166, 35, 0.18);
-  --bn-colors-highlights-gray-background: rgba(255, 255, 255, 0.08);
+/* TipTap (admin articoli) */
+.article-html-editor .tiptap-article ul,
+.article-html-editor .tiptap-article ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.article-html-editor .tiptap-article li {
+  margin: 0.2rem 0;
+}
+.article-html-editor .tiptap-article blockquote {
+  border-left: 3px solid rgba(245, 166, 35, 0.45);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+.article-html-editor .tiptap-article hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin: 1rem 0;
+}
+.article-html-editor .tiptap-article img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+.article-html-editor .tiptap-article a {
+  color: #f5a623;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.article-html-editor .tiptap-article p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.32);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }

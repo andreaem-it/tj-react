@@ -4,10 +4,11 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import type { BlockNoteEditorHandle } from "@/components/admin/BlockNoteEditor";
+import type { ArticleHtmlEditorHandle } from "@/components/admin/ArticleHtmlEditor";
+import { initialHtmlFromStoredContent } from "@/lib/legacyBlockNoteToHtml";
 
-const BlockNoteEditor = dynamic(
-  () => import("@/components/admin/BlockNoteEditor"),
+const ArticleHtmlEditor = dynamic(
+  () => import("@/components/admin/ArticleHtmlEditor"),
   { ssr: false }
 );
 
@@ -58,7 +59,7 @@ export default function ArticoloForm({ articleId }: ArticleFormProps) {
   const [loaded, setLoaded] = useState(!articleId);
   /** Contenuto iniziale dell'editor: impostato solo al load, mai dall'onChange (evita perdita focus) */
   const [initialEditorContent, setInitialEditorContent] = useState<string>("");
-  const editorRef = useRef<BlockNoteEditorHandle | null>(null);
+  const editorRef = useRef<ArticleHtmlEditorHandle | null>(null);
 
   // Stato per media picker
   type MediaItem = {
@@ -135,9 +136,10 @@ export default function ArticoloForm({ articleId }: ArticleFormProps) {
       })
       .then((a: Record<string, unknown>) => {
         const contentStr = typeof a.content === "string" ? a.content : "";
+        const htmlInitial = initialHtmlFromStoredContent(contentStr);
         setTitle(typeof a.title === "string" ? a.title : "");
-        setContent(contentStr);
-        setInitialEditorContent(contentStr);
+        setContent(htmlInitial);
+        setInitialEditorContent(htmlInitial);
         const s = a.status === "published" ? "published" : a.status === "private" ? "private" : "draft";
         setStatus(s as ArticleStatus);
         setCategorySlug(typeof a.category_slug === "string" ? a.category_slug : "");
@@ -287,8 +289,7 @@ export default function ArticoloForm({ articleId }: ArticleFormProps) {
             <div>
               <h2 className="text-sm font-semibold text-white/90">Corpo dell&apos;articolo</h2>
               <p className="text-xs text-white/50 mt-0.5">
-                Editor a blocchi (stile Notion): comandi in italiano, menu con <kbd className="px-1 py-0.5 rounded bg-white/10 text-white/70 font-mono text-[10px]">/</kbd>{" "}
-                sulla riga vuota.
+                Testo formattato salvato come <strong className="text-white/70 font-medium">HTML</strong> (come sul sito). Barra in alto per titoli, grassetto, link e elenchi.
               </p>
             </div>
             <button
@@ -301,15 +302,14 @@ export default function ArticoloForm({ articleId }: ArticleFormProps) {
           </div>
           <div className="px-4 py-3 bg-[#1e1e1e]/80 border-b border-white/5">
             <p className="text-xs text-white/55 leading-relaxed">
-              <span className="text-white/70 font-medium">Suggerimenti:</span> trascina i blocchi dal menu a sinistra del paragrafo;
-              seleziona testo per grassetto e link; incolla da Word o Google Docs; trascina un file immagine nell&apos;area sotto per caricarlo.
+              <span className="text-white/70 font-medium">Suggerimenti:</span> immagini da R2 con il pulsante a destra o trascinando il file nell&apos;area di scrittura; incolla da Word o browser mantenendo spesso la formattazione.
             </p>
           </div>
           <div className="p-1 sm:p-2 bg-[#252525] w-full">
-            <BlockNoteEditor
+            <ArticleHtmlEditor
               key={articleId ?? "new"}
               ref={editorRef}
-              initialContent={initialEditorContent || undefined}
+              initialContent={initialEditorContent}
               onChange={setContent}
               minHeight="min(70vh, 560px)"
             />
