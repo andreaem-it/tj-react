@@ -13,7 +13,7 @@ export default async function AdminLoginLayout({
   const token = cookieStore.get(getSessionCookieName())?.value;
   if (token) {
     const session = await getSessionFromToken(token);
-    if (session) redirect("/admin");
+    if (session) redirect("/");
   }
   return <>{children}</>;
 }

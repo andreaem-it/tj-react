@@ -14,7 +14,7 @@ npm install
 npm run dev
 ```
 
-Apri [http://localhost:3001](http://localhost:3001) → `/admin/login`.
+Apri [http://localhost:3001](http://localhost:3001) → `/login` (dashboard su `/`).
 
 ## Variabili d’ambiente
 
@@ -26,8 +26,8 @@ Collega il progetto al repo **tj-react-admin** (root del repository = root di qu
 
 ## Route
 
-- `/admin/login` – accesso
-- `/admin` – dashboard e sezioni (articoli, media, …)
+- `/login` – accesso (app su dominio dedicato: niente prefisso `/admin`)
+- `/`, `/articoli`, `/media`, … – dashboard e sezioni
 - `/api/auth/*`, `/api/admin/*` – API protette da sessione
 
 ## Allineare monorepo → repo admin

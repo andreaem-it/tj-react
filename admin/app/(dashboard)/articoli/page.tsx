@@ -13,7 +13,7 @@ export default function AdminArticoliPage() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-semibold">Articoli</h1>
         <Link
-          href="/admin/articoli/nuovo"
+          href="/articoli/nuovo"
           className="px-4 py-2 rounded-lg bg-[#f5a623] text-[#1a1a1a] font-medium hover:bg-[#e09520] transition-colors"
         >
           Nuovo articolo

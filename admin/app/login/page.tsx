@@ -2,12 +2,16 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+
+const PUBLIC_SITE_URL =
+  typeof process.env.NEXT_PUBLIC_SITE_URL === "string"
+    ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")
+    : "";
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get("from") ?? "/admin";
+  const from = searchParams.get("from") ?? "/";
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -91,11 +95,18 @@ export default function AdminLoginPage() {
             {loading ? "Accesso in corso…" : "Accedi"}
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-white/50">
-          <Link href="/" className="hover:text-white/80 transition-colors">
-            ← Torna al sito
-          </Link>
-        </p>
+        {PUBLIC_SITE_URL ? (
+          <p className="mt-6 text-center text-sm text-white/50">
+            <a
+              href={PUBLIC_SITE_URL}
+              className="hover:text-white/80 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ← Sito pubblico
+            </a>
+          </p>
+        ) : null}
       </div>
     </div>
   );

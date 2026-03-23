@@ -204,9 +204,9 @@ export default function ArticoloForm({ articleId }: ArticleFormProps) {
         }
         const saved = await res.json();
         if (articleId) {
-          router.push("/admin/articoli");
+          router.push("/articoli");
         } else {
-          router.push(`/admin/articoli/${saved.id}/edit`);
+          router.push(`/articoli/${saved.id}/edit`);
         }
         router.refresh();
       } catch (err) {
@@ -490,7 +490,7 @@ export default function ArticoloForm({ articleId }: ArticleFormProps) {
               Salva bozza
             </button>
             <Link
-              href="/admin/articoli"
+              href="/articoli"
               className="text-center px-4 py-2.5 text-white/70 hover:text-white text-sm transition-colors"
             >
               Annulla

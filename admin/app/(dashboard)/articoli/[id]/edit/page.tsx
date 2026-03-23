@@ -16,7 +16,7 @@ export default async function AdminArticoloEditPage({ params }: Props) {
     return (
       <div>
         <p className="text-red-400">ID non valido.</p>
-        <Link href="/admin/articoli" className="text-[#f5a623] hover:underline mt-2 inline-block">
+        <Link href="/articoli" className="text-[#f5a623] hover:underline mt-2 inline-block">
           ← Torna agli articoli
         </Link>
       </div>
@@ -27,7 +27,7 @@ export default async function AdminArticoloEditPage({ params }: Props) {
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Link
-          href="/admin/articoli"
+          href="/articoli"
           className="text-white/60 hover:text-white text-sm transition-colors"
         >
           ← Articoli

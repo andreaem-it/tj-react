@@ -73,7 +73,7 @@ export default function ArticoliList() {
       <div className="p-8 rounded-xl bg-white/5 border border-white/10 text-center text-white/60">
         <p className="mb-4">Nessun articolo.</p>
         <Link
-          href="/admin/articoli/nuovo"
+          href="/articoli/nuovo"
           className="text-[#f5a623] hover:underline"
         >
           Crea il primo articolo
@@ -120,7 +120,7 @@ export default function ArticoliList() {
               >
                 <td className="px-4 py-3">
                   <Link
-                    href={`/admin/articoli/${a.id}/edit`}
+                    href={`/articoli/${a.id}/edit`}
                     className="font-medium text-white hover:text-[#f5a623] transition-colors"
                   >
                     {a.title}
@@ -151,7 +151,7 @@ export default function ArticoliList() {
                 </td>
                 <td className="px-4 py-3">
                   <Link
-                    href={`/admin/articoli/${a.id}/edit`}
+                    href={`/articoli/${a.id}/edit`}
                     className="text-sm text-[#f5a623] hover:underline"
                   >
                     Modifica

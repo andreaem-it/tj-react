@@ -17,49 +17,49 @@ export default async function AdminDashboardLayout({
   const cookieStore = await cookies();
   const token = cookieStore.get(getSessionCookieName())?.value;
   if (!token) {
-    redirect(`/admin/login?from=${encodeURIComponent("/admin")}`);
+    redirect(`/login?from=${encodeURIComponent("/")}`);
   }
   const session = await getSessionFromToken(token);
   if (!session) {
-    redirect(`/admin/login?from=${encodeURIComponent("/admin")}`);
+    redirect(`/login?from=${encodeURIComponent("/")}`);
   }
 
   return (
     <>
       <header className="border-b border-white/10 bg-[#212121] px-4 py-3 flex items-center justify-between">
         <Link
-          href="/admin"
+          href="/"
           className="font-semibold text-lg text-white hover:text-[#f5a623] transition-colors"
         >
           TechJournal Admin
         </Link>
         <nav className="flex items-center gap-6">
           <Link
-            href="/admin"
+            href="/"
             className="text-sm text-white/80 hover:text-white transition-colors"
           >
             Dashboard
           </Link>
           <Link
-            href="/admin/articoli"
+            href="/articoli"
             className="text-sm text-white/80 hover:text-white transition-colors"
           >
             Articoli
           </Link>
           <Link
-            href="/admin/media"
+            href="/media"
             className="text-sm text-white/80 hover:text-white transition-colors"
           >
             Media
           </Link>
           <Link
-            href="/admin/categorie"
+            href="/categorie"
             className="text-sm text-white/80 hover:text-white transition-colors"
           >
             Categorie
           </Link>
           <Link
-            href="/admin/utenti"
+            href="/utenti"
             className="text-sm text-white/80 hover:text-white transition-colors"
           >
             Utenti

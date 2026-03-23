@@ -20,7 +20,7 @@ npm run install:admin   # prima volta
 npm run dev:admin
 ```
 
-Apri [http://localhost:3001/admin/login](http://localhost:3001/admin/login). Variabili: `admin/.env.example`.
+Apri [http://localhost:3001/login](http://localhost:3001/login) (dashboard su `/`). Variabili: `admin/.env.example`.
 
 Build produzione admin: `npm run build:admin`.
 

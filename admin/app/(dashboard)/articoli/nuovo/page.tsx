@@ -12,7 +12,7 @@ export default function AdminArticoloNuovoPage() {
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Link
-          href="/admin/articoli"
+          href="/articoli"
           className="text-white/60 hover:text-white text-sm transition-colors"
         >
           ← Articoli
