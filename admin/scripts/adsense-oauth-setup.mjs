@@ -7,20 +7,27 @@
  *   **Utenti di test** l’email con cui apri il browser (deve coincidere con l’accesso AdSense).
  *   Senza questo, Google risponde access_denied (403).
  *
- * Uso:
- *   export ADSENSE_OAUTH_CLIENT_ID=...
- *   export ADSENSE_OAUTH_CLIENT_SECRET=...
+ * Uso (dalla cartella admin):
+ *   Imposta ADSENSE_OAUTH_CLIENT_ID e ADSENSE_OAUTH_CLIENT_SECRET in admin/.env.local
+ *   oppure esportale nel terminale.
  *   npm run adsense-oauth
  *
  * Redirect (solo client OAuth di tipo "Applicazione web"):
  *   http://127.0.0.1:34567/oauth2callback
  *
- * Non committare mai ID/secret in questo file: usa solo export o .env.local (non in git).
+ * Non committare mai ID/secret in questo file: solo .env.local (gitignored).
  */
 
+import { config as loadEnv } from "dotenv";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 import { OAuth2Client } from "google-auth-library";
 import http from "http";
 import { URL } from "url";
+
+const adminRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+loadEnv({ path: resolve(adminRoot, ".env") });
+loadEnv({ path: resolve(adminRoot, ".env.local"), override: true });
 
 const PORT = 34567;
 const SCOPE = "https://www.googleapis.com/auth/adsense.readonly";
@@ -30,7 +37,8 @@ const clientSecret = process.env.ADSENSE_OAUTH_CLIENT_SECRET?.trim();
 
 if (!clientId || !clientSecret) {
   console.error(
-    "Imposta ADSENSE_OAUTH_CLIENT_ID e ADSENSE_OAUTH_CLIENT_SECRET (es. export …) e rilancia npm run adsense-oauth."
+    "Mancano ADSENSE_OAUTH_CLIENT_ID e/o ADSENSE_OAUTH_CLIENT_SECRET.\n" +
+      `Aggiungile in ${resolve(adminRoot, ".env.local")} (cartella admin) oppure esportale nel terminale, poi rilancia npm run adsense-oauth.`
   );
   process.exit(1);
 }
