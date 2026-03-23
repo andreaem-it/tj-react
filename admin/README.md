@@ -22,7 +22,7 @@ Copia `.env.example` in `.env.local` e configura almeno `AUTH_SECRET`, credenzia
 
 ## Deploy (Vercel)
 
-Collega il progetto al repo **tj-react-admin** (root del repository = root di questa app Next, nessuna sottocartella). Imposta le stesse variabili d’ambiente del file `.env.example`.
+Collega il progetto al repo **[tj-react-admin](https://github.com/andreaem-it/tj-react-admin)**, branch **`main`** (root del repo = questa app Next, nessuna sottocartella). Il deploy **non** passa da `tj-react` / `feature/admin-d1`: dopo le modifiche nel monorepo va eseguito il **subtree push** (sezione sotto). Variabili: come `.env.example`.
 
 ## Route
 
@@ -32,18 +32,19 @@ Collega il progetto al repo **tj-react-admin** (root del repository = root di qu
 
 Le vecchie URL `/admin`, `/admin/login`, `/admin/articoli/…` reindirizzano (308) alle nuove path.
 
-## Allineare monorepo → repo admin
+## Allineare monorepo → repo admin (push che attiva Vercel)
 
-Dal repository **tj-react** (con cartella `admin/` aggiornata):
+Dal repository **tj-react**, sulla **branch che contiene i commit aggiornati** su `admin/`:
 
 ```bash
-# una tantum
+# una tantum: remote verso il repo deploy
 git remote add tj-react-admin https://github.com/andreaem-it/tj-react-admin.git
 
-# invia solo la history della cartella admin come root del repo admin
-git subtree split --prefix=admin -b admin-split
-git push tj-react-admin admin-split:main --force
-# oppure merge su branch diverso se preferisci non forzare main
+git subtree split --prefix=admin -b tmp-admin-split
+git push tj-react-admin tmp-admin-split:main
+git branch -D tmp-admin-split
 ```
+
+Se `main` su `tj-react-admin` non è antenato dello split, il push può essere rifiutato: in quel caso solo se consapevoli, `git push tj-react-admin tmp-admin-split:main --force-with-lease`.
 
 In alternativa: clona `tj-react-admin`, copia i file dalla cartella `admin/` del monorepo e committa lì.

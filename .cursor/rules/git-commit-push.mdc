@@ -10,10 +10,26 @@ Dopo aver modificato file del progetto (codice, config, documentazione):
 1. **Verifica** lo stato: `git status`
 2. **Aggiungi** solo i file rilevanti (escludi `.env.local` e file sensibili): `git add <file>...` o `git add -A` se appropriato
 3. **Commit** con messaggio chiaro e conciso (preferibilmente convenzione conventional commits: `tipo(scope): messaggio`)
-4. **Controlla il branch** prima del push: `git branch --show-current`. Lavoro admin/monorepo: di solito **`feature/admin-d1`** (o altro branch feature indicato dall’utente), **mai** assumere `main`.
-5. **Push** esplicito sul branch corrente: `git push origin HEAD` oppure `git push origin <nome-branch>` — così **non** si rischia di pushare su `main` per errore. Serve affinché **Vercel** (o CI) faccia deploy dal branch configurato nel progetto.
 
-**Non pushare su `origin/main`** (frontend produzione nel monorepo `tj-react`) salvo **richiesta esplicita** dell’utente (merge/release). Non fare merge su `main` in autonomia.
+## Frontend (repo `tj-react`, remote `origin`)
+
+- Push sul **branch di lavoro** indicato dall’utente (es. feature), **mai** `git push origin main` senza **richiesta esplicita** (la `main` è il frontend in produzione).
+- `git branch --show-current` prima del push.
+
+## Admin (app in `admin/`, deploy su **tj-react-admin**)
+
+Il progetto Vercel dell’admin è collegato al repo **`https://github.com/andreaem-it/tj-react-admin`**, branch **`main`** (non usare `origin/feature/admin-d1` su `tj-react` per quel deploy).
+
+Dopo commit che toccano `admin/` nel monorepo:
+
+```bash
+cd /path/to/techjournal-clone   # root monorepo, branch che contiene i commit aggiornati su admin/
+git subtree split --prefix=admin -b tmp-admin-split
+git push tj-react-admin tmp-admin-split:main
+git branch -D tmp-admin-split
+```
+
+Remote `tj-react-admin` deve esistere (`git remote -v`). Se il push non è fast-forward, valutare `--force-with-lease` solo se consapevoli di sovrascrivere `main` del repo admin.
 
 Non fare commit di:
 - `.env.local` o file con segreti
