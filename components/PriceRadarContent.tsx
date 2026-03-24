@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import type { TechRadarOffer, SortOption } from "@/lib/techradar";
-import { TECHRADAR_API_BASE, PRICE_RADAR_ENABLED, PRICE_RADAR_BETA_ENABLED } from "@/lib/techradar";
+import {
+  TECHRADAR_API_BASE,
+  PRICE_RADAR_ENABLED,
+  PRICE_RADAR_BETA_ENABLED,
+  PRICE_RADAR_SQLITE_ENABLED,
+} from "@/lib/techradar";
+import type { PriceRadarProductListItem } from "@/lib/priceRadar/types";
 import { API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
 import PriceRadarCard from "./PriceRadarCard";
 import { getBetaOffers } from "@/lib/priceRadarBetaData";
@@ -36,6 +42,39 @@ async function fetchBetaOffers(): Promise<TechRadarOffer[]> {
     return memoryCache.offers;
   }
   const offers = getBetaOffers();
+  memoryCache = { offers, fetchedAt: Date.now() };
+  return offers;
+}
+
+function mapSqliteProductsToOffers(products: PriceRadarProductListItem[]): TechRadarOffer[] {
+  return products.map((p) => ({
+    title: p.title ?? `Prodotto ${p.asin}`,
+    price: p.current_price ?? 0,
+    previous_avg_price: p.max_price_30d ?? p.current_price ?? 0,
+    discount_percent: p.discount_percent,
+    image: p.image_url ?? "",
+    url: p.url,
+    asin: p.asin,
+    created_at: p.last_checked_at ?? p.last_price_change_at ?? new Date().toISOString(),
+    productId: p.id,
+  }));
+}
+
+async function fetchSqliteOffers(): Promise<TechRadarOffer[]> {
+  if (memoryCache && Date.now() - memoryCache.fetchedAt < CACHE_TTL_MS) {
+    return memoryCache.offers;
+  }
+  const res = await fetch("/api/price-radar/products", {
+    headers: API_REQUEST_HEADERS,
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(typeof err?.error === "string" ? err.error : "Errore API Price Radar");
+  }
+  const data = (await res.json()) as { products?: PriceRadarProductListItem[] };
+  const products = Array.isArray(data.products) ? data.products : [];
+  const offers = mapSqliteProductsToOffers(products);
   memoryCache = { offers, fetchedAt: Date.now() };
   return offers;
 }
@@ -96,7 +135,11 @@ export default function PriceRadarContent() {
     setLoading(true);
     setError(null);
     try {
-      const data = PRICE_RADAR_ENABLED ? await fetchLiveOffers() : await fetchBetaOffers();
+      const data = PRICE_RADAR_ENABLED
+        ? await fetchLiveOffers()
+        : PRICE_RADAR_SQLITE_ENABLED
+          ? await fetchSqliteOffers()
+          : await fetchBetaOffers();
       setOffers(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Errore nel caricamento");
@@ -107,7 +150,7 @@ export default function PriceRadarContent() {
   }, []);
 
   useEffect(() => {
-    if (PRICE_RADAR_ENABLED || PRICE_RADAR_BETA_ENABLED) {
+    if (PRICE_RADAR_ENABLED || PRICE_RADAR_BETA_ENABLED || PRICE_RADAR_SQLITE_ENABLED) {
       loadOffers();
     } else {
       setLoading(false);
@@ -127,7 +170,7 @@ export default function PriceRadarContent() {
     return sortOffers(result, sort);
   }, [offers, search, sort]);
 
-  if (!PRICE_RADAR_ENABLED && !PRICE_RADAR_BETA_ENABLED) {
+  if (!PRICE_RADAR_ENABLED && !PRICE_RADAR_BETA_ENABLED && !PRICE_RADAR_SQLITE_ENABLED) {
     return <PriceRadarComingSoon />;
   }
 
@@ -176,7 +219,12 @@ export default function PriceRadarContent() {
       <header className="mb-10">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-foreground text-3xl md:text-4xl font-bold">Price Radar</h1>
-          {PRICE_RADAR_BETA_ENABLED && !PRICE_RADAR_ENABLED && (
+          {PRICE_RADAR_SQLITE_ENABLED && !PRICE_RADAR_ENABLED && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/35">
+              Live DB
+            </span>
+          )}
+          {PRICE_RADAR_BETA_ENABLED && !PRICE_RADAR_ENABLED && !PRICE_RADAR_SQLITE_ENABLED && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-accent/15 text-accent border border-accent/40">
               Beta
             </span>

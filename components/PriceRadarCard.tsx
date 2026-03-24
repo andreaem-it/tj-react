@@ -91,7 +91,12 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
           target="_blank"
           rel="noopener noreferrer sponsored"
           className="relative z-20 mt-auto flex items-center justify-center gap-2 w-full py-3 px-4 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (offer.productId != null) {
+              void fetch(`/api/price-radar/products/${offer.productId}/click`, { method: "POST" });
+            }
+          }}
         >
           Scopri su Amazon
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
