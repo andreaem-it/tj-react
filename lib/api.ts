@@ -1,9 +1,6 @@
 import https from "node:https";
 import { unstable_cache } from "next/cache";
-import { API_BASE, API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
-
-const WP_BASE =
-  process.env.NEXT_PUBLIC_WP_BASE ?? `${API_BASE}/wp-json/tj/v1`;
+import { API_BASE, API_REQUEST_HEADERS, WP_BASE, logApiUrl } from "@/lib/constants";
 
 export interface WPCategory {
   id: number;
@@ -391,15 +388,42 @@ export async function fetchTrendingWeekAndMonth(params: {
 }
 
 export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null> {
-  const url = `${WP_BASE}/post/${encodeURIComponent(slug)}`;
-  logApiUrl(url);
-  const res = await fetch(url, {
+  const raw = typeof slug === "string" ? slug.trim() : "";
+  if (!raw) return null;
+
+  const tryParsePost = async (res: Response): Promise<PostWithMeta | null> => {
+    if (!res.ok) return null;
+    const data = (await res.json()) as PostWithMeta | TjPostsResponse | null;
+    if (!data || typeof data !== "object") return null;
+    if ("posts" in data && Array.isArray(data.posts)) {
+      return data.posts[0] ?? null;
+    }
+    if ("slug" in data && typeof (data as PostWithMeta).slug === "string") {
+      return data as PostWithMeta;
+    }
+    return null;
+  };
+
+  const urlSingle = `${WP_BASE}/post/${encodeURIComponent(raw)}`;
+  logApiUrl(urlSingle);
+  const resSingle = await fetch(urlSingle, {
     headers: API_REQUEST_HEADERS,
     next: { revalidate: 60 },
   });
-  if (!res.ok) return null;
-  const post = (await res.json()) as PostWithMeta | null;
-  return post ?? null;
+  const fromSingle = await tryParsePost(resSingle);
+  if (fromSingle) return fromSingle;
+
+  const urlList = `${WP_BASE}/posts?${new URLSearchParams({
+    slug: raw,
+    per_page: "1",
+    page: "1",
+  }).toString()}`;
+  logApiUrl(urlList);
+  const resList = await fetch(urlList, {
+    headers: API_REQUEST_HEADERS,
+    next: { revalidate: 60 },
+  });
+  return tryParsePost(resList);
 }
 
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {
