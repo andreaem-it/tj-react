@@ -24,6 +24,9 @@ export async function fetchHtml(
   options?: { timeoutMs?: number; userAgent?: string }
 ): Promise<FetchHtmlResult> {
   const timeoutMs = options?.timeoutMs ?? 28_000;
+  const userAgent =
+    options?.userAgent ??
+    (process.env.PRICE_RADAR_USER_AGENT?.trim() || DEFAULT_UA);
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -31,7 +34,7 @@ export async function fetchHtml(
       redirect: "follow",
       signal: controller.signal,
       headers: {
-        "User-Agent": options?.userAgent ?? process.env.PRICE_RADAR_USER_AGENT?.trim() || DEFAULT_UA,
+        "User-Agent": userAgent,
         Accept:
           "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
