@@ -167,8 +167,13 @@ async function fetchTjPosts(params: {
   });
   if (!res.ok) throw new Error(`TJ API error: ${res.status}`);
   const data = (await res.json()) as TjPostsResponse;
+  const headerStr = res.headers.get("X-TJ-Total-Pages");
+  const fromHeader =
+    headerStr != null && headerStr !== "" ? Number(headerStr) : Number.NaN;
   const totalPages =
-    Number(res.headers.get("X-TJ-Total-Pages")) ?? data.totalPages ?? 1;
+    Number.isFinite(fromHeader) && fromHeader >= 1
+      ? fromHeader
+      : Math.max(1, data.totalPages ?? 1);
   return { posts: data.posts ?? [], totalPages };
 }
 
