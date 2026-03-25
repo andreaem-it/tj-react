@@ -13,7 +13,7 @@ export interface TechRadarOffer {
   url: string;
   asin: string;
   created_at: string;
-  /** Presente quando i dati arrivano da SQLite /api/price-radar */
+  /** Presente quando i dati arrivano da /api/price-radar (proxy → tj-api). */
   productId?: number;
 }
 
@@ -32,7 +32,7 @@ export const PRICE_RADAR_BETA_ENABLED =
   process.env.NEXT_PUBLIC_PRICE_RADAR_BETA_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_PRICE_RADAR_BETA_ENABLED === "1";
 
-/** Dati da SQLite + route Next /api/price-radar (scraper Node/cron). */
+/** Lista prodotti da /api/price-radar (proxy verso tj-api). Il nome env è storico. */
 export const PRICE_RADAR_SQLITE_ENABLED =
   process.env.NEXT_PUBLIC_PRICE_RADAR_SQLITE_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_PRICE_RADAR_SQLITE_ENABLED === "1";
