@@ -34,7 +34,7 @@ SELECT p.id, p.current_price, p.currency, datetime('now'), 'seed', 1, 'seed'
 FROM products p
 WHERE NOT EXISTS (SELECT 1 FROM price_history h WHERE h.product_id = p.id);
 
-INSERT INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, updated_at)
-SELECT p.id, 0, 0, 0, 0, datetime('now')
+INSERT INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, event_boost, updated_at)
+SELECT p.id, 0, 0, 0, 0, 0, datetime('now')
 FROM products p
 WHERE NOT EXISTS (SELECT 1 FROM product_metrics m WHERE m.product_id = p.id);

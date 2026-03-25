@@ -1,4 +1,11 @@
 import { getPriceRadarDb } from "./db";
+import {
+  getAveragePrice,
+  getMaxPrice,
+  getMinPrice,
+  getPriceVolatility,
+  isGoodDeal,
+} from "./priceIntelligence";
 import type { ProductRow } from "./types";
 import { getProductById, refreshProductPriorityFromMetrics } from "./productQueries";
 
@@ -7,6 +14,12 @@ export interface AdminProductRow extends ProductRow {
   clicks_24h: number;
   article_mentions: number;
   manual_boost: number;
+  event_boost: number;
+  price_volatility_30d: number | null;
+  min_price_30d: number | null;
+  max_price_30d: number | null;
+  avg_price_30d: number | null;
+  is_good_deal: boolean;
 }
 
 function rowToProduct(row: Record<string, unknown>): ProductRow {
@@ -51,7 +64,8 @@ export function listProductsAdmin(params: ListAdminProductsParams): AdminProduct
       COALESCE(m.views_24h, 0) AS views_24h,
       COALESCE(m.clicks_24h, 0) AS clicks_24h,
       COALESCE(m.article_mentions, 0) AS article_mentions,
-      COALESCE(m.manual_boost, 0) AS manual_boost
+      COALESCE(m.manual_boost, 0) AS manual_boost,
+      COALESCE(m.event_boost, 0) AS event_boost
     FROM products p
     LEFT JOIN product_metrics m ON m.product_id = p.id
     WHERE 1=1
@@ -72,12 +86,20 @@ export function listProductsAdmin(params: ListAdminProductsParams): AdminProduct
   const rows = db.prepare(sql).all(...binds) as Record<string, unknown>[];
   return rows.map((row) => {
     const p = rowToProduct(row);
+    const id = p.id;
+    const cur = p.current_price ?? 0;
     return {
       ...p,
       views_24h: Number(row.views_24h ?? 0),
       clicks_24h: Number(row.clicks_24h ?? 0),
       article_mentions: Number(row.article_mentions ?? 0),
       manual_boost: Number(row.manual_boost ?? 0),
+      event_boost: Number(row.event_boost ?? 0),
+      price_volatility_30d: getPriceVolatility(id, 30),
+      min_price_30d: getMinPrice(id, 30),
+      max_price_30d: getMaxPrice(id, 30),
+      avg_price_30d: getAveragePrice(id, 30),
+      is_good_deal: isGoodDeal(id, cur),
     };
   });
 }
@@ -153,8 +175,8 @@ export function insertProductAdmin(input: {
     .run(asin, source, url, url, title);
   const id = Number(r.lastInsertRowid);
   db.prepare(
-    `INSERT INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, updated_at)
-     VALUES (?, 0, 0, 0, 0, datetime('now'))`
+    `INSERT INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, event_boost, updated_at)
+     VALUES (?, 0, 0, 0, 0, 0, datetime('now'))`
   ).run(id);
   refreshProductPriorityFromMetrics(id);
   return { id };
@@ -175,8 +197,8 @@ export function patchProductAdmin(
   }
   const db = getPriceRadarDb();
   db.prepare(
-    `INSERT OR IGNORE INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, updated_at)
-     VALUES (?, 0, 0, 0, 0, datetime('now'))`
+    `INSERT OR IGNORE INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, event_boost, updated_at)
+     VALUES (?, 0, 0, 0, 0, 0, datetime('now'))`
   ).run(id);
 
   if (patch.tracking_status === "active" || patch.tracking_status === "paused") {

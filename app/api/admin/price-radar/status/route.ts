@@ -17,7 +17,7 @@ export async function GET(_request: Request): Promise<NextResponse> {
       { status: 503 }
     );
   }
-  if (!isPriceRadarAdminRequest(request)) {
+  if (!isPriceRadarAdminRequest(_request)) {
     return unauthorized();
   }
   if (!isPriceRadarDbConfigured()) {

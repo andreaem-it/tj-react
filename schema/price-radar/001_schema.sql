@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS product_metrics (
   clicks_24h INTEGER NOT NULL DEFAULT 0,
   article_mentions INTEGER NOT NULL DEFAULT 0,
   manual_boost INTEGER NOT NULL DEFAULT 0,
+  event_boost INTEGER NOT NULL DEFAULT 0,
   last_interest_at TEXT,
   views_period_start TEXT,
   clicks_period_start TEXT,
@@ -87,6 +88,8 @@ CREATE TABLE IF NOT EXISTS scrape_runs (
   price_found INTEGER NOT NULL DEFAULT 0,
   error_message TEXT,
   response_hash TEXT,
+  response_time_ms INTEGER,
+  parser_confidence REAL,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 

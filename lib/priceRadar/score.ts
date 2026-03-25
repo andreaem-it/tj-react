@@ -6,13 +6,14 @@ export const RECENT_PRICE_CHANGE_DAYS = 7;
 /**
  * score =
  * (views_24h * 1) + (clicks_24h * 3) + (article_mentions * 5) + (manual_boost * 10) +
- * (recent_price_change ? 15 : 0)
+ * (event_boost * 2) + (recent_price_change ? 15 : 0)
  */
 export function computeScore(input: {
   views24h: number;
   clicks24h: number;
   articleMentions: number;
   manualBoost: number;
+  eventBoost: number;
   lastPriceChangeAt: string | null;
 }): number {
   const now = Date.now();
@@ -28,6 +29,7 @@ export function computeScore(input: {
     input.clicks24h * 3 +
     input.articleMentions * 5 +
     input.manualBoost * 10 +
+    input.eventBoost * 2 +
     (recent ? 15 : 0)
   );
 }

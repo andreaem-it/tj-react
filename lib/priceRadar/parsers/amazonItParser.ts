@@ -8,6 +8,8 @@ export interface AmazonItParseResult {
   imageUrl: string | null;
   parserUsed: string;
   rawPriceText: string | null;
+  /** Affidabilità stimata del prezzo estratto (0–1). */
+  confidence: number;
 }
 
 function normalizePriceText(raw: string): string {
@@ -21,7 +23,9 @@ function parseEuPrice(s: string): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-function parseJsonLdPrices(html: string): { price: number; raw: string } | null {
+type LayerHit = { price: number; raw: string; layer: string; confidence: number };
+
+function parseJsonLdPrices(html: string): LayerHit | null {
   const re = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null) {
@@ -42,11 +46,11 @@ function parseJsonLdPrices(html: string): { price: number; raw: string } | null 
           if (!off || typeof off !== "object") continue;
           const price = (off as Record<string, unknown>).price;
           if (typeof price === "number" && price > 0) {
-            return { price, raw: String(price) };
+            return { price, raw: String(price), layer: "json_ld", confidence: 0.92 };
           }
           if (typeof price === "string") {
             const n = parseEuPrice(price);
-            if (n != null) return { price: n, raw: price };
+            if (n != null) return { price: n, raw: price, layer: "json_ld", confidence: 0.9 };
           }
         }
       }
@@ -57,17 +61,22 @@ function parseJsonLdPrices(html: string): { price: number; raw: string } | null 
   return null;
 }
 
-function parseAriaPrice(html: string): { price: number; raw: string } | null {
-  const re = /aria-label="[^"]*?([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))\s*€[^"]*"/i;
-  const m = html.match(re);
-  if (m?.[1]) {
-    const n = parseEuPrice(m[1]);
-    if (n != null) return { price: n, raw: m[1] };
+function parseAriaPrice(html: string): LayerHit | null {
+  const patterns = [
+    /aria-label="[^"]*?([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))\s*€[^"]*"/i,
+    /aria-label="[^"]*?€\s*([\d]{1,3}(?:[.,]\d{3})*(?:[.,]\d{2}))[^"]*"/i,
+  ];
+  for (const re of patterns) {
+    const m = html.match(re);
+    if (m?.[1]) {
+      const n = parseEuPrice(m[1]);
+      if (n != null) return { price: n, raw: m[1], layer: "aria_label", confidence: 0.84 };
+    }
   }
   return null;
 }
 
-function parseApriceBlocks(html: string): { price: number; raw: string } | null {
+function parseApriceBlocks(html: string): LayerHit | null {
   const wholeM = html.match(/class="a-price-whole"[^>]*>([^<]+)</i);
   const fracM = html.match(/class="a-price-fraction"[^>]*>([^<]+)</i);
   if (wholeM?.[1]) {
@@ -75,7 +84,48 @@ function parseApriceBlocks(html: string): { price: number; raw: string } | null 
     const frac = fracM?.[1]?.replace(/\D/g, "") ?? "";
     const raw = frac ? `${whole},${frac}` : whole;
     const n = parseEuPrice(raw);
-    if (n != null) return { price: n, raw };
+    if (n != null) return { price: n, raw, layer: "a_price_whole_fraction", confidence: 0.76 };
+  }
+  return null;
+}
+
+/** Selettori aggiuntivi comuni nelle pagine prodotto Amazon. */
+function parseDomSelectors(html: string): LayerHit | null {
+  const dataPrice = html.match(/data-a-color-price[^>]*>([^<]+)</i);
+  if (dataPrice?.[1]) {
+    const n = parseEuPrice(dataPrice[1]);
+    if (n != null) return { price: n, raw: dataPrice[1].trim(), layer: "data_a_color_price", confidence: 0.72 };
+  }
+  const offscreen = html.match(/class="a-offscreen"[^>]*>([^<]*€[^<]+)</i);
+  if (offscreen?.[1]) {
+    const n = parseEuPrice(offscreen[1]);
+    if (n != null) return { price: n, raw: offscreen[1].trim(), layer: "a_offscreen", confidence: 0.7 };
+  }
+  const twister = html.match(/class="a-price\s+a-text-price"[^>]*>[\s\S]*?class="a-offscreen"[^>]*>([^<]+)/i);
+  if (twister?.[1]) {
+    const n = parseEuPrice(twister[1]);
+    if (n != null) return { price: n, raw: twister[1].trim(), layer: "a_text_price", confidence: 0.68 };
+  }
+  return null;
+}
+
+function parseRegexFallback(html: string): LayerHit | null {
+  const patterns = [
+    /€\s*([\d]{1,3}(?:\.\d{3})*,\d{2})/g,
+    /EUR\s*([\d]{1,3}(?:\.\d{3})*,\d{2})/gi,
+    /([\d]{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*€/g,
+  ];
+  for (const re of patterns) {
+    let m: RegExpExecArray | null;
+    const r = new RegExp(re.source, re.flags);
+    while ((m = r.exec(html)) !== null) {
+      if (m[1]) {
+        const n = parseEuPrice(m[1]);
+        if (n != null && n > 0 && n < 50000) {
+          return { price: n, raw: m[1], layer: "regex_eur", confidence: 0.48 };
+        }
+      }
+    }
   }
   return null;
 }
@@ -105,47 +155,64 @@ function parseOgImage(html: string): string | null {
   return m?.[1]?.startsWith("http") ? m[1] : null;
 }
 
+function mergeConfidence(hits: LayerHit[]): { hit: LayerHit; confidence: number } | null {
+  if (hits.length === 0) return null;
+  hits.sort((a, b) => b.confidence - a.confidence);
+  const best = hits[0];
+  let conf = best.confidence;
+  for (let i = 1; i < hits.length; i++) {
+    const other = hits[i];
+    if (Math.abs(other.price - best.price) / best.price < 0.01) {
+      conf = Math.min(0.99, conf + 0.04);
+    }
+  }
+  return { hit: best, confidence: conf };
+}
+
 /**
- * Parser dedicato pagina prodotto Amazon.it (HTML pubblico).
- * Fragile per natura: incapsulato qui, non logica sparsa.
+ * Parser multi-strato pagina prodotto Amazon.it (HTML pubblico).
+ * Ordine: JSON-LD → aria → blocchi a-price → selettori DOM → regex.
  */
 export function parseAmazonItProductHtml(html: string): AmazonItParseResult {
   const availability = detectAvailability(html);
   const title = parseOgTitle(html);
   const imageUrl = parseOgImage(html);
 
-  let parserUsed = "none";
-  let rawPriceText: string | null = null;
-  let price: number | null = null;
-
+  const hits: LayerHit[] = [];
   const ld = parseJsonLdPrices(html);
-  if (ld) {
-    price = ld.price;
-    rawPriceText = ld.raw;
-    parserUsed = "json_ld";
-  } else {
-    const aria = parseAriaPrice(html);
-    if (aria) {
-      price = aria.price;
-      rawPriceText = aria.raw;
-      parserUsed = "aria_label";
-    } else {
-      const ap = parseApriceBlocks(html);
-      if (ap) {
-        price = ap.price;
-        rawPriceText = ap.raw;
-        parserUsed = "a_price";
-      }
-    }
+  if (ld) hits.push(ld);
+  const aria = parseAriaPrice(html);
+  if (aria) hits.push(aria);
+  const ap = parseApriceBlocks(html);
+  if (ap) hits.push(ap);
+  const dom = parseDomSelectors(html);
+  if (dom) hits.push(dom);
+  const rx = parseRegexFallback(html);
+  if (rx) hits.push(rx);
+
+  const merged = mergeConfidence(hits);
+
+  if (!merged) {
+    return {
+      price: null,
+      currency: "EUR",
+      availability,
+      title,
+      imageUrl,
+      parserUsed: "none",
+      rawPriceText: null,
+      confidence: 0,
+    };
   }
 
   return {
-    price,
+    price: merged.hit.price,
     currency: "EUR",
     availability,
     title,
     imageUrl,
-    parserUsed,
-    rawPriceText,
+    parserUsed: merged.hit.layer,
+    rawPriceText: merged.hit.raw,
+    confidence: merged.confidence,
   };
 }

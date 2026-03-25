@@ -1,16 +1,22 @@
 import crypto from "node:crypto";
 import type Database from "better-sqlite3";
 import { getPriceRadarDb } from "./db";
+import { handlePriceEvent } from "./priceEvents";
+import { getMinPrice, getPriceVolatility } from "./priceIntelligence";
 import { parseAmazonItProductHtml } from "./parsers/amazonItParser";
 import { fetchHtml, randomScrapeDelay } from "./scraper/httpClient";
 import {
   refreshAllActiveProductPriorities,
   refreshProductPriorityFromMetrics,
 } from "./productQueries";
+import { computeNextCheckMinutes } from "./scheduler";
+import type { PriorityLevel } from "./types";
 
 const BATCH_DEFAULT = 8;
 const FAILURE_PAUSE_CAP_MIN = 7 * 24 * 60;
 const PAUSE_AFTER_FAILURES = 8;
+/** Sotto questa soglia, con prezzo già noto, non si aggiorna il listino (fail-safe). */
+const MIN_PARSER_CONFIDENCE_WITH_EXISTING_PRICE = 0.22;
 
 interface ProductDueRow {
   id: number;
@@ -124,15 +130,16 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
     const fetchUrl = (p.canonical_url?.trim() || p.url).trim();
     const startedAt = db.prepare(`SELECT datetime('now') AS t`).get() as { t: string };
     const runInsert = db.prepare(
-      `INSERT INTO scrape_runs (product_id, started_at, status, parser_used, price_found)
-       VALUES (?, ?, 'running', '', 0)`
+      `INSERT INTO scrape_runs (product_id, started_at, status, parser_used, price_found, response_time_ms, parser_confidence)
+       VALUES (?, ?, 'running', '', 0, NULL, NULL)`
     );
     const runResult = runInsert.run(p.id, startedAt.t);
     const runId = Number(runResult.lastInsertRowid);
 
     if (p.source !== "amazon_it") {
       db.prepare(
-        `UPDATE scrape_runs SET finished_at = datetime('now'), status = 'skipped', error_message = ?
+        `UPDATE scrape_runs SET finished_at = datetime('now'), status = 'skipped', error_message = ?,
+          response_time_ms = 0, parser_confidence = 0
          WHERE id = ?`
       ).run("Sorgente non supportata dallo scraper", runId);
       continue;
@@ -140,28 +147,47 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
 
     let httpCode: number | null = null;
     let body = "";
+    let elapsedMs = 0;
     try {
       const res = await fetchHtml(fetchUrl);
       httpCode = res.status;
       body = res.body;
+      elapsedMs = res.elapsedMs;
       const hash = responseHash(body);
       const parsed = parseAmazonItProductHtml(body);
 
-      if (parsed.price == null || parsed.price <= 0) {
+      const hadValidPrice = p.current_price != null && p.current_price > 0;
+      const parseFailed =
+        parsed.price == null ||
+        parsed.price <= 0 ||
+        (hadValidPrice && parsed.confidence < MIN_PARSER_CONFIDENCE_WITH_EXISTING_PRICE);
+
+      if (parseFailed) {
         const failures = p.consecutive_failures + 1;
-        const backoff = Math.min(FAILURE_PAUSE_CAP_MIN, p.check_interval_minutes + failures * 30);
-        const nextAt = sqliteNowPlusMinutes(db, backoff);
+        const cooldown = Math.min(
+          FAILURE_PAUSE_CAP_MIN,
+          p.check_interval_minutes + failures * 45
+        );
+        const nextAt = sqliteNowPlusMinutes(db, cooldown);
         const paused = failures >= PAUSE_AFTER_FAILURES;
+
+        const errMsg =
+          parsed.price == null || parsed.price <= 0
+            ? "Prezzo non trovato o pari a zero"
+            : "Confidenza parser troppo bassa";
 
         db.prepare(
           `UPDATE scrape_runs SET finished_at = datetime('now'), status = 'error', http_code = ?,
-            parser_used = ?, price_found = 0, error_message = ?, response_hash = ?
+            parser_used = ?, price_found = 0, error_message = ?, response_hash = ?,
+            response_time_ms = ?, parser_confidence = ?
            WHERE id = ?`
         ).run(
           httpCode,
           parsed.parserUsed,
-          "Prezzo non trovato o pari a zero",
+          errMsg,
           hash,
+          elapsedMs,
+          parsed.confidence,
           runId
         );
 
@@ -170,24 +196,29 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
             last_checked_at = datetime('now'),
             consecutive_failures = ?,
             last_error = ?,
-            availability = 'unknown',
             next_check_at = ?,
             tracking_status = ?,
             updated_at = datetime('now')
            WHERE id = ?`
         ).run(
           failures,
-          "Prezzo non trovato",
+          errMsg.slice(0, 500),
           nextAt,
           paused ? "paused" : "active",
           p.id
         );
+
+        if (!hadValidPrice) {
+          db.prepare(
+            `UPDATE products SET availability = 'unknown', updated_at = datetime('now') WHERE id = ?`
+          ).run(p.id);
+        }
         errors++;
         processed++;
         continue;
       }
 
-      const price = parsed.price;
+      const price = parsed.price!;
       const newAvail = parsed.availability;
       const oldAvail = p.availability;
       const lastSnap = lastHistorySnapshot(db, p.id);
@@ -201,6 +232,8 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
 
       const priceChanged =
         p.current_price == null || Math.abs(p.current_price - price) > 0.009;
+
+      const prevMin30 = getMinPrice(p.id, 30);
 
       if (recordHistory) {
         const isAvailInt = newAvail === "in_stock" ? 1 : newAvail === "out_of_stock" ? 0 : 1;
@@ -242,36 +275,48 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
         p.id
       );
 
+      if (priceChanged) {
+        handlePriceEvent(p.id, p.current_price, price, prevMin30);
+      }
       refreshProductPriorityFromMetrics(p.id);
 
-      const intervalRow = db
-        .prepare(`SELECT check_interval_minutes FROM products WHERE id = ?`)
-        .get(p.id) as { check_interval_minutes: number };
-      const minutes = Math.max(15, intervalRow.check_interval_minutes || 180);
+      const vol = getPriceVolatility(p.id, 30);
+      const plRow = db
+        .prepare(`SELECT priority_level FROM products WHERE id = ?`)
+        .get(p.id) as { priority_level: string };
+      const level = (plRow?.priority_level ?? "cold") as PriorityLevel;
+      const minutes = computeNextCheckMinutes({
+        volatility: vol,
+        priorityLevel: level,
+      });
       const nextOk = sqliteNowPlusMinutes(db, minutes);
-      db.prepare(`UPDATE products SET next_check_at = ?, updated_at = datetime('now') WHERE id = ?`).run(
-        nextOk,
-        p.id
-      );
+      db.prepare(
+        `UPDATE products SET next_check_at = ?, check_interval_minutes = ?, updated_at = datetime('now') WHERE id = ?`
+      ).run(nextOk, minutes, p.id);
 
       db.prepare(
         `UPDATE scrape_runs SET finished_at = datetime('now'), status = 'ok', http_code = ?,
-          parser_used = ?, price_found = 1, response_hash = ?, error_message = NULL
+          parser_used = ?, price_found = 1, response_hash = ?, error_message = NULL,
+          response_time_ms = ?, parser_confidence = ?
          WHERE id = ?`
-      ).run(httpCode, parsed.parserUsed, responseHash(body), runId);
+      ).run(httpCode, parsed.parserUsed, hash, elapsedMs, parsed.confidence, runId);
       processed++;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       const failures = p.consecutive_failures + 1;
-      const backoff = Math.min(FAILURE_PAUSE_CAP_MIN, p.check_interval_minutes + failures * 30);
-      const nextAt = sqliteNowPlusMinutes(db, backoff);
+      const cooldown = Math.min(
+        FAILURE_PAUSE_CAP_MIN,
+        p.check_interval_minutes + failures * 45
+      );
+      const nextAt = sqliteNowPlusMinutes(db, cooldown);
       const paused = failures >= PAUSE_AFTER_FAILURES;
 
       db.prepare(
         `UPDATE scrape_runs SET finished_at = datetime('now'), status = 'error', http_code = ?,
-          error_message = ?, parser_used = 'none', price_found = 0
+          error_message = ?, parser_used = 'none', price_found = 0,
+          response_time_ms = ?, parser_confidence = 0
          WHERE id = ?`
-      ).run(httpCode, msg.slice(0, 500), runId);
+      ).run(httpCode, msg.slice(0, 500), elapsedMs, runId);
 
       db.prepare(
         `UPDATE products SET

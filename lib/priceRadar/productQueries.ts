@@ -214,22 +214,23 @@ interface MetricsSnapshot {
   clicks_24h: number;
   article_mentions: number;
   manual_boost: number;
+  event_boost: number;
 }
 
 function getMetricsForProduct(db: ReturnType<typeof getPriceRadarDb>, productId: number): MetricsSnapshot {
   const row = db
     .prepare(
-      `SELECT views_24h, clicks_24h, article_mentions, manual_boost
+      `SELECT views_24h, clicks_24h, article_mentions, manual_boost, COALESCE(event_boost, 0) AS event_boost
        FROM product_metrics WHERE product_id = ?`
     )
     .get(productId) as MetricsSnapshot | undefined;
-  return row ?? { views_24h: 0, clicks_24h: 0, article_mentions: 0, manual_boost: 0 };
+  return row ?? { views_24h: 0, clicks_24h: 0, article_mentions: 0, manual_boost: 0, event_boost: 0 };
 }
 
 function ensureMetricsRow(db: ReturnType<typeof getPriceRadarDb>, productId: number): void {
   db.prepare(
-    `INSERT OR IGNORE INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, updated_at)
-     VALUES (?, 0, 0, 0, 0, datetime('now'))`
+    `INSERT OR IGNORE INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, event_boost, updated_at)
+     VALUES (?, 0, 0, 0, 0, 0, datetime('now'))`
   ).run(productId);
 }
 
@@ -255,6 +256,7 @@ export function refreshProductPriorityFromMetrics(productId: number): void {
     clicks24h: m.clicks_24h,
     articleMentions: m.article_mentions,
     manualBoost: m.manual_boost,
+    eventBoost: m.event_boost,
     lastPriceChangeAt: prow?.last_price_change_at ?? null,
   });
   const level = scoreToPriority(score);
