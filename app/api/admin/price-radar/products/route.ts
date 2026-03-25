@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const st = searchParams.get("status");
     const status =
       st === "active" || st === "paused" || st === "all" ? st : "all";
-    const products = listProductsAdmin({ search, status });
+    const products = await listProductsAdmin({ search, status });
     return NextResponse.json({ products });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Errore";
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   const url = typeof o.url === "string" ? o.url : "";
   const title = typeof o.title === "string" ? o.title : null;
   try {
-    const { id } = insertProductAdmin({ asin, url, title });
+    const { id } = await insertProductAdmin({ asin, url, title });
     return NextResponse.json({ id }, { status: 201 });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Errore";

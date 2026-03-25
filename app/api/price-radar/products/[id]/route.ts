@@ -18,11 +18,11 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "ID non valido" }, { status: 400 });
   }
   try {
-    const product = getProductById(id);
+    const product = await getProductById(id);
     if (!product) {
       return NextResponse.json({ error: "Prodotto non trovato" }, { status: 404 });
     }
-    const extras = getDetailExtras(id);
+    const extras = await getDetailExtras(id);
     return NextResponse.json({ product: { ...product, ...extras } });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Errore interno";

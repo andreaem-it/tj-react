@@ -1,8 +1,35 @@
+import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
-import Database from "better-sqlite3";
+import initSqlJs from "sql.js";
+import { PriceRadarSqlDatabase } from "./sqliteAdapter";
 
-let singleton: Database.Database | null = null;
+const require = createRequire(import.meta.url);
+/** Directory `dist/` di sql.js (contiene sql-wasm.wasm). */
+const sqlJsDist = path.dirname(require.resolve("sql.js"));
+
+export type PriceRadarDb = PriceRadarSqlDatabase;
+
+type SqlJsModule = Awaited<ReturnType<typeof initSqlJs>>;
+
+let sqlJsStatic: SqlJsModule | null = null;
+let sqlJsPromise: Promise<SqlJsModule> | null = null;
+
+async function ensureSqlJs(): Promise<SqlJsModule> {
+  if (sqlJsStatic) return sqlJsStatic;
+  if (!sqlJsPromise) {
+    sqlJsPromise = initSqlJs({
+      locateFile: (file: string) => path.join(sqlJsDist, file),
+    }).then((m) => {
+      sqlJsStatic = m;
+      return m;
+    });
+  }
+  return sqlJsPromise;
+}
+
+let singleton: PriceRadarSqlDatabase | null = null;
+let dbOpenPromise: Promise<PriceRadarSqlDatabase> | null = null;
 
 function defaultDbPath(): string {
   const fromEnv = process.env.PRICE_RADAR_SQLITE_PATH?.trim();
@@ -14,19 +41,27 @@ function defaultDbPath(): string {
  * Apre il database Price Radar (solo lato server).
  * Se il file non esiste, lancia errore: eseguire `npm run price-radar:init`.
  */
-export function getPriceRadarDb(): Database.Database {
+export async function getPriceRadarDb(): Promise<PriceRadarSqlDatabase> {
   if (singleton) return singleton;
-  const file = defaultDbPath();
-  if (!fs.existsSync(file)) {
-    throw new Error(
-      `Price Radar DB mancante: ${file}. Esegui: npm run price-radar:init`
-    );
+  if (!dbOpenPromise) {
+    dbOpenPromise = (async () => {
+      const SQL = await ensureSqlJs();
+      const file = defaultDbPath();
+      if (!fs.existsSync(file)) {
+        throw new Error(`Price Radar DB mancante: ${file}. Esegui: npm run price-radar:init`);
+      }
+      const buf = fs.readFileSync(file);
+      const db = new SQL.Database(buf);
+      const flush = () => {
+        fs.writeFileSync(file, Buffer.from(db.export()));
+      };
+      const wrapper = new PriceRadarSqlDatabase(db, flush);
+      wrapper.pragma("foreign_keys = ON");
+      singleton = wrapper;
+      return wrapper;
+    })();
   }
-  const db = new Database(file);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  singleton = db;
-  return db;
+  return dbOpenPromise;
 }
 
 export function isPriceRadarDbConfigured(): boolean {
@@ -41,6 +76,9 @@ export function resetPriceRadarDbSingleton(): void {
     } catch {
       /* ignore */
     }
-    singleton = null;
   }
+  singleton = null;
+  dbOpenPromise = null;
+  sqlJsStatic = null;
+  sqlJsPromise = null;
 }

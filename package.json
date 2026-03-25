@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "price-radar:init": "node scripts/init-price-radar-db.mjs",
+    "price-radar:init": "tsx scripts/init-price-radar-db.ts",
     "price-radar:cron": "tsx scripts/price-radar-cron.ts"
   },
   "dependencies": {
@@ -29,7 +29,6 @@
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^11.7.0",
     "google-auth-library": "^10.6.2",
     "jose": "^6.2.2",
     "next": "16.1.6",
@@ -38,14 +37,15 @@
     "react-simple-maps": "^3.0.0",
     "recharts": "^3.8.0",
     "sharp": "^0.34.5",
+    "sql.js": "^1.13.0",
     "styled-jsx": "5.1.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sql.js": "^1.4.10",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",

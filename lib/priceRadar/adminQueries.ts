@@ -57,8 +57,8 @@ export interface ListAdminProductsParams {
   status?: "all" | "active" | "paused";
 }
 
-export function listProductsAdmin(params: ListAdminProductsParams): AdminProductRow[] {
-  const db = getPriceRadarDb();
+export async function listProductsAdmin(params: ListAdminProductsParams): Promise<AdminProductRow[]> {
+  const db = await getPriceRadarDb();
   let sql = `
     SELECT p.*,
       COALESCE(m.views_24h, 0) AS views_24h,
@@ -84,34 +84,36 @@ export function listProductsAdmin(params: ListAdminProductsParams): AdminProduct
   }
   sql += ` ORDER BY p.updated_at DESC`;
   const rows = db.prepare(sql).all(...binds) as Record<string, unknown>[];
-  return rows.map((row) => {
-    const p = rowToProduct(row);
-    const id = p.id;
-    const cur = p.current_price ?? 0;
-    return {
-      ...p,
-      views_24h: Number(row.views_24h ?? 0),
-      clicks_24h: Number(row.clicks_24h ?? 0),
-      article_mentions: Number(row.article_mentions ?? 0),
-      manual_boost: Number(row.manual_boost ?? 0),
-      event_boost: Number(row.event_boost ?? 0),
-      price_volatility_30d: getPriceVolatility(id, 30),
-      min_price_30d: getMinPrice(id, 30),
-      max_price_30d: getMaxPrice(id, 30),
-      avg_price_30d: getAveragePrice(id, 30),
-      is_good_deal: isGoodDeal(id, cur),
-    };
-  });
+  return Promise.all(
+    rows.map(async (row) => {
+      const p = rowToProduct(row);
+      const id = p.id;
+      const cur = p.current_price ?? 0;
+      return {
+        ...p,
+        views_24h: Number(row.views_24h ?? 0),
+        clicks_24h: Number(row.clicks_24h ?? 0),
+        article_mentions: Number(row.article_mentions ?? 0),
+        manual_boost: Number(row.manual_boost ?? 0),
+        event_boost: Number(row.event_boost ?? 0),
+        price_volatility_30d: await getPriceVolatility(id, 30),
+        min_price_30d: await getMinPrice(id, 30),
+        max_price_30d: await getMaxPrice(id, 30),
+        avg_price_30d: await getAveragePrice(id, 30),
+        is_good_deal: await isGoodDeal(id, cur),
+      };
+    })
+  );
 }
 
-export function getAdminStatus(): {
+export async function getAdminStatus(): Promise<{
   dbConfigured: boolean;
   productCount: number;
   activeCount: number;
   pausedCount: number;
   batchSize: number;
-} {
-  const db = getPriceRadarDb();
+}> {
+  const db = await getPriceRadarDb();
   const productCount = Number(
     (db.prepare(`SELECT COUNT(*) AS c FROM products`).get() as { c: number }).c
   );
@@ -138,12 +140,12 @@ export function getAdminStatus(): {
 
 const ASIN_RE = /^[A-Z0-9]{10}$/i;
 
-export function insertProductAdmin(input: {
+export async function insertProductAdmin(input: {
   asin: string;
   url: string;
   title?: string | null;
   source?: string;
-}): { id: number } {
+}): Promise<{ id: number }> {
   const asin = input.asin.trim().toUpperCase();
   if (!ASIN_RE.test(asin)) {
     throw new Error("ASIN non valido (10 caratteri alfanumerici)");
@@ -153,7 +155,7 @@ export function insertProductAdmin(input: {
     throw new Error("URL non valido");
   }
   const source = input.source?.trim() || "amazon_it";
-  const db = getPriceRadarDb();
+  const db = await getPriceRadarDb();
   const existing = db.prepare(`SELECT id FROM products WHERE asin = ? AND source = ?`).get(asin, source) as
     | { id: number }
     | undefined;
@@ -178,11 +180,11 @@ export function insertProductAdmin(input: {
     `INSERT INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, event_boost, updated_at)
      VALUES (?, 0, 0, 0, 0, 0, datetime('now'))`
   ).run(id);
-  refreshProductPriorityFromMetrics(id);
+  await refreshProductPriorityFromMetrics(id);
   return { id };
 }
 
-export function patchProductAdmin(
+export async function patchProductAdmin(
   id: number,
   patch: {
     tracking_status?: "active" | "paused";
@@ -190,12 +192,12 @@ export function patchProductAdmin(
     article_mentions?: number;
     check_now?: boolean;
   }
-): void {
-  const existing = getProductById(id);
+): Promise<void> {
+  const existing = await getProductById(id);
   if (!existing) {
     throw new Error("Prodotto non trovato");
   }
-  const db = getPriceRadarDb();
+  const db = await getPriceRadarDb();
   db.prepare(
     `INSERT OR IGNORE INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, event_boost, updated_at)
      VALUES (?, 0, 0, 0, 0, 0, datetime('now'))`
@@ -233,5 +235,5 @@ export function patchProductAdmin(
     ).run(id);
   }
 
-  refreshProductPriorityFromMetrics(id);
+  await refreshProductPriorityFromMetrics(id);
 }

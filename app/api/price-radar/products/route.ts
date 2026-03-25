@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const priority =
       pr === "hot" || pr === "warm" || pr === "cold" || pr === "all" ? pr : "all";
     const params: ListProductsParams = { search, sort, priority };
-    const products = listProducts(params);
+    const products = await listProducts(params);
     return NextResponse.json({ products });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Errore interno";

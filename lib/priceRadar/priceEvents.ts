@@ -9,12 +9,12 @@ const EVENT_BOOST_STEP = 4;
  *
  * @param prevMin30d minimo prezzo nei 30g **prima** dell’inserimento del nuovo punto nello storico.
  */
-export function handlePriceEvent(
+export async function handlePriceEvent(
   productId: number,
   oldPrice: number | null,
   newPrice: number,
   prevMin30d: number | null
-): void {
+): Promise<void> {
   if (!Number.isFinite(newPrice) || newPrice <= 0) return;
 
   let dropPct = 0;
@@ -30,7 +30,7 @@ export function handlePriceEvent(
     return;
   }
 
-  const db = getPriceRadarDb();
+  const db = await getPriceRadarDb();
   db.prepare(
     `INSERT OR IGNORE INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, event_boost, updated_at)
      VALUES (?, 0, 0, 0, 0, 0, datetime('now'))`

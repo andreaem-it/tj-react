@@ -20,10 +20,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   }
   const range = parseHistoryRangeParam(request.nextUrl.searchParams.get("range"));
   try {
-    if (!getProductById(id)) {
+    if (!(await getProductById(id))) {
       return NextResponse.json({ error: "Prodotto non trovato" }, { status: 404 });
     }
-    const data = getPriceHistory(id, range);
+    const data = await getPriceHistory(id, range);
     return NextResponse.json(data);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Errore interno";

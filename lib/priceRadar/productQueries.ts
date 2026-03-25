@@ -1,4 +1,4 @@
-import { getPriceRadarDb } from "./db";
+import { getPriceRadarDb, type PriceRadarDb } from "./db";
 import type {
   Availability,
   HistoryRange,
@@ -60,8 +60,8 @@ export interface ListProductsParams {
   priority?: "hot" | "warm" | "cold" | "all";
 }
 
-export function listProducts(params: ListProductsParams): PriceRadarProductListItem[] {
-  const db = getPriceRadarDb();
+export async function listProducts(params: ListProductsParams): Promise<PriceRadarProductListItem[]> {
+  const db = await getPriceRadarDb();
   let sql = `
     SELECT
       p.*,
@@ -143,14 +143,14 @@ export function listProducts(params: ListProductsParams): PriceRadarProductListI
   return copy;
 }
 
-export function getProductById(id: number): ProductRow | null {
-  const db = getPriceRadarDb();
+export async function getProductById(id: number): Promise<ProductRow | null> {
+  const db = await getPriceRadarDb();
   const row = db.prepare(`SELECT * FROM products WHERE id = ?`).get(id) as Record<string, unknown> | undefined;
   return row ? rowToProduct(row) : null;
 }
 
-export function getProductByAsin(asin: string): ProductRow | null {
-  const db = getPriceRadarDb();
+export async function getProductByAsin(asin: string): Promise<ProductRow | null> {
+  const db = await getPriceRadarDb();
   const row = db
     .prepare(`SELECT * FROM products WHERE asin = ? AND source = 'amazon_it' LIMIT 1`)
     .get(asin) as Record<string, unknown> | undefined;
@@ -170,8 +170,8 @@ function rangeToSqlClause(range: HistoryRange): string {
   }
 }
 
-export function getPriceHistory(productId: number, range: HistoryRange): PriceHistoryResponse {
-  const db = getPriceRadarDb();
+export async function getPriceHistory(productId: number, range: HistoryRange): Promise<PriceHistoryResponse> {
+  const db = await getPriceRadarDb();
   const since = rangeToSqlClause(range);
   const rows = db
     .prepare(
@@ -185,7 +185,7 @@ export function getPriceHistory(productId: number, range: HistoryRange): PriceHi
   const points: PriceHistoryPoint[] = rows.map((r) => ({ t: r.t, price: Number(r.price) }));
 
   const prices = points.map((p) => p.price).filter((n) => n > 0);
-  const product = getProductById(productId);
+  const product = await getProductById(productId);
   const current = product?.current_price != null && product.current_price > 0 ? product.current_price : null;
 
   let min: number | null = null;
@@ -217,7 +217,7 @@ interface MetricsSnapshot {
   event_boost: number;
 }
 
-function getMetricsForProduct(db: ReturnType<typeof getPriceRadarDb>, productId: number): MetricsSnapshot {
+function getMetricsForProduct(db: PriceRadarDb, productId: number): MetricsSnapshot {
   const row = db
     .prepare(
       `SELECT views_24h, clicks_24h, article_mentions, manual_boost, COALESCE(event_boost, 0) AS event_boost
@@ -227,7 +227,7 @@ function getMetricsForProduct(db: ReturnType<typeof getPriceRadarDb>, productId:
   return row ?? { views_24h: 0, clicks_24h: 0, article_mentions: 0, manual_boost: 0, event_boost: 0 };
 }
 
-function ensureMetricsRow(db: ReturnType<typeof getPriceRadarDb>, productId: number): void {
+function ensureMetricsRow(db: PriceRadarDb, productId: number): void {
   db.prepare(
     `INSERT OR IGNORE INTO product_metrics (product_id, views_24h, clicks_24h, article_mentions, manual_boost, event_boost, updated_at)
      VALUES (?, 0, 0, 0, 0, 0, datetime('now'))`
@@ -235,17 +235,17 @@ function ensureMetricsRow(db: ReturnType<typeof getPriceRadarDb>, productId: num
 }
 
 /** Ricalcola priorità per tutti i prodotti attivi (utile prima del batch cron). */
-export function refreshAllActiveProductPriorities(): void {
-  const db = getPriceRadarDb();
+export async function refreshAllActiveProductPriorities(): Promise<void> {
+  const db = await getPriceRadarDb();
   const rows = db.prepare(`SELECT id FROM products WHERE tracking_status = 'active'`).all() as { id: number }[];
   for (const { id } of rows) {
-    refreshProductPriorityFromMetrics(id);
+    await refreshProductPriorityFromMetrics(id);
   }
 }
 
 /** Ricalcola score / priorità / intervallo su products. */
-export function refreshProductPriorityFromMetrics(productId: number): void {
-  const db = getPriceRadarDb();
+export async function refreshProductPriorityFromMetrics(productId: number): Promise<void> {
+  const db = await getPriceRadarDb();
   ensureMetricsRow(db, productId);
   const m = getMetricsForProduct(db, productId);
   const prow = db.prepare(`SELECT last_price_change_at FROM products WHERE id = ?`).get(productId) as
@@ -284,8 +284,8 @@ function periodExpired(periodStart: string | null): boolean {
   return nowUnix() - t >= DAY_SEC;
 }
 
-export function incrementProductView(productId: number): void {
-  const db = getPriceRadarDb();
+export async function incrementProductView(productId: number): Promise<void> {
+  const db = await getPriceRadarDb();
   ensureMetricsRow(db, productId);
   const row = db
     .prepare(
@@ -311,11 +311,11 @@ export function incrementProductView(productId: number): void {
        WHERE product_id = ?`
     ).run(productId);
   }
-  refreshProductPriorityFromMetrics(productId);
+  await refreshProductPriorityFromMetrics(productId);
 }
 
-export function incrementProductClick(productId: number): void {
-  const db = getPriceRadarDb();
+export async function incrementProductClick(productId: number): Promise<void> {
+  const db = await getPriceRadarDb();
   ensureMetricsRow(db, productId);
   const row = db
     .prepare(
@@ -341,11 +341,14 @@ export function incrementProductClick(productId: number): void {
        WHERE product_id = ?`
     ).run(productId);
   }
-  refreshProductPriorityFromMetrics(productId);
+  await refreshProductPriorityFromMetrics(productId);
 }
 
-export function getDetailExtras(productId: number): { min_price_30d: number | null; discount_percent: number } {
-  const db = getPriceRadarDb();
+export async function getDetailExtras(productId: number): Promise<{
+  min_price_30d: number | null;
+  discount_percent: number;
+}> {
+  const db = await getPriceRadarDb();
   const row = db
     .prepare(
       `SELECT
@@ -355,7 +358,7 @@ export function getDetailExtras(productId: number): { min_price_30d: number | nu
          WHERE ph.product_id = ? AND ph.detected_at >= datetime('now', '-30 days')) AS min_30d`
     )
     .get(productId, productId) as { max_30d: number | null; min_30d: number | null };
-  const p = getProductById(productId);
+  const p = await getProductById(productId);
   const max30 = row?.max_30d != null ? Number(row.max_30d) : null;
   return {
     min_price_30d: row?.min_30d != null ? Number(row.min_30d) : null,

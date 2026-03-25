@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
-import type Database from "better-sqlite3";
-import { getPriceRadarDb } from "./db";
+import { getPriceRadarDb, type PriceRadarDb } from "./db";
 import { handlePriceEvent } from "./priceEvents";
 import { getMinPrice, getPriceVolatility } from "./priceIntelligence";
 import { parseAmazonItProductHtml } from "./parsers/amazonItParser";
@@ -35,14 +34,14 @@ function responseHash(body: string): string {
   return crypto.createHash("md5").update(slice, "utf8").digest("hex");
 }
 
-function sqliteNowPlusMinutes(db: Database.Database, minutes: number): string {
+function sqliteNowPlusMinutes(db: PriceRadarDb, minutes: number): string {
   const row = db
     .prepare(`SELECT datetime('now', ?) AS t`)
     .get(`+${Math.floor(minutes)} minutes`) as { t: string };
   return row.t;
 }
 
-function lastHistorySnapshot(db: Database.Database, productId: number): string | null {
+function lastHistorySnapshot(db: PriceRadarDb, productId: number): string | null {
   const row = db
     .prepare(
       `SELECT detected_at FROM price_history WHERE product_id = ? ORDER BY detected_at DESC LIMIT 1`
@@ -94,8 +93,8 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
   processed: number;
   errors: number;
 }> {
-  const db = getPriceRadarDb();
-  refreshAllActiveProductPriorities();
+  const db = await getPriceRadarDb();
+  await refreshAllActiveProductPriorities();
 
   const batchSize =
     options?.batchSize ??
@@ -119,7 +118,7 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
          next_check_at ASC
        LIMIT ?`
     )
-    .all(batchSize) as ProductDueRow[];
+    .all(batchSize) as unknown as ProductDueRow[];
 
   let processed = 0;
   let errors = 0;
@@ -233,7 +232,7 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
       const priceChanged =
         p.current_price == null || Math.abs(p.current_price - price) > 0.009;
 
-      const prevMin30 = getMinPrice(p.id, 30);
+      const prevMin30 = await getMinPrice(p.id, 30);
 
       if (recordHistory) {
         const isAvailInt = newAvail === "in_stock" ? 1 : newAvail === "out_of_stock" ? 0 : 1;
@@ -276,11 +275,11 @@ export async function runPriceRadarScrapeBatch(options?: ScrapeBatchOptions): Pr
       );
 
       if (priceChanged) {
-        handlePriceEvent(p.id, p.current_price, price, prevMin30);
+        await handlePriceEvent(p.id, p.current_price, price, prevMin30);
       }
-      refreshProductPriorityFromMetrics(p.id);
+      await refreshProductPriorityFromMetrics(p.id);
 
-      const vol = getPriceVolatility(p.id, 30);
+      const vol = await getPriceVolatility(p.id, 30);
       const plRow = db
         .prepare(`SELECT priority_level FROM products WHERE id = ?`)
         .get(p.id) as { priority_level: string };

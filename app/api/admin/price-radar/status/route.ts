@@ -34,7 +34,7 @@ export async function GET(_request: Request): Promise<NextResponse> {
     );
   }
   try {
-    const status = getAdminStatus();
+    const status = await getAdminStatus();
     return NextResponse.json(status);
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Errore";

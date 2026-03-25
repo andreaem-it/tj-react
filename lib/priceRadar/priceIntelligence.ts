@@ -2,8 +2,8 @@ import { getPriceRadarDb } from "./db";
 
 const DEFAULT_DAYS = 30;
 
-function pricesInWindow(productId: number, days: number): number[] {
-  const db = getPriceRadarDb();
+async function pricesInWindow(productId: number, days: number): Promise<number[]> {
+  const db = await getPriceRadarDb();
   const rows = db
     .prepare(
       `SELECT price FROM price_history
@@ -17,8 +17,8 @@ function pricesInWindow(productId: number, days: number): number[] {
 }
 
 /** Prezzo minimo nel periodo (default 30g). */
-export function getMinPrice(productId: number, days: number = DEFAULT_DAYS): number | null {
-  const db = getPriceRadarDb();
+export async function getMinPrice(productId: number, days: number = DEFAULT_DAYS): Promise<number | null> {
+  const db = await getPriceRadarDb();
   const row = db
     .prepare(
       `SELECT MIN(price) AS m FROM price_history
@@ -31,8 +31,8 @@ export function getMinPrice(productId: number, days: number = DEFAULT_DAYS): num
 }
 
 /** Prezzo massimo nel periodo. */
-export function getMaxPrice(productId: number, days: number = DEFAULT_DAYS): number | null {
-  const db = getPriceRadarDb();
+export async function getMaxPrice(productId: number, days: number = DEFAULT_DAYS): Promise<number | null> {
+  const db = await getPriceRadarDb();
   const row = db
     .prepare(
       `SELECT MAX(price) AS m FROM price_history
@@ -45,8 +45,8 @@ export function getMaxPrice(productId: number, days: number = DEFAULT_DAYS): num
 }
 
 /** Media aritmetica dei prezzi storici nel periodo. */
-export function getAveragePrice(productId: number, days: number = DEFAULT_DAYS): number | null {
-  const db = getPriceRadarDb();
+export async function getAveragePrice(productId: number, days: number = DEFAULT_DAYS): Promise<number | null> {
+  const db = await getPriceRadarDb();
   const row = db
     .prepare(
       `SELECT AVG(price) AS a FROM price_history
@@ -62,8 +62,8 @@ export function getAveragePrice(productId: number, days: number = DEFAULT_DAYS):
  * Volatilità normalizzata 0–1: coefficiente di variazione (dev.std / media), cap a 1.
  * Con meno di 2 punti restituisce 0 (stabile).
  */
-export function getPriceVolatility(productId: number, days: number = DEFAULT_DAYS): number {
-  const prices = pricesInWindow(productId, days);
+export async function getPriceVolatility(productId: number, days: number = DEFAULT_DAYS): Promise<number> {
+  const prices = await pricesInWindow(productId, days);
   if (prices.length < 2) return 0;
   const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
   if (mean <= 0) return 0;
@@ -77,10 +77,10 @@ export function getPriceVolatility(productId: number, days: number = DEFAULT_DAY
 /**
  * True se il prezzo corrente è almeno il 3% sotto la media 30g (o sotto il min storico nel periodo).
  */
-export function isGoodDeal(productId: number, currentPrice: number): boolean {
+export async function isGoodDeal(productId: number, currentPrice: number): Promise<boolean> {
   if (!Number.isFinite(currentPrice) || currentPrice <= 0) return false;
-  const avg = getAveragePrice(productId, DEFAULT_DAYS);
-  const min = getMinPrice(productId, DEFAULT_DAYS);
+  const avg = await getAveragePrice(productId, DEFAULT_DAYS);
+  const min = await getMinPrice(productId, DEFAULT_DAYS);
   if (avg != null && currentPrice <= avg * 0.97) return true;
   if (min != null && currentPrice <= min + 0.02) return true;
   return false;

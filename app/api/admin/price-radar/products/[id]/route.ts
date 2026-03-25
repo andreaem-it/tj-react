@@ -50,7 +50,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     patch.check_now = true;
   }
   try {
-    patchProductAdmin(id, patch);
+    await patchProductAdmin(id, patch);
     return NextResponse.json({ ok: true });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Errore";
