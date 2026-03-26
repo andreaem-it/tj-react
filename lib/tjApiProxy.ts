@@ -54,6 +54,18 @@ export async function proxyToTjApi(request: NextRequest): Promise<NextResponse> 
     if (upstreamCt) {
       outHeaders.set("Content-Type", upstreamCt);
     }
+    const setCookies =
+      typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : null;
+    if (setCookies?.length) {
+      for (const c of setCookies) {
+        outHeaders.append("Set-Cookie", c);
+      }
+    } else {
+      const single = res.headers.get("set-cookie");
+      if (single) {
+        outHeaders.append("Set-Cookie", single);
+      }
+    }
 
     return new NextResponse(text, {
       status: res.status,
