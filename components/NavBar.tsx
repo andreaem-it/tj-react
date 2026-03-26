@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import { fetchMegamenu as fetchMegamenuFromApi, type MegamenuPost } from "@/lib/tjApiClient";
+
+export type { MegamenuPost };
 
 const NAV_ITEMS = [
   { label: "Ultime Notizie", href: "/" },
@@ -15,13 +18,6 @@ const NAV_ITEMS = [
   { label: "IA", slug: "ia" },
   { label: "Price Radar", href: "/price-radar" },
 ];
-
-export interface MegamenuPost {
-  slug: string;
-  title: string;
-  imageUrl: string | null;
-  imageAlt: string;
-}
 
 interface NavBarProps {
   /** @deprecated I link alle categorie usano ora solo lo slug (es. /apple). */
@@ -151,8 +147,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
     loadingSlugsRef.current.add(slug);
     setLoadingSlug(slug);
     try {
-      const res = await fetch(`/api/megamenu/${encodeURIComponent(slug)}`);
-      const posts: MegamenuPost[] = res.ok ? await res.json() : [];
+      const posts = await fetchMegamenuFromApi(slug);
       loadedSlugsRef.current.add(slug);
       setMegamenuBySlug((prev) => ({ ...prev, [slug]: posts }));
     } finally {

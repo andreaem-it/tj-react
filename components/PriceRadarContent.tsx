@@ -10,6 +10,7 @@ import {
 } from "@/lib/techradar";
 import type { PriceRadarProductListItem } from "@/lib/priceRadar/types";
 import { API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
+import { fetchPriceRadarProducts } from "@/lib/tjApiClient";
 import PriceRadarCard from "./PriceRadarCard";
 import { getBetaOffers } from "@/lib/priceRadarBetaData";
 
@@ -64,15 +65,7 @@ async function fetchSqliteOffers(): Promise<TechRadarOffer[]> {
   if (memoryCache && Date.now() - memoryCache.fetchedAt < CACHE_TTL_MS) {
     return memoryCache.offers;
   }
-  const res = await fetch("/api/price-radar/products", {
-    headers: API_REQUEST_HEADERS,
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(typeof err?.error === "string" ? err.error : "Errore API Price Radar");
-  }
-  const data = (await res.json()) as { products?: PriceRadarProductListItem[] };
+  const data = await fetchPriceRadarProducts();
   const products = Array.isArray(data.products) ? data.products : [];
   const offers = mapSqliteProductsToOffers(products);
   memoryCache = { offers, fetchedAt: Date.now() };

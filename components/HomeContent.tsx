@@ -11,6 +11,7 @@ import MostReadSidebar from "./MostReadSidebar";
 import TrendingByPeriodSidebar from "./TrendingByPeriodSidebar";
 import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
 import type { PostWithMeta } from "@/lib/api";
+import { fetchPosts, fetchSocialStats } from "@/lib/tjApiClient";
 
 const PER_PAGE = 10;
 
@@ -52,10 +53,8 @@ export default function HomeContent({
 
   useEffect(() => {
     let cancelled = false;
-    const url = `${window.location.origin}/api/social-stats?refresh=1&t=${Date.now()}`;
-    fetch(url, { cache: "no-store", credentials: "same-origin" })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { facebook?: { followers: number } | null; instagram?: { followers: number } | null } | null) => {
+    fetchSocialStats({ refresh: true })
+      .then((data) => {
         if (cancelled || !data) return;
         setSocialStats({
           facebook: data.facebook?.followers ?? null,
@@ -76,9 +75,7 @@ export default function HomeContent({
     const pageToFetch = nextPageRef.current;
     setIsLoading(true);
     try {
-      const url = `${window.location.origin}/api/posts/${pageToFetch}${categoryId ? `?category=${categoryId}` : ""}`;
-      const res = await fetch(url, { cache: "no-store" });
-      const data = res.ok ? await res.json() : { posts: [], totalPages: 0 };
+      const data = await fetchPosts(pageToFetch, categoryId);
       if (data.posts?.length) {
         setGridPosts((prev) => {
           const existingIds = new Set([...heroPosts, ...prev].map((p) => p.id));
@@ -90,6 +87,8 @@ export default function HomeContent({
       } else {
         setHasMore(false);
       }
+    } catch {
+      setHasMore(false);
     } finally {
       setIsLoading(false);
     }

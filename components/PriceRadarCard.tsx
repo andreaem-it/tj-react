@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { TechRadarOffer } from "@/lib/techradar";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import { postPriceRadarProductClick } from "@/lib/tjApiClient";
 
 interface PriceRadarCardProps {
   offer: TechRadarOffer;
@@ -94,7 +95,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
           onClick={(e) => {
             e.stopPropagation();
             if (offer.productId != null) {
-              void fetch(`/api/price-radar/products/${offer.productId}/click`, { method: "POST" });
+              postPriceRadarProductClick(offer.productId);
             }
           }}
         >
