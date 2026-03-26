@@ -7,6 +7,18 @@ export type ProxyToTjApiOptions = {
 };
 
 /**
+ * Header di risposta upstream da ripassare al client (stesso nome, case-insensitive in fetch).
+ * Include wordpress-content: X-Next-Page, X-Next-Already, Cache-Control, Pragma.
+ */
+const UPSTREAM_RESPONSE_HEADERS_TO_FORWARD = [
+  "content-type",
+  "cache-control",
+  "pragma",
+  "x-next-page",
+  "x-next-already",
+] as const;
+
+/**
  * Inoltra la richiesta a tj-api con stesso path e query string.
  * Per route admin basate su sessione cookie, inoltra l’header `Cookie` verso l’upstream.
  * Pass-through di status e body; errore di rete → 502.
@@ -63,10 +75,14 @@ export async function proxyToTjApi(
 
     const text = await res.text();
     const outHeaders = new Headers();
-    const upstreamCt = res.headers.get("content-type");
-    if (upstreamCt) {
-      outHeaders.set("Content-Type", upstreamCt);
+
+    for (const name of UPSTREAM_RESPONSE_HEADERS_TO_FORWARD) {
+      const v = res.headers.get(name);
+      if (v) {
+        outHeaders.set(name, v);
+      }
     }
+
     const setCookies =
       typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : null;
     if (setCookies?.length) {

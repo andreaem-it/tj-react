@@ -1,34 +1,14 @@
-import { fetchPostsPageFromWordPress } from "@/lib/api";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { proxyToTjApi } from "@/lib/tjApiProxy";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-/** GET /api/posts/3?category=123 → richiede la pagina 3 a tj/v1. */
+/** GET /api/posts/:page?category=… → proxy verso tj-api (wordpress-content). */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ page: string }> }
+  { params }: { params: Promise<{ page: string }> },
 ) {
-  try {
-    const { page: pageParam } = await params;
-    const page = Math.max(1, Number(pageParam) || 1);
-    const perPage = 10;
-    const categoryId = request.nextUrl.searchParams.get("category");
-    const catId = categoryId ? Math.max(0, parseInt(categoryId, 10)) : undefined;
-    const { posts, totalPages } = await fetchPostsPageFromWordPress(
-      page,
-      perPage,
-      catId && catId > 0 ? catId : undefined
-    );
-    const res = NextResponse.json({ posts, totalPages });
-    res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
-    return res;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("[api/posts/[page]]", message, err instanceof Error ? err.stack : "");
-    return NextResponse.json(
-      { error: "Errore caricamento post", posts: [], totalPages: 0 },
-      { status: 500 }
-    );
-  }
+  await params;
+  return proxyToTjApi(request);
 }
