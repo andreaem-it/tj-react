@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
 
+export type ProxyToTjApiOptions = {
+  /** Es. PATCH in ingresso → PUT verso tj-api (articoli). */
+  methodOverride?: string;
+};
+
 /**
  * Inoltra la richiesta a tj-api con stesso path e query string.
  * Per route admin basate su sessione cookie, inoltra l’header `Cookie` verso l’upstream.
  * Pass-through di status e body; errore di rete → 502.
+ *
+ * Body (JSON o multipart): lettura come `ArrayBuffer` e reinvio con gli stessi header
+ * `Content-Type` (boundary incluso per form-data), senza riparsing del multipart.
  */
-export async function proxyToTjApi(request: NextRequest): Promise<NextResponse> {
+export async function proxyToTjApi(
+  request: NextRequest,
+  options?: ProxyToTjApiOptions,
+): Promise<NextResponse> {
   const base = getTjApiBaseUrl();
   if (!base) {
     return NextResponse.json(
@@ -17,6 +28,8 @@ export async function proxyToTjApi(request: NextRequest): Promise<NextResponse> 
 
   const path = request.nextUrl.pathname + request.nextUrl.search;
   const url = `${base}${path}`;
+
+  const method = options?.methodOverride ?? request.method;
 
   const headers = new Headers();
   const cookie = request.headers.get("cookie");
@@ -29,7 +42,7 @@ export async function proxyToTjApi(request: NextRequest): Promise<NextResponse> 
   }
 
   let body: BodyInit | undefined;
-  if (request.method !== "GET" && request.method !== "HEAD") {
+  if (method !== "GET" && method !== "HEAD") {
     const buf = await request.arrayBuffer();
     if (buf.byteLength > 0) {
       body = buf;
@@ -42,7 +55,7 @@ export async function proxyToTjApi(request: NextRequest): Promise<NextResponse> 
 
   try {
     const res = await fetch(url, {
-      method: request.method,
+      method,
       headers,
       body,
       cache: "no-store",
