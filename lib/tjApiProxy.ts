@@ -4,9 +4,11 @@ import { getTjApiBaseUrl } from "@/lib/config/tjApi";
 export type ProxyToTjApiOptions = {
   /** Es. PATCH in ingresso → PUT verso tj-api (articoli). */
   methodOverride?: string;
+  /** Timeout fetch verso tj-api (ms). Default 10s; webhook lunghi es. 120000. */
+  timeoutMs?: number;
 };
 
-const UPSTREAM_TIMEOUT_MS = 10_000;
+const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000;
 
 /**
  * Header di risposta upstream da ripassare al client (case-insensitive in fetch).
@@ -87,6 +89,14 @@ export async function proxyToTjApi(
   if (accept) {
     headers.set("Accept", accept);
   }
+  const authorization = request.headers.get("authorization");
+  if (authorization) {
+    headers.set("Authorization", authorization);
+  }
+  const webhookSecret = request.headers.get("x-tj-webhook-secret");
+  if (webhookSecret) {
+    headers.set("X-TJ-Webhook-Secret", webhookSecret);
+  }
 
   let body: BodyInit | undefined;
   if (method !== "GET" && method !== "HEAD") {
@@ -100,8 +110,9 @@ export async function proxyToTjApi(
     headers.set("Content-Type", contentType);
   }
 
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(url, {
