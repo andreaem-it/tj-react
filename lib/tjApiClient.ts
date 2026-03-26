@@ -1,6 +1,7 @@
 import type { PostWithMeta } from "@/lib/api";
-import { logApiUrl } from "@/lib/constants";
 import type { PriceRadarProductListItem } from "@/lib/priceRadar/types";
+
+const DEFAULT_FETCH_TIMEOUT_MS = 10_000;
 
 /**
  * Base pubblica tj-api (browser + SSR). Se assente o vuota → path relativi `/api/...`
@@ -14,14 +15,115 @@ export function getPublicTjApiBaseUrl(): string | null {
   return t.replace(/\/$/, "");
 }
 
+function normalizePath(path: string): string {
+  if (path.startsWith("/")) return path;
+  return `/${path}`;
+}
+
+/** Path relativo `/api/...` (solo proxy, nessun host). */
+function proxyPathOnly(pathWithQuery: string): string {
+  return normalizePath(pathWithQuery);
+}
+
 /**
  * URL verso tj-api (`https://…/api/…`) oppure path relativo `/api/…` per il proxy Next.
  */
 export function resolvePublicApiUrl(path: string): string {
   const base = getPublicTjApiBaseUrl();
-  const p = path.startsWith("/") ? path : `/${path}`;
+  const p = normalizePath(path);
   if (base) return `${base}${p}`;
   return p;
+}
+
+function warnApi(context: string, detail: string): void {
+  console.warn(`[tjApiClient] API error (${context}): ${detail}`);
+}
+
+function warnFallback(context: string): void {
+  console.warn(`[tjApiClient] Fallback to proxy (${context})`);
+}
+
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+      cache: "no-store",
+      credentials: "omit",
+    });
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+/**
+ * Prova prima l’URL risolto (tj-api se configurato), poi il path relativo `/api/...` in caso di
+ * errore di rete o timeout. Se non c’è base pubblica, una sola richiesta (già proxy).
+ */
+async function fetchWithFallback(
+  pathWithQuery: string,
+  init: RequestInit,
+  context: string,
+): Promise<Response | null> {
+  const primary = resolvePublicApiUrl(pathWithQuery);
+  const proxyOnly = proxyPathOnly(pathWithQuery);
+
+  const attempt = async (url: string): Promise<Response | null> => {
+    try {
+      return await fetchWithTimeout(url, init);
+    } catch {
+      return null;
+    }
+  };
+
+  if (primary === proxyOnly) {
+    const res = await attempt(primary);
+    if (res === null) {
+      warnApi(context, "network/timeout");
+    }
+    return res;
+  }
+
+  const first = await attempt(primary);
+  if (first !== null) {
+    return first;
+  }
+
+  warnFallback(context);
+  const second = await attempt(proxyOnly);
+  if (second === null) {
+    warnApi(context, "network/timeout");
+  }
+  return second;
+}
+
+/**
+ * Parse JSON senza lanciare: null su errore HTTP, body vuoto o JSON non valido.
+ */
+async function parseJsonSafe<T>(res: Response | null, context: string): Promise<T | null> {
+  if (res === null) {
+    return null;
+  }
+  if (!res.ok) {
+    warnApi(context, `HTTP ${res.status}`);
+    return null;
+  }
+  const text = await res.text();
+  if (!text.trim()) {
+    warnApi(context, "empty body");
+    return null;
+  }
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    warnApi(context, "invalid JSON");
+    return null;
+  }
 }
 
 export interface MegamenuPost {
@@ -45,67 +147,38 @@ export interface SocialStatsJson {
   instagram?: { followers: number } | null;
 }
 
-async function parseJsonOrThrow<T>(res: Response): Promise<T> {
-  const text = await res.text();
-  let data: unknown;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    throw new Error("Risposta non valida dal server");
-  }
-  if (!res.ok) {
-    const err = data as { error?: string } | null;
-    throw new Error(
-      typeof err?.error === "string" ? err.error : `Errore HTTP ${res.status}`,
-    );
-  }
-  return data as T;
-}
-
 const jsonHeaders: HeadersInit = { Accept: "application/json" };
 
 /** Lista prodotti Price Radar (GET). */
 export async function fetchPriceRadarProducts(): Promise<PriceRadarProductsJson> {
-  const url = resolvePublicApiUrl("/api/price-radar/products");
-  logApiUrl(url);
-  const res = await fetch(url, {
-    headers: jsonHeaders,
-    cache: "no-store",
-    credentials: "omit",
-  });
-  return parseJsonOrThrow<PriceRadarProductsJson>(res);
+  const res = await fetchWithFallback(
+    "/api/price-radar/products",
+    { headers: jsonHeaders },
+    "price-radar products",
+  );
+  const data = await parseJsonSafe<PriceRadarProductsJson>(
+    res,
+    "price-radar products",
+  );
+  return data ?? { products: [] };
 }
 
 /** Dettaglio prodotto (GET). */
 export async function fetchPriceRadarProduct(
   id: string | number,
 ): Promise<unknown> {
-  const url = resolvePublicApiUrl(
-    `/api/price-radar/products/${encodeURIComponent(String(id))}`,
-  );
-  logApiUrl(url);
-  const res = await fetch(url, {
-    headers: jsonHeaders,
-    cache: "no-store",
-    credentials: "omit",
-  });
-  return parseJsonOrThrow<unknown>(res);
+  const path = `/api/price-radar/products/${encodeURIComponent(String(id))}`;
+  const res = await fetchWithFallback(path, { headers: jsonHeaders }, "price-radar product");
+  return parseJsonSafe<unknown>(res, "price-radar product");
 }
 
 /** Storico prezzi (GET). */
 export async function fetchPriceRadarHistory(
   id: string | number,
 ): Promise<unknown> {
-  const url = resolvePublicApiUrl(
-    `/api/price-radar/products/${encodeURIComponent(String(id))}/history`,
-  );
-  logApiUrl(url);
-  const res = await fetch(url, {
-    headers: jsonHeaders,
-    cache: "no-store",
-    credentials: "omit",
-  });
-  return parseJsonOrThrow<unknown>(res);
+  const path = `/api/price-radar/products/${encodeURIComponent(String(id))}/history`;
+  const res = await fetchWithFallback(path, { headers: jsonHeaders }, "price-radar history");
+  return parseJsonSafe<unknown>(res, "price-radar history");
 }
 
 /** Paginazione homepage / categoria (GET). */
@@ -117,28 +190,21 @@ export async function fetchPosts(
     categoryId != null
       ? `?category=${encodeURIComponent(String(categoryId))}`
       : "";
-  const url = resolvePublicApiUrl(`/api/posts/${page}${qs}`);
-  logApiUrl(url);
-  const res = await fetch(url, {
-    headers: jsonHeaders,
-    cache: "no-store",
-    credentials: "omit",
-  });
-  return parseJsonOrThrow<PostsPageJson>(res);
+  const res = await fetchWithFallback(
+    `/api/posts/${page}${qs}`,
+    { headers: jsonHeaders },
+    "posts",
+  );
+  const data = await parseJsonSafe<PostsPageJson>(res, "posts");
+  return data ?? { posts: [], totalPages: 0 };
 }
 
 /** Megamenu categoria (GET). In errore restituisce array vuoto (come prima). */
 export async function fetchMegamenu(slug: string): Promise<MegamenuPost[]> {
-  const url = resolvePublicApiUrl(
-    `/api/megamenu/${encodeURIComponent(slug)}`,
-  );
-  const res = await fetch(url, {
-    headers: jsonHeaders,
-    cache: "force-cache",
-    credentials: "omit",
-  });
-  if (!res.ok) return [];
-  const data: unknown = await res.json().catch(() => null);
+  const path = `/api/megamenu/${encodeURIComponent(slug)}`;
+  const res = await fetchWithFallback(path, { headers: jsonHeaders }, "megamenu");
+  const data = await parseJsonSafe<unknown>(res, "megamenu");
+  if (data === null) return [];
   return Array.isArray(data) ? (data as MegamenuPost[]) : [];
 }
 
@@ -148,24 +214,14 @@ export async function fetchSocialStats(options?: {
 }): Promise<SocialStatsJson | null> {
   const qs = new URLSearchParams();
   if (options?.refresh) qs.set("refresh", "1");
-  qs.set("t", String(Date.now()));
-  const url = resolvePublicApiUrl(`/api/social-stats?${qs.toString()}`);
-  const res = await fetch(url, {
-    cache: "no-store",
-    credentials: "omit",
-  });
-  if (!res.ok) return null;
-  return (await res.json()) as SocialStatsJson;
+  const query = qs.toString();
+  const path = `/api/social-stats${query ? `?${query}` : ""}`;
+  const res = await fetchWithFallback(path, { headers: jsonHeaders }, "social-stats");
+  return parseJsonSafe<SocialStatsJson>(res, "social-stats");
 }
 
 /** Tracciamento click offerta Amazon (POST, fire-and-forget). */
 export function postPriceRadarProductClick(productId: number): void {
-  const url = resolvePublicApiUrl(
-    `/api/price-radar/products/${encodeURIComponent(String(productId))}/click`,
-  );
-  void fetch(url, {
-    method: "POST",
-    cache: "no-store",
-    credentials: "omit",
-  });
+  const path = `/api/price-radar/products/${encodeURIComponent(String(productId))}/click`;
+  void fetchWithFallback(path, { method: "POST", headers: jsonHeaders }, "price-radar click");
 }
