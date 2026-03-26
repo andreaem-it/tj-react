@@ -1,7 +1,30 @@
 import type { PostWithMeta } from "@/lib/api";
 import type { PriceRadarProductListItem } from "@/lib/priceRadar/types";
 
-const DEFAULT_FETCH_TIMEOUT_MS = 10_000;
+/** Timeout passati a fetchWithFallback dai call site (ms). */
+const TIMEOUT_PRICE_RADAR_MS = 5000;
+const TIMEOUT_POSTS_MS = 6000;
+const TIMEOUT_MEGAMENU_MS = 4000;
+const TIMEOUT_SOCIAL_STATS_MS = 10000;
+
+const WARN_THROTTLE_MS = 5000;
+
+let lastWarnApiAt = 0;
+let lastWarnFallbackAt = 0;
+
+function throttledApiWarn(log: () => void): void {
+  const now = Date.now();
+  if (now - lastWarnApiAt < WARN_THROTTLE_MS) return;
+  lastWarnApiAt = now;
+  log();
+}
+
+function throttledFallbackWarn(log: () => void): void {
+  const now = Date.now();
+  if (now - lastWarnFallbackAt < WARN_THROTTLE_MS) return;
+  lastWarnFallbackAt = now;
+  log();
+}
 
 /**
  * Base pubblica tj-api (browser + SSR). Se assente o vuota → path relativi `/api/...`
@@ -35,20 +58,21 @@ export function resolvePublicApiUrl(path: string): string {
   return p;
 }
 
-function warnApi(context: string, detail: string): void {
-  console.warn(`[tjApiClient] API error (${context}): ${detail}`);
-}
-
-function warnFallback(context: string): void {
-  console.warn(`[tjApiClient] Fallback to proxy (${context})`);
+function isRetriableFetchError(e: unknown): boolean {
+  if (e instanceof TypeError) return true;
+  if (typeof e === "object" && e !== null && "name" in e) {
+    return (e as { name: string }).name === "AbortError";
+  }
+  return false;
 }
 
 async function fetchWithTimeout(
   url: string,
   init: RequestInit,
+  timeoutMs: number,
 ): Promise<Response> {
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+  const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(url, {
       ...init,
@@ -62,68 +86,114 @@ async function fetchWithTimeout(
 }
 
 /**
- * Prova prima l’URL risolto (tj-api se configurato), poi il path relativo `/api/...` in caso di
- * errore di rete o timeout. Se non c’è base pubblica, una sola richiesta (già proxy).
+ * Una sola richiesta: fallisce solo su errore di rete / timeout (ritorna null).
+ * Se arriva una Response (anche HTTP 5xx), non lancia e non ritorna null.
+ */
+async function attemptFetch(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response | null> {
+  try {
+    return await fetchWithTimeout(url, init, timeoutMs);
+  } catch (e) {
+    if (!isRetriableFetchError(e)) throw e;
+    return null;
+  }
+}
+
+/**
+ * Primary → tj-api (se configurato); fallback → proxy una sola volta, solo dopo
+ * errore di rete/timeout sulla primary. Mai ricorsione oltre un livello.
  */
 async function fetchWithFallback(
   pathWithQuery: string,
   init: RequestInit,
   context: string,
+  timeoutMs: number,
+  isFallbackAttempt = false,
 ): Promise<Response | null> {
-  const primary = resolvePublicApiUrl(pathWithQuery);
   const proxyOnly = proxyPathOnly(pathWithQuery);
+  const primary = resolvePublicApiUrl(pathWithQuery);
 
-  const attempt = async (url: string): Promise<Response | null> => {
-    try {
-      return await fetchWithTimeout(url, init);
-    } catch {
-      return null;
-    }
-  };
-
-  if (primary === proxyOnly) {
-    const res = await attempt(primary);
+  if (isFallbackAttempt) {
+    const res = await attemptFetch(proxyOnly, init, timeoutMs);
     if (res === null) {
-      warnApi(context, "network/timeout");
+      throttledApiWarn(() =>
+        console.warn(`[tjApiClient] API error (${context}): network/timeout`),
+      );
     }
     return res;
   }
 
-  const first = await attempt(primary);
+  if (primary === proxyOnly) {
+    const res = await attemptFetch(primary, init, timeoutMs);
+    if (res === null) {
+      throttledApiWarn(() =>
+        console.warn(`[tjApiClient] API error (${context}): network/timeout`),
+      );
+    }
+    return res;
+  }
+
+  const first = await attemptFetch(primary, init, timeoutMs);
   if (first !== null) {
     return first;
   }
 
-  warnFallback(context);
-  const second = await attempt(proxyOnly);
-  if (second === null) {
-    warnApi(context, "network/timeout");
-  }
-  return second;
+  throttledFallbackWarn(() =>
+    console.warn(`[tjApiClient] Fallback to proxy (${context})`),
+  );
+
+  return fetchWithFallback(pathWithQuery, init, context, timeoutMs, true);
 }
 
-/**
- * Parse JSON senza lanciare: null su errore HTTP, body vuoto o JSON non valido.
- */
-async function parseJsonSafe<T>(res: Response | null, context: string): Promise<T | null> {
+type ParseOutcome<T> =
+  | { status: "ok"; data: T }
+  | {
+      status: "error";
+      kind: "no_response" | "http" | "empty" | "parse";
+      httpStatus?: number;
+    };
+
+async function parseJsonSafe<T>(
+  res: Response | null,
+  context: string,
+): Promise<ParseOutcome<T>> {
   if (res === null) {
-    return null;
+    throttledApiWarn(() =>
+      console.warn(`[tjApiClient] API error (${context}): no response`),
+    );
+    return { status: "error", kind: "no_response" };
   }
   if (!res.ok) {
-    warnApi(context, `HTTP ${res.status}`);
-    return null;
+    const st = res.status;
+    throttledApiWarn(() =>
+      console.warn(`[tjApiClient] API error (${context}): HTTP ${st}`),
+    );
+    return { status: "error", kind: "http", httpStatus: st };
   }
   const text = await res.text();
   if (!text.trim()) {
-    warnApi(context, "empty body");
-    return null;
+    throttledApiWarn(() =>
+      console.warn(`[tjApiClient] API error (${context}): empty body`),
+    );
+    return { status: "error", kind: "empty" };
   }
   try {
-    return JSON.parse(text) as T;
+    return { status: "ok", data: JSON.parse(text) as T };
   } catch {
-    warnApi(context, "invalid JSON");
-    return null;
+    throttledApiWarn(() =>
+      console.warn(`[tjApiClient] API error (${context}): invalid JSON`),
+    );
+    return { status: "error", kind: "parse" };
   }
+}
+
+function withInternalError<T extends Record<string, unknown>>(
+  base: T,
+): T & { _error?: true } {
+  return { ...base, _error: true };
 }
 
 export interface MegamenuPost {
@@ -155,12 +225,20 @@ export async function fetchPriceRadarProducts(): Promise<PriceRadarProductsJson>
     "/api/price-radar/products",
     { headers: jsonHeaders },
     "price-radar products",
+    TIMEOUT_PRICE_RADAR_MS,
   );
-  const data = await parseJsonSafe<PriceRadarProductsJson>(
+  const outcome = await parseJsonSafe<PriceRadarProductsJson>(
     res,
     "price-radar products",
   );
-  return data ?? { products: [] };
+  if (outcome.status === "ok") {
+    const d = outcome.data;
+    if (d != null && typeof d === "object") {
+      return d;
+    }
+    return withInternalError({ products: [] }) as PriceRadarProductsJson;
+  }
+  return withInternalError({ products: [] }) as PriceRadarProductsJson;
 }
 
 /** Dettaglio prodotto (GET). */
@@ -168,8 +246,14 @@ export async function fetchPriceRadarProduct(
   id: string | number,
 ): Promise<unknown> {
   const path = `/api/price-radar/products/${encodeURIComponent(String(id))}`;
-  const res = await fetchWithFallback(path, { headers: jsonHeaders }, "price-radar product");
-  return parseJsonSafe<unknown>(res, "price-radar product");
+  const res = await fetchWithFallback(
+    path,
+    { headers: jsonHeaders },
+    "price-radar product",
+    TIMEOUT_PRICE_RADAR_MS,
+  );
+  const outcome = await parseJsonSafe<unknown>(res, "price-radar product");
+  return outcome.status === "ok" ? outcome.data ?? null : null;
 }
 
 /** Storico prezzi (GET). */
@@ -177,8 +261,14 @@ export async function fetchPriceRadarHistory(
   id: string | number,
 ): Promise<unknown> {
   const path = `/api/price-radar/products/${encodeURIComponent(String(id))}/history`;
-  const res = await fetchWithFallback(path, { headers: jsonHeaders }, "price-radar history");
-  return parseJsonSafe<unknown>(res, "price-radar history");
+  const res = await fetchWithFallback(
+    path,
+    { headers: jsonHeaders },
+    "price-radar history",
+    TIMEOUT_PRICE_RADAR_MS,
+  );
+  const outcome = await parseJsonSafe<unknown>(res, "price-radar history");
+  return outcome.status === "ok" ? outcome.data ?? null : null;
 }
 
 /** Paginazione homepage / categoria (GET). */
@@ -194,17 +284,37 @@ export async function fetchPosts(
     `/api/posts/${page}${qs}`,
     { headers: jsonHeaders },
     "posts",
+    TIMEOUT_POSTS_MS,
   );
-  const data = await parseJsonSafe<PostsPageJson>(res, "posts");
-  return data ?? { posts: [], totalPages: 0 };
+  const outcome = await parseJsonSafe<PostsPageJson>(res, "posts");
+  if (outcome.status === "ok") {
+    const d = outcome.data;
+    if (d != null && typeof d === "object") {
+      return d;
+    }
+    return withInternalError({
+      posts: [],
+      totalPages: 0,
+    }) as PostsPageJson;
+  }
+  return withInternalError({
+    posts: [],
+    totalPages: 0,
+  }) as PostsPageJson;
 }
 
 /** Megamenu categoria (GET). In errore restituisce array vuoto (come prima). */
 export async function fetchMegamenu(slug: string): Promise<MegamenuPost[]> {
   const path = `/api/megamenu/${encodeURIComponent(slug)}`;
-  const res = await fetchWithFallback(path, { headers: jsonHeaders }, "megamenu");
-  const data = await parseJsonSafe<unknown>(res, "megamenu");
-  if (data === null) return [];
+  const res = await fetchWithFallback(
+    path,
+    { headers: jsonHeaders },
+    "megamenu",
+    TIMEOUT_MEGAMENU_MS,
+  );
+  const outcome = await parseJsonSafe<unknown>(res, "megamenu");
+  if (outcome.status !== "ok") return [];
+  const data = outcome.data;
   return Array.isArray(data) ? (data as MegamenuPost[]) : [];
 }
 
@@ -216,12 +326,23 @@ export async function fetchSocialStats(options?: {
   if (options?.refresh) qs.set("refresh", "1");
   const query = qs.toString();
   const path = `/api/social-stats${query ? `?${query}` : ""}`;
-  const res = await fetchWithFallback(path, { headers: jsonHeaders }, "social-stats");
-  return parseJsonSafe<SocialStatsJson>(res, "social-stats");
+  const res = await fetchWithFallback(
+    path,
+    { headers: jsonHeaders },
+    "social-stats",
+    TIMEOUT_SOCIAL_STATS_MS,
+  );
+  const outcome = await parseJsonSafe<SocialStatsJson>(res, "social-stats");
+  return outcome.status === "ok" ? outcome.data ?? null : null;
 }
 
 /** Tracciamento click offerta Amazon (POST, fire-and-forget). */
 export function postPriceRadarProductClick(productId: number): void {
   const path = `/api/price-radar/products/${encodeURIComponent(String(productId))}/click`;
-  void fetchWithFallback(path, { method: "POST", headers: jsonHeaders }, "price-radar click");
+  void fetchWithFallback(
+    path,
+    { method: "POST", headers: jsonHeaders },
+    "price-radar click",
+    TIMEOUT_PRICE_RADAR_MS,
+  );
 }
