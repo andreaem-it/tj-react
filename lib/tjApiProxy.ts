@@ -19,6 +19,7 @@ const UPSTREAM_RESPONSE_HEADERS_TO_FORWARD = [
   "pragma",
   "x-next-page",
   "x-next-already",
+  "retry-after",
 ] as const;
 
 function buildUpstreamResponseHeaders(res: Response): Headers {
@@ -42,6 +43,13 @@ function buildUpstreamResponseHeaders(res: Response): Headers {
     }
   }
   return outHeaders;
+}
+
+function isLikelyHtmlBody(body: string, contentType: string | null): boolean {
+  const ct = (contentType ?? "").toLowerCase();
+  if (ct.includes("text/html")) return true;
+  const t = body.trimStart().slice(0, 512).toLowerCase();
+  return t.startsWith("<!doctype") || t.startsWith("<html") || t.startsWith("<head");
 }
 
 /**
@@ -98,16 +106,9 @@ export async function proxyToTjApi(
     headers.set("X-TJ-Webhook-Secret", webhookSecret);
   }
 
-  let body: BodyInit | undefined;
-  if (method !== "GET" && method !== "HEAD") {
-    const buf = await request.arrayBuffer();
-    if (buf.byteLength > 0) {
-      body = buf;
-    }
-  }
-  const contentType = request.headers.get("content-type");
-  if (contentType) {
-    headers.set("Content-Type", contentType);
+  const contentTypeIn = request.headers.get("content-type");
+  if (contentTypeIn) {
+    headers.set("Content-Type", contentTypeIn);
   }
 
   const timeoutMs = options?.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
@@ -115,6 +116,14 @@ export async function proxyToTjApi(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    let body: BodyInit | undefined;
+    if (method !== "GET" && method !== "HEAD") {
+      const buf = await request.arrayBuffer();
+      if (buf.byteLength > 0) {
+        body = buf;
+      }
+    }
+
     const res = await fetch(url, {
       method,
       headers,
@@ -128,6 +137,24 @@ export async function proxyToTjApi(
     console.log("[WP Proxy]", method, pathname, res.status);
 
     const text = await res.text();
+    const upstreamCt = res.headers.get("content-type");
+
+    if (isLikelyHtmlBody(text, upstreamCt)) {
+      const status = res.status >= 400 ? res.status : 502;
+      const out = NextResponse.json(
+        {
+          error:
+            "L'upstream ha risposto con HTML invece di JSON. Verifica TJ_API_BASE_URL, che tj-api sia raggiungibile e che il path sia /api/...",
+        },
+        { status },
+      );
+      const ra = res.headers.get("retry-after");
+      if (ra) {
+        out.headers.set("Retry-After", ra);
+      }
+      return out;
+    }
+
     const outHeaders = buildUpstreamResponseHeaders(res);
 
     return new NextResponse(text, {
@@ -140,7 +167,7 @@ export async function proxyToTjApi(
       err instanceof Error &&
       (err.name === "AbortError" || err.message === "This operation was aborted");
     const status = isAbort ? 504 : 502;
-    console.log("[WP Proxy]", method, pathname, status);
+    console.log("[WP Proxy]", method, pathname, status, err instanceof Error ? err.message : err);
     return NextResponse.json(
       { error: isAbort ? "Upstream timeout" : "Upstream error" },
       { status },
