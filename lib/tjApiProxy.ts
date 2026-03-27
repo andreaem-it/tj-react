@@ -93,9 +93,13 @@ export async function proxyToTjApi(
   if (cookie) {
     headers.set("Cookie", cookie);
   }
-  const accept = request.headers.get("accept");
-  if (accept) {
-    headers.set("Accept", accept);
+  if (pathname.startsWith("/api/")) {
+    headers.set("Accept", "application/json");
+  } else {
+    const accept = request.headers.get("accept");
+    if (accept) {
+      headers.set("Accept", accept);
+    }
   }
   const authorization = request.headers.get("authorization");
   if (authorization) {
@@ -144,7 +148,10 @@ export async function proxyToTjApi(
       const out = NextResponse.json(
         {
           error:
-            "L'upstream ha risposto con HTML invece di JSON. Verifica TJ_API_BASE_URL, che tj-api sia raggiungibile e che il path sia /api/...",
+            "L'upstream ha risposto con HTML invece di JSON: la richiesta non sta arrivando a tj-api come previsto.",
+          upstreamUrl: url,
+          hint:
+            "TJ_API_BASE_URL deve essere l’URL del backend tj-api (locale es. http://127.0.0.1:3002, produzione l’host api), non il sito front-end.",
         },
         { status },
       );
