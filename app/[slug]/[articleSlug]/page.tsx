@@ -106,10 +106,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       >
         {post.categoryName}
       </Link>
-      <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-1 mb-2 max-w-3xl w-full min-w-0 wrap-anywhere break-words hyphens-auto">
+      <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-1 mb-2 max-w-3xl w-full min-w-0 wrap-anywhere hyphens-auto">
         {post.title}
       </h1>
-      <p className="text-muted text-base max-w-2xl w-full min-w-0 wrap-anywhere break-words hyphens-auto">
+      <p className="text-muted text-base max-w-2xl w-full min-w-0 wrap-anywhere hyphens-auto">
         {post.excerpt}
       </p>
 
