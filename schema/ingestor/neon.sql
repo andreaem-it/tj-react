@@ -1,5 +1,6 @@
 -- Ingestor: fonti RSS e item in coda (Neon Postgres).
--- Esegui una volta sul database usato da tj-api (stesso DATABASE_URL).
+-- Riferimento manuale: tj-api crea automaticamente queste tabelle all'avvio (ensureIngestorSchema).
+-- Usa questo file solo per ispezione o migrazioni esterne.
 
 CREATE TABLE IF NOT EXISTS ingest_feed_sources (
   id SERIAL PRIMARY KEY,
