@@ -24,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/search`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
     { url: `${base}/price-radar`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/compatibility`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
   ];
 
   let categories: Awaited<ReturnType<typeof fetchCategories>> = [];

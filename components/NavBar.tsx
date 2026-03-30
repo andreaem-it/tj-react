@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { label: "Smart Home", slug: "smart-home" },
   { label: "IA", slug: "ia" },
   { label: "Price Radar", href: "/price-radar" },
+  { label: "Compatibilità", href: "/compatibility" },
 ];
 
 interface NavBarProps {

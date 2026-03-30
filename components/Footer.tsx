@@ -21,6 +21,9 @@ export default function Footer() {
             <Link href="/contatti" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Contatti
             </Link>
+            <Link href="/compatibility" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+              Compatibilità Apple
+            </Link>
             <Link href="/lavora-con-noi" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Lavora con noi
             </Link>
