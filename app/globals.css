@@ -56,6 +56,9 @@ body {
   line-height: var(--article-line-height);
   margin-top: 1.5rem;
   padding: 0 1rem 1rem;
+  /* Tabelle molto larghe senza wrapper Gutenberg: scroll orizzontale nel blocco */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 768px) {
@@ -126,6 +129,53 @@ body {
 
 .article-body-wrapper .article-content ul ul ul {
   list-style-type: square;
+}
+
+/* Tabelle: Preflight azzera padding celle; WordPress/Gutenberg avvolge in figure.wp-block-table */
+.article-body-wrapper .article-content figure.wp-block-table {
+  margin: 0 0 1.25em;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-body-wrapper .article-content table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.25em;
+  border: 1px solid var(--border);
+  font-size: 0.95em;
+}
+
+.article-body-wrapper .article-content figure.wp-block-table table {
+  margin-bottom: 0;
+}
+
+.article-body-wrapper .article-content caption {
+  caption-side: bottom;
+  padding: 0.5rem 0 0;
+  font-size: 0.9em;
+  color: var(--muted);
+  text-align: center;
+}
+
+.article-body-wrapper .article-content th,
+.article-body-wrapper .article-content td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.article-body-wrapper .article-content thead th {
+  background: var(--surface-overlay);
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.article-body-wrapper .article-content tbody tr:nth-child(even) td {
+  background: var(--surface-overlay);
 }
 
 /* Livelli dimensione: 0 = 16px, 1 = 18px (+2pt base), 2 = 20px */
