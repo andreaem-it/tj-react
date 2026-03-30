@@ -21,6 +21,8 @@ export type Device = {
   endOfSupportYear: number | null;
   chipset: string | null;
   notes: string | null;
+  imageUrl: string | null;
+  imageR2Key: string | null;
 };
 
 export type OperatingSystem = {

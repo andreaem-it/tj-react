@@ -16,9 +16,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchDeviceDetail(decodeURIComponent(slug));
   if (!data) return { title: "Dispositivo" };
+  const u = data.device.imageUrl;
   return {
     title: `${data.device.name} · compatibilità`,
     description: `Compatibilità OS per ${data.device.name} (${TYPE_LABEL[data.device.type]}).`,
+    ...(u ? { openGraph: { images: [{ url: u }] } } : {}),
   };
 }
 
@@ -43,32 +45,44 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
         <p className="text-xs uppercase tracking-wide text-[var(--muted)] mb-1">
           {TYPE_LABEL[device.type]}
         </p>
-        <h1 className="text-2xl font-bold">{device.name}</h1>
-        <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-          {device.releaseYear != null && (
-            <div>
-              <dt className="text-[var(--muted)]">Anno uscita</dt>
-              <dd>{device.releaseYear}</dd>
-            </div>
-          )}
-          {device.endOfSupportYear != null && (
-            <div>
-              <dt className="text-[var(--muted)]">Fine supporto (stimata)</dt>
-              <dd>{device.endOfSupportYear}</dd>
-            </div>
-          )}
-          {device.chipset && (
-            <div className="sm:col-span-2">
-              <dt className="text-[var(--muted)]">Chipset</dt>
-              <dd>{device.chipset}</dd>
-            </div>
-          )}
-        </dl>
-        {device.notes && (
-          <p className="mt-4 text-sm text-[var(--article-text)] border-l-2 border-[var(--accent)] pl-3">
-            {device.notes}
-          </p>
-        )}
+        <div className="flex flex-col sm:flex-row sm:items-start gap-6">
+          {device.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={device.imageUrl}
+              alt=""
+              className="w-full max-w-[200px] rounded-xl border border-[var(--border)] object-cover bg-[var(--sidebar-bg)] aspect-square shrink-0"
+            />
+          ) : null}
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold">{device.name}</h1>
+            <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+              {device.releaseYear != null && (
+                <div>
+                  <dt className="text-[var(--muted)]">Anno uscita</dt>
+                  <dd>{device.releaseYear}</dd>
+                </div>
+              )}
+              {device.endOfSupportYear != null && (
+                <div>
+                  <dt className="text-[var(--muted)]">Fine supporto (stimata)</dt>
+                  <dd>{device.endOfSupportYear}</dd>
+                </div>
+              )}
+              {device.chipset && (
+                <div className="sm:col-span-2">
+                  <dt className="text-[var(--muted)]">Chipset</dt>
+                  <dd>{device.chipset}</dd>
+                </div>
+              )}
+            </dl>
+            {device.notes && (
+              <p className="mt-4 text-sm text-[var(--article-text)] border-l-2 border-[var(--accent)] pl-3">
+                {device.notes}
+              </p>
+            )}
+          </div>
+        </div>
       </header>
 
       <section className="mb-10 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] p-4">

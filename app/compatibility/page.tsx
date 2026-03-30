@@ -71,8 +71,7 @@ export default async function CompatibilityIndexPage({
         Compatibilità dispositivi Apple
       </h1>
       <p className="text-[var(--muted)] text-sm mb-6 max-w-2xl">
-        Database aggiornabile: scegli una categoria o apri la scheda di un dispositivo per vedere il
-        supporto OS e le note.
+        Scopri se il tuo dispositivo Apple è compatibile con un sistema operativo, quali sono supportati e quali no.
       </p>
 
       <TypeFilter active={type} />
@@ -92,8 +91,16 @@ export default async function CompatibilityIndexPage({
                       <li key={d.id}>
                         <Link
                           href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                          className="block rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
+                          className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
                         >
+                          {d.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={d.imageUrl}
+                              alt=""
+                              className="h-14 w-14 shrink-0 rounded object-cover border border-[var(--border)] bg-[var(--sidebar-bg)]"
+                            />
+                          ) : null}
                           <span className="font-medium">{d.name}</span>
                           {d.releaseYear != null && (
                             <span className="block text-xs text-[var(--muted)] mt-0.5">
@@ -118,8 +125,16 @@ export default async function CompatibilityIndexPage({
                     <li key={d.id}>
                       <Link
                         href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                        className="block rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
+                        className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
                       >
+                        {d.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={d.imageUrl}
+                            alt=""
+                            className="h-14 w-14 shrink-0 rounded object-cover border border-[var(--border)] bg-[var(--sidebar-bg)]"
+                          />
+                        ) : null}
                         <span className="font-medium">{d.name}</span>
                         {d.releaseYear != null && (
                           <span className="block text-xs text-[var(--muted)] mt-0.5">
