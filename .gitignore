@@ -14,7 +14,9 @@
 /coverage
 
 # Admin UI: vive nel repo tj-react-admin, non in questo frontend.
-/app/admin/
+/app/admin/*
+!/app/admin/compatibility/
+!/app/admin/compatibility/**
 /components/admin/
 
 # next.js
