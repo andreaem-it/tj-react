@@ -1,6 +1,6 @@
 -- Esempio dati di test (opzionale). Dopo aver creato il DB:
 --   sqlite3 data/compatibility.db < schema/compatibility/seed_example.sql
--- Oppure inserisci dal pannello /admin/compatibility
+-- Oppure inserisci dal pannello Compatibilità in tj-react-admin
 
 INSERT OR IGNORE INTO devices (id, name, slug, type, release_year, chipset, notes)
 VALUES

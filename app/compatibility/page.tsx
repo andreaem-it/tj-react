@@ -135,11 +135,8 @@ export default async function CompatibilityIndexPage({
 
         {devices.length === 0 && (
           <p className="text-[var(--muted)] text-sm">
-            Nessun dispositivo in elenco. Aggiungi dati dal pannello admin (
-            <Link href="/admin/compatibility" className="text-[var(--accent)] underline">
-              /admin/compatibility
-            </Link>
-            ).
+            Nessun dispositivo in elenco. I dati si gestiscono dal pannello TechJournal Admin (voce
+            Compatibilità).
           </p>
         )}
       </div>

@@ -1,7 +1,7 @@
 /**
  * URL base del backend tj-api (senza slash finale).
  * Esempio: http://localhost:3003 oppure https://api.example.com
- * Route proxy (stesso path): Price Radar, compatibilità Apple (`/api/compatibility/*`, `/api/admin/compatibility/*`), articoli, ecc.
+ * Route proxy (stesso path): Price Radar, compatibilità pubblica (`/api/compatibility/*`), articoli, ecc.
  */
 export const TJ_API_BASE_URL = (process.env.TJ_API_BASE_URL ?? "").trim();
 

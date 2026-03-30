@@ -13,10 +13,8 @@
 # testing
 /coverage
 
-# Admin UI: vive nel repo tj-react-admin, non in questo frontend.
-/app/admin/*
-!/app/admin/compatibility/
-!/app/admin/compatibility/**
+# Admin UI: solo tj-react-admin, non questo frontend.
+/app/admin/
 /components/admin/
 
 # next.js
