@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { parseDeviceType } from "@/lib/compatibility/filters";
+import {
+  fetchCompatibilityDevices,
+  fetchCompatibilityOsList,
+} from "@/lib/compatibility/serverApi";
 import type { DeviceType } from "@/lib/compatibility/types";
-import { listDevices, listOperatingSystems, withDb } from "@/lib/compatibility/queries";
 
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
 
 export const metadata: Metadata = {
   title: "Compatibilità Apple",
@@ -48,8 +50,8 @@ export default async function CompatibilityIndexPage({
 }) {
   const sp = await searchParams;
   const type = parseDeviceType(sp.type ?? null);
-  const devices = withDb((db) => listDevices(db, type ? { type } : undefined));
-  const operatingSystems = withDb((db) => listOperatingSystems(db));
+  const devices = await fetchCompatibilityDevices(type);
+  const operatingSystems = await fetchCompatibilityOsList();
 
   const grouped: Record<DeviceType, typeof devices> = {
     iphone: [],

@@ -24,13 +24,11 @@
     "next": "16.1.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "better-sqlite3": "^11.10.0",
     "sharp": "^0.34.5",
     "styled-jsx": "5.1.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

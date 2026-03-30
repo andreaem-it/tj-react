@@ -4,10 +4,9 @@ import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/compatibility/StatusBadge";
 import { ExperienceBadge } from "@/components/compatibility/ExperienceBadge";
 import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
-import { getDeviceDetailBySlug, withDb } from "@/lib/compatibility/queries";
+import { fetchDeviceDetail } from "@/lib/compatibility/serverApi";
 
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
 
 const TYPE_LABEL = { iphone: "iPhone", ipad: "iPad", mac: "Mac" } as const;
 
@@ -15,7 +14,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const data = withDb((db) => getDeviceDetailBySlug(db, decodeURIComponent(slug)));
+  const data = await fetchDeviceDetail(decodeURIComponent(slug));
   if (!data) return { title: "Dispositivo" };
   return {
     title: `${data.device.name} · compatibilità`,
@@ -25,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DeviceCompatibilityPage({ params }: Props) {
   const { slug } = await params;
-  const data = withDb((db) => getDeviceDetailBySlug(db, decodeURIComponent(slug)));
+  const data = await fetchDeviceDetail(decodeURIComponent(slug));
   if (!data) notFound();
 
   const { device, latestSupportedOs, rows } = data;

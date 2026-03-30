@@ -5,11 +5,10 @@ import { StatusBadge } from "@/components/compatibility/StatusBadge";
 import { ExperienceBadge } from "@/components/compatibility/ExperienceBadge";
 import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
 import { parseStatus } from "@/lib/compatibility/filters";
-import { getOsDetailBySlug, withDb } from "@/lib/compatibility/queries";
+import { fetchOsDetail } from "@/lib/compatibility/serverApi";
 import type { CompatibilityStatus } from "@/lib/compatibility/types";
 
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
 
 const STATUS_OPTIONS: { value: CompatibilityStatus | ""; label: string }[] = [
   { value: "", label: "Tutti gli stati" },
@@ -26,7 +25,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const data = withDb((db) => getOsDetailBySlug(db, decodeURIComponent(slug)));
+  const data = await fetchOsDetail(decodeURIComponent(slug));
   if (!data) return { title: "OS" };
   return {
     title: `${data.os.name} · compatibilità dispositivi`,
@@ -38,9 +37,7 @@ export default async function OsCompatibilityPage({ params, searchParams }: Prop
   const { slug } = await params;
   const sp = await searchParams;
   const status = parseStatus(sp.status ?? null);
-  const data = withDb((db) =>
-    getOsDetailBySlug(db, decodeURIComponent(slug), status ? { status } : undefined),
-  );
+  const data = await fetchOsDetail(decodeURIComponent(slug), status ? { status } : undefined);
   if (!data) notFound();
 
   const { os, rows } = data;

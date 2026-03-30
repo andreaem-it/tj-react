@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3"],
   transpilePackages: ["@mep-agency/next-iubenda"],
   async rewrites() {
     return [
