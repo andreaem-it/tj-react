@@ -439,7 +439,6 @@ export function listAllCompatibilityMatrix(db: Database.Database): MatrixRow[] {
   }));
 }
 
-/** Entry point comodo per le route (usa DB singleton). */
 export function withDb<T>(fn: (db: Database.Database) => T): T {
   return fn(getCompatibilityDb());
 }

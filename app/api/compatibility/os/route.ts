@@ -5,7 +5,7 @@ import { listOperatingSystems, withDb } from "@/lib/compatibility/queries";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const type = parseOsKind(request.nextUrl.searchParams.get("type"));
     const operatingSystems = withDb((db) =>

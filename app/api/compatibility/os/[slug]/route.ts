@@ -12,7 +12,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const { slug } = await context.params;
     const decoded = decodeURIComponent(slug);
     const status = parseStatus(request.nextUrl.searchParams.get("status"));
-    const data = withDb((db) => getOsDetailBySlug(db, decoded, status ? { status } : undefined));
+    const data = withDb((db) =>
+      getOsDetailBySlug(db, decoded, status ? { status } : undefined),
+    );
     if (!data) {
       return NextResponse.json({ error: "Sistema operativo non trovato" }, { status: 404 });
     }

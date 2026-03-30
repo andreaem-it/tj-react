@@ -5,7 +5,7 @@ import { listDevices, withDb } from "@/lib/compatibility/queries";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const type = parseDeviceType(request.nextUrl.searchParams.get("type"));
     const devices = withDb((db) => listDevices(db, type ? { type } : undefined));

@@ -28,7 +28,8 @@ function initSchema(db: Database.Database): void {
 }
 
 /**
- * Connessione singleton SQLite (runtime Node). Crea `data/` e applica lo schema se mancante.
+ * Connessione singleton SQLite (runtime Node, modulo nativo).
+ * Richiede Node ≥ 22.13 (toolchain per compilare better-sqlite3) e `npm install` locale.
  */
 export function getCompatibilityDb(): Database.Database {
   if (globalForDb.__compatibilityDb) {
