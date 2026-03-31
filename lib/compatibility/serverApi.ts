@@ -1,3 +1,4 @@
+import { API_BASE } from "@/lib/constants";
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
 import { getPublicTjApiBaseUrl } from "@/lib/tjApiClient";
 import type {
@@ -23,6 +24,9 @@ function resolveCompatUpstreamUrl(pathWithQuery: string): string | null {
   if (server) return `${server}${p}`;
   const pub = getPublicTjApiBaseUrl();
   if (pub) return `${pub}${p}`;
+  /** Stesso default di WP/REST: host tj-api (es. api.techjournal.it), evita SSR senza URL. */
+  const fromApiBase = API_BASE.replace(/\/$/, "");
+  if (fromApiBase.length > 0) return `${fromApiBase}${p}`;
   return null;
 }
 
