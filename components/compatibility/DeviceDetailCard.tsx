@@ -1,4 +1,5 @@
-import type { Device } from "@/lib/compatibility/types";
+import Link from "next/link";
+import type { Device, OperatingSystem } from "@/lib/compatibility/types";
 
 function formatSpecLabel(key: string): string {
   const s = key.replace(/_/g, " ").trim();
@@ -91,9 +92,12 @@ function SpecValue({ value }: { value: unknown }) {
   return <span className="text-[var(--article-text)]">{String(value)}</span>;
 }
 
-type Props = { device: Device };
+type Props = {
+  device: Device;
+  latestSupportedOs: OperatingSystem | null;
+};
 
-export function DeviceDetailCard({ device }: Props) {
+export function DeviceDetailCard({ device, latestSupportedOs }: Props) {
   const specEntries = getSpecEntries(device);
   const hasSpecs = specEntries.length > 0;
 
@@ -134,6 +138,19 @@ export function DeviceDetailCard({ device }: Props) {
               )}
             </div>
           )}
+          <div className="mt-3 text-sm">
+            <span className="text-[var(--muted)]">Ultimo OS supportato · </span>
+            {latestSupportedOs ? (
+              <Link
+                href={`/compatibility/os/${encodeURIComponent(latestSupportedOs.slug)}`}
+                className="text-lg font-semibold text-[var(--accent)] hover:underline"
+              >
+                {latestSupportedOs.name}
+              </Link>
+            ) : (
+              <span className="text-sm text-[var(--muted)]">Nessun dato in matrice per questo dispositivo.</span>
+            )}
+          </div>
           {device.notes && (
             <p className="mt-4 border-l-2 border-[var(--accent)] pl-3 text-sm text-[var(--article-text)]">
               {device.notes}

@@ -56,25 +56,7 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
         <span className="text-[var(--foreground)]">{device.name}</span>
       </nav>
 
-      <DeviceDetailCard device={device} />
-
-      <section className="mb-10 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] p-4">
-        <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">Ultimo OS supportato</h2>
-        {latestSupportedOs ? (
-          <p>
-            <Link
-              href={`/compatibility/os/${encodeURIComponent(latestSupportedOs.slug)}`}
-              className="text-lg font-medium text-[var(--accent)] hover:underline"
-            >
-              {latestSupportedOs.name}
-            </Link>
-          </p>
-        ) : (
-          <p className="text-sm text-[var(--muted)]">
-            Nessun dato in matrice per questo dispositivo.
-          </p>
-        )}
-      </section>
+      <DeviceDetailCard device={device} latestSupportedOs={latestSupportedOs} />
 
       <section>
         <h2 className="text-lg font-semibold mb-3">Tabella compatibilità</h2>
