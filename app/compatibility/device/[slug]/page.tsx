@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/compatibility/StatusBadge";
 import { ExperienceBadge } from "@/components/compatibility/ExperienceBadge";
-import { DeviceSpecsSection } from "@/components/compatibility/DeviceSpecsSection";
+import { DeviceDetailCard } from "@/components/compatibility/DeviceDetailCard";
 import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
 import { fetchDeviceDetail } from "@/lib/compatibility/serverApi";
 import type { DeviceDetailPayload } from "@/lib/compatibility/types";
@@ -56,48 +56,7 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
         <span className="text-[var(--foreground)]">{device.name}</span>
       </nav>
 
-      <header className="mb-8"> 
-        <div className="flex flex-col sm:flex-row sm:items-start gap-6">
-          {device.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={device.imageUrl}
-              alt=""
-              style={{ maxWidth: 75, width: "100%", height: "auto", flexShrink: 0 }}
-            />
-          ) : null}
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold">{device.name}</h1>
-            <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-              {device.releaseYear != null && (
-                <div>
-                  <dt className="text-[var(--muted)]">Anno uscita</dt>
-                  <dd>{device.releaseYear}</dd>
-                </div>
-              )}
-              {device.endOfSupportYear != null && (
-                <div>
-                  <dt className="text-[var(--muted)]">Fine supporto</dt>
-                  <dd>{device.endOfSupportYear}</dd>
-                </div>
-              )}
-              {device.chipset && (
-                <div className="sm:col-span-2">
-                  <dt className="text-[var(--muted)]">Chipset</dt>
-                  <dd>{device.chipset}</dd>
-                </div>
-              )}
-            </dl>
-            {device.notes && (
-              <p className="mt-4 text-sm text-[var(--article-text)] border-l-2 border-[var(--accent)] pl-3">
-                {device.notes}
-              </p>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <DeviceSpecsSection specs={device.specs} />
+      <DeviceDetailCard device={device} />
 
       <section className="mb-10 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] p-4">
         <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">Ultimo OS supportato</h2>
