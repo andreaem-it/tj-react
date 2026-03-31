@@ -11,7 +11,7 @@ import type { CompatibilityStatus } from "@/lib/compatibility/types";
 export const dynamic = "force-dynamic";
 
 const STATUS_OPTIONS: { value: CompatibilityStatus | ""; label: string }[] = [
-  { value: "", label: "Tutti gli stati" },
+  { value: "", label: "Tutti" },
   { value: "supported", label: "Supportato" },
   { value: "partial", label: "Parziale" },
   { value: "unsupported", label: "Non supportato" },
@@ -106,7 +106,7 @@ export default async function OsCompatibilityPage({ params, searchParams }: Prop
           <thead className="bg-[var(--sidebar-bg)] text-[var(--muted)]">
             <tr>
               <th className="p-3 font-medium">Dispositivo</th>
-              <th className="p-3 font-medium">Stato</th>
+              <th className="p-3 font-medium">Esito</th>
               <th className="p-3 font-medium">Tipo</th>
               <th className="p-3 font-medium">Esperienza</th>
               <th className="p-3 font-medium">Note</th>

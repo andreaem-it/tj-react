@@ -2,7 +2,7 @@ import type { SupportType } from "@/lib/compatibility/types";
 
 const MAP: Record<SupportType, string> = {
   official: "Ufficiale",
-  predicted: "Stimato",
+  predicted: "Documentato",
   opencore: "OpenCore",
 };
 

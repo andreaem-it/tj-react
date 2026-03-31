@@ -98,7 +98,7 @@ export default async function CompatibilityIndexPage({
                             <img
                               src={d.imageUrl}
                               alt=""
-                              className="h-14 w-14 shrink-0 rounded object-cover border border-[var(--border)] bg-[var(--sidebar-bg)]"
+                              style={{ maxWidth: 75, width: "100%", height: "auto", flexShrink: 0 }}
                             />
                           ) : null}
                           <span className="font-medium">{d.name}</span>
@@ -132,7 +132,7 @@ export default async function CompatibilityIndexPage({
                           <img
                             src={d.imageUrl}
                             alt=""
-                            className="h-14 w-14 shrink-0 rounded object-cover border border-[var(--border)] bg-[var(--sidebar-bg)]"
+                            style={{ maxWidth: 75, width: "100%", height: "auto", flexShrink: 0 }}
                           />
                         ) : null}
                         <span className="font-medium">{d.name}</span>

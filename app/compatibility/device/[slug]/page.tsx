@@ -42,16 +42,13 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
       </nav>
 
       <header className="mb-8">
-        <p className="text-xs uppercase tracking-wide text-[var(--muted)] mb-1">
-          {TYPE_LABEL[device.type]}
-        </p>
         <div className="flex flex-col sm:flex-row sm:items-start gap-6">
           {device.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={device.imageUrl}
               alt=""
-              className="w-full max-w-[200px] rounded-xl border border-[var(--border)] object-cover bg-[var(--sidebar-bg)] aspect-square shrink-0"
+              style={{ maxWidth: 75, width: "100%", height: "auto", flexShrink: 0 }}
             />
           ) : null}
           <div className="min-w-0 flex-1">
@@ -65,7 +62,7 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
               )}
               {device.endOfSupportYear != null && (
                 <div>
-                  <dt className="text-[var(--muted)]">Fine supporto (stimata)</dt>
+                  <dt className="text-[var(--muted)]">Fine supporto</dt>
                   <dd>{device.endOfSupportYear}</dd>
                 </div>
               )}
@@ -86,7 +83,7 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
       </header>
 
       <section className="mb-10 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] p-4">
-        <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">Ultimo OS supportato (calcolato)</h2>
+        <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">Ultimo OS supportato</h2>
         {latestSupportedOs ? (
           <p>
             <Link
@@ -95,13 +92,10 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
             >
               {latestSupportedOs.name}
             </Link>
-            <span className="text-sm text-[var(--muted)] ml-2">
-              (stati: supportato / parziale, ordinato per anno)
-            </span>
           </p>
         ) : (
           <p className="text-sm text-[var(--muted)]">
-            Nessuna voce con stato supportato o parziale. Aggiungi righe nella matrice compatibilità.
+            Nessun dato in matrice per questo dispositivo.
           </p>
         )}
       </section>
@@ -113,7 +107,7 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
             <thead className="bg-[var(--sidebar-bg)] text-[var(--muted)]">
               <tr>
                 <th className="p-3 font-medium">OS</th>
-                <th className="p-3 font-medium">Stato</th>
+                <th className="p-3 font-medium">Esito</th>
                 <th className="p-3 font-medium">Tipo</th>
                 <th className="p-3 font-medium">Esperienza</th>
                 <th className="p-3 font-medium">Note</th>
