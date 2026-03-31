@@ -1,6 +1,4 @@
-import { API_REQUEST_HEADERS, SITE_URL } from "@/lib/constants";
-import { getTjApiBaseUrl } from "@/lib/config/tjApi";
-import { getPublicTjApiBaseUrl } from "@/lib/tjApiClient";
+import { resolvePublicApiUrl } from "@/lib/tjApiClient";
 import type {
   CompatibilityStatus,
   Device,
@@ -11,56 +9,19 @@ import type {
 } from "@/lib/compatibility/types";
 
 const jsonHeaders = { Accept: "application/json" } as const;
-const FETCH_TIMEOUT_MS = 12_000;
 
-/**
- * URL assoluto verso tj-api (mai path relativo `/api/...`).
- * Un fetch relativo dai Server Component verso il proxy Next sullo stesso processo
- * può andare in deadlock e bloccare il tab del browser al reload.
- */
-function resolveCompatUpstreamUrl(pathWithQuery: string): string | null {
-  const p = pathWithQuery.startsWith("/") ? pathWithQuery : `/${pathWithQuery}`;
-  const server = getTjApiBaseUrl();
-  if (server) return `${server}${p}`;
-  const pub = getPublicTjApiBaseUrl();
-  if (pub) return `${pub}${p}`;
-  /**
-   * Ultimo fallback: host del sito Next (stesso path del proxy `/api/compatibility/*`).
-   * Non usare NEXT_PUBLIC_API_BASE: su api.techjournal.it spesso non c’è tj-api (404 HTML).
-   */
-  const site = SITE_URL.replace(/\/$/, "");
-  if (site.length > 0) return `${site}${p}`;
-  return null;
-}
-
-async function fetchCompatJson<T>(pathWithQuery: string): Promise<T | null> {
-  const url = resolveCompatUpstreamUrl(pathWithQuery);
-  if (url == null) {
-    return null;
-  }
-
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+async function fetchCompatJson<T>(path: string): Promise<T | null> {
+  const url = resolvePublicApiUrl(path);
+  const res = await fetch(url, { cache: "no-store", headers: jsonHeaders });
+  if (!res.ok) return null;
   try {
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: { ...API_REQUEST_HEADERS, ...jsonHeaders },
-      signal: controller.signal,
-    });
-    if (!res.ok) return null;
-    try {
-      return (await res.json()) as T;
-    } catch {
-      return null;
-    }
+    return (await res.json()) as T;
   } catch {
     return null;
-  } finally {
-    clearTimeout(t);
   }
 }
 
-/** Dati pubblici compatibilità (tj-api, path `/api/compatibility/*`; il proxy Next resta per il browser). */
+/** Dati pubblici compatibilità (tj-api via proxy `/api/compatibility/*`). */
 export async function fetchCompatibilityDevices(type?: DeviceType): Promise<Device[]> {
   const qs = type ? `?type=${encodeURIComponent(type)}` : "";
   const data = await fetchCompatJson<{ devices: Device[] }>(`/api/compatibility/devices${qs}`);
