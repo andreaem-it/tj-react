@@ -1,4 +1,5 @@
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
+import { SITE_URL } from "@/lib/constants";
 import { resolvePublicApiUrl } from "@/lib/tjApiClient";
 import type {
   CompatibilityStatus,
@@ -14,9 +15,10 @@ const FETCH_TIMEOUT_MS = 15_000;
 
 /**
  * URL per le fetch SSR: stesso path del proxy (`/api/compatibility/*`).
- * Se `TJ_API_BASE_URL` è impostato (come per il proxy), chiama tj-api direttamente
- * e si evita un HTTP verso lo stesso Next in dev → deadlock sul reload.
- * Altrimenti `resolvePublicApiUrl` (relativo o `NEXT_PUBLIC_TJ_API_BASE_URL`), invariato.
+ * 1) `TJ_API_BASE_URL` → tj-api diretto (evita fetch ricorsivo sullo stesso Next in dev).
+ * 2) `NEXT_PUBLIC_TJ_API_BASE_URL` → URL assoluto da resolvePublicApiUrl.
+ * 3) Solo path `/api/...`: in Node il fetch con URL relativo può fallire in SSR → prefisso
+ *    `SITE_URL` (dominio Next con proxy). Su localhost si lascia relativo (Next risolve).
  */
 function resolveCompatFetchUrl(path: string): string {
   const p = path.startsWith("/") ? path : `/${path}`;
@@ -24,7 +26,24 @@ function resolveCompatFetchUrl(path: string): string {
   if (tj) {
     return `${tj.replace(/\/$/, "")}${p}`;
   }
-  return resolvePublicApiUrl(path);
+  const resolved = resolvePublicApiUrl(path);
+  if (resolved.startsWith("http://") || resolved.startsWith("https://")) {
+    return resolved;
+  }
+  if (resolved.startsWith("/")) {
+    const site = SITE_URL.replace(/\/$/, "");
+    if (!site) return resolved;
+    try {
+      const { hostname } = new URL(site);
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        return resolved;
+      }
+    } catch {
+      return resolved;
+    }
+    return `${site}${resolved}`;
+  }
+  return resolved;
 }
 
 async function fetchCompatJson<T>(path: string): Promise<T | null> {
