@@ -12,6 +12,8 @@ export type SupportType = "official" | "predicted" | "opencore";
 
 export type ExperienceLevel = "excellent" | "good" | "limited" | "poor";
 
+export type DeviceSpecs = Record<string, unknown>;
+
 export type Device = {
   id: number;
   name: string;
@@ -23,6 +25,7 @@ export type Device = {
   notes: string | null;
   imageUrl: string | null;
   imageR2Key: string | null;
+  specs: DeviceSpecs | null;
 };
 
 export type OperatingSystem = {

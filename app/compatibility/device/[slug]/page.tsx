@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/compatibility/StatusBadge";
 import { ExperienceBadge } from "@/components/compatibility/ExperienceBadge";
+import { DeviceSpecsSection } from "@/components/compatibility/DeviceSpecsSection";
 import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
 import { fetchDeviceDetail } from "@/lib/compatibility/serverApi";
 import type { DeviceDetailPayload } from "@/lib/compatibility/types";
@@ -95,6 +96,8 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
           </div>
         </div>
       </header>
+
+      <DeviceSpecsSection specs={device.specs} />
 
       <section className="mb-10 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] p-4">
         <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">Ultimo OS supportato</h2>
