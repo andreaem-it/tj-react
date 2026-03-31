@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { parseDeviceType } from "@/lib/compatibility/filters";
 import {
   fetchCompatibilityDevices,
@@ -19,6 +20,13 @@ const TYPE_LABEL: Record<DeviceType, string> = {
   iphone: "iPhone",
   ipad: "iPad",
   mac: "Mac",
+};
+
+const DEVICE_LIST_THUMB_STYLE: CSSProperties = {
+  maxWidth: 50,
+  width: "100%",
+  height: "auto",
+  flexShrink: 0,
 };
 
 function TypeFilter({ active }: { active?: DeviceType }) {
@@ -91,23 +99,21 @@ export default async function CompatibilityIndexPage({
                       <li key={d.id}>
                         <Link
                           href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                          className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
+                          className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
                         >
                           {d.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={d.imageUrl}
-                              alt=""
-                              style={{ maxWidth: 75, width: "100%", height: "auto", flexShrink: 0 }}
-                            />
+                            <img src={d.imageUrl} alt="" style={DEVICE_LIST_THUMB_STYLE} />
                           ) : null}
-                          <span className="font-medium">{d.name}</span>
-                          {d.releaseYear != null && (
-                            <span className="block text-xs text-[var(--muted)] mt-0.5">
-                              {d.releaseYear}
-                              {d.chipset ? ` · ${d.chipset}` : ""}
-                            </span>
-                          )}
+                          <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                            <span className="font-medium">{d.name}</span>
+                            {d.releaseYear != null && (
+                              <span className="text-xs text-[var(--muted)]">{d.releaseYear}</span>
+                            )}
+                            {d.chipset ? (
+                              <span className="text-xs text-[var(--muted)]">{d.chipset}</span>
+                            ) : null}
+                          </div>
                         </Link>
                       </li>
                     ))}
@@ -125,22 +131,21 @@ export default async function CompatibilityIndexPage({
                     <li key={d.id}>
                       <Link
                         href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                        className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
+                        className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
                       >
                         {d.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={d.imageUrl}
-                            alt=""
-                            style={{ maxWidth: 75, width: "100%", height: "auto", flexShrink: 0 }}
-                          />
+                          <img src={d.imageUrl} alt="" style={DEVICE_LIST_THUMB_STYLE} />
                         ) : null}
-                        <span className="font-medium">{d.name}</span>
-                        {d.releaseYear != null && (
-                          <span className="block text-xs text-[var(--muted)] mt-0.5">
-                            {d.releaseYear}
-                          </span>
-                        )}
+                        <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                          <span className="font-medium">{d.name}</span>
+                          {d.releaseYear != null && (
+                            <span className="text-xs text-[var(--muted)]">{d.releaseYear}</span>
+                          )}
+                          {d.chipset ? (
+                            <span className="text-xs text-[var(--muted)]">{d.chipset}</span>
+                          ) : null}
+                        </div>
                       </Link>
                     </li>
                   ))}
