@@ -23,7 +23,8 @@
   --muted: #9ca3af;
   --accent: #f5a623;
   --header-bg: #212121;
-  --content-bg: #2c2f3a;
+  /* Stesso tono neutro della sidebar: niente dominante blu */
+  --content-bg: #252525;
   --sidebar-bg: #252525;
   --article-text: #c8ccd1;
   --border: rgba(255, 255, 255, 0.1);
