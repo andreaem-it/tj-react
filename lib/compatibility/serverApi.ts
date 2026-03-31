@@ -1,3 +1,4 @@
+import { getTjApiBaseUrl } from "@/lib/config/tjApi";
 import { resolvePublicApiUrl } from "@/lib/tjApiClient";
 import type {
   CompatibilityStatus,
@@ -10,8 +11,23 @@ import type {
 
 const jsonHeaders = { Accept: "application/json" } as const;
 
+/**
+ * URL per le fetch SSR: stesso path del proxy (`/api/compatibility/*`).
+ * Se `TJ_API_BASE_URL` è impostato (come per il proxy), chiama tj-api direttamente
+ * e si evita un HTTP verso lo stesso Next in dev → deadlock sul reload.
+ * Altrimenti `resolvePublicApiUrl` (relativo o `NEXT_PUBLIC_TJ_API_BASE_URL`), invariato.
+ */
+function resolveCompatFetchUrl(path: string): string {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  const tj = getTjApiBaseUrl();
+  if (tj) {
+    return `${tj.replace(/\/$/, "")}${p}`;
+  }
+  return resolvePublicApiUrl(path);
+}
+
 async function fetchCompatJson<T>(path: string): Promise<T | null> {
-  const url = resolvePublicApiUrl(path);
+  const url = resolveCompatFetchUrl(path);
   const res = await fetch(url, { cache: "no-store", headers: jsonHeaders });
   if (!res.ok) return null;
   try {
