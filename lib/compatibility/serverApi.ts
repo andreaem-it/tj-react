@@ -1,4 +1,4 @@
-import { API_BASE } from "@/lib/constants";
+import { API_REQUEST_HEADERS, SITE_URL } from "@/lib/constants";
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
 import { getPublicTjApiBaseUrl } from "@/lib/tjApiClient";
 import type {
@@ -24,9 +24,12 @@ function resolveCompatUpstreamUrl(pathWithQuery: string): string | null {
   if (server) return `${server}${p}`;
   const pub = getPublicTjApiBaseUrl();
   if (pub) return `${pub}${p}`;
-  /** Stesso default di WP/REST: host tj-api (es. api.techjournal.it), evita SSR senza URL. */
-  const fromApiBase = API_BASE.replace(/\/$/, "");
-  if (fromApiBase.length > 0) return `${fromApiBase}${p}`;
+  /**
+   * Ultimo fallback: host del sito Next (stesso path del proxy `/api/compatibility/*`).
+   * Non usare NEXT_PUBLIC_API_BASE: su api.techjournal.it spesso non c’è tj-api (404 HTML).
+   */
+  const site = SITE_URL.replace(/\/$/, "");
+  if (site.length > 0) return `${site}${p}`;
   return null;
 }
 
@@ -41,7 +44,7 @@ async function fetchCompatJson<T>(pathWithQuery: string): Promise<T | null> {
   try {
     const res = await fetch(url, {
       cache: "no-store",
-      headers: jsonHeaders,
+      headers: { ...API_REQUEST_HEADERS, ...jsonHeaders },
       signal: controller.signal,
     });
     if (!res.ok) return null;
