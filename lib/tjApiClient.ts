@@ -6,6 +6,7 @@ const TIMEOUT_PRICE_RADAR_MS = 5000;
 const TIMEOUT_POSTS_MS = 6000;
 const TIMEOUT_MEGAMENU_MS = 4000;
 const TIMEOUT_SOCIAL_STATS_MS = 10000;
+const TIMEOUT_COMPATIBILITY_MS = 15_000;
 
 const WARN_THROTTLE_MS = 5000;
 
@@ -333,6 +334,25 @@ export async function fetchSocialStats(options?: {
     TIMEOUT_SOCIAL_STATS_MS,
   );
   const outcome = await parseJsonSafe<SocialStatsJson>(res, "social-stats");
+  return outcome.status === "ok" ? outcome.data ?? null : null;
+}
+
+/**
+ * GET JSON verso route proxy `/api/*` (stesso meccanismo di `fetchPosts`, megamenu, Price Radar).
+ * Usare da Server Component per evitare duplicare `resolvePublicApiUrl` / timeout / fallback.
+ */
+export async function fetchTjProxyJson<T>(
+  path: string,
+  context: string,
+  timeoutMs: number = TIMEOUT_COMPATIBILITY_MS,
+): Promise<T | null> {
+  const res = await fetchWithFallback(
+    path,
+    { headers: jsonHeaders },
+    context,
+    timeoutMs,
+  );
+  const outcome = await parseJsonSafe<T>(res, context);
   return outcome.status === "ok" ? outcome.data ?? null : null;
 }
 

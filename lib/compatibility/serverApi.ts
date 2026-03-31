@@ -1,6 +1,4 @@
-import { getTjApiBaseUrl } from "@/lib/config/tjApi";
-import { SITE_URL } from "@/lib/constants";
-import { resolvePublicApiUrl } from "@/lib/tjApiClient";
+import { fetchTjProxyJson } from "@/lib/tjApiClient";
 import type {
   CompatibilityStatus,
   Device,
@@ -10,83 +8,32 @@ import type {
   OsDetailPayload,
 } from "@/lib/compatibility/types";
 
-const jsonHeaders = { Accept: "application/json" } as const;
-const FETCH_TIMEOUT_MS = 15_000;
+const CTX = "compatibility";
 
-/**
- * URL per le fetch SSR: stesso path del proxy (`/api/compatibility/*`).
- * 1) `TJ_API_BASE_URL` → tj-api diretto (evita fetch ricorsivo sullo stesso Next in dev).
- * 2) `NEXT_PUBLIC_TJ_API_BASE_URL` → URL assoluto da resolvePublicApiUrl.
- * 3) Solo path `/api/...`: in Node il fetch con URL relativo può fallire in SSR → prefisso
- *    `SITE_URL` (dominio Next con proxy). Su localhost si lascia relativo (Next risolve).
- */
-function resolveCompatFetchUrl(path: string): string {
-  const p = path.startsWith("/") ? path : `/${path}`;
-  const tj = getTjApiBaseUrl();
-  if (tj) {
-    return `${tj.replace(/\/$/, "")}${p}`;
-  }
-  const resolved = resolvePublicApiUrl(path);
-  if (resolved.startsWith("http://") || resolved.startsWith("https://")) {
-    return resolved;
-  }
-  if (resolved.startsWith("/")) {
-    const site = SITE_URL.replace(/\/$/, "");
-    if (!site) return resolved;
-    try {
-      const { hostname } = new URL(site);
-      if (hostname === "localhost" || hostname === "127.0.0.1") {
-        return resolved;
-      }
-    } catch {
-      return resolved;
-    }
-    return `${site}${resolved}`;
-  }
-  return resolved;
-}
-
-async function fetchCompatJson<T>(path: string): Promise<T | null> {
-  const url = resolveCompatFetchUrl(path);
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  try {
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: jsonHeaders,
-      signal: controller.signal,
-    });
-    if (!res.ok) return null;
-    try {
-      return (await res.json()) as T;
-    } catch {
-      return null;
-    }
-  } catch {
-    /** Rete, timeout, TLS, URL non valida: non propagare (in prod RSC mostrerebbe digest generico). */
-    return null;
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-/** Dati pubblici compatibilità (tj-api via proxy `/api/compatibility/*`). */
+/** Dati pubblici compatibilità: stesso stack di `fetchPosts` / Price Radar (`fetchWithFallback` + proxy `/api/compatibility/*`). */
 export async function fetchCompatibilityDevices(type?: DeviceType): Promise<Device[]> {
   const qs = type ? `?type=${encodeURIComponent(type)}` : "";
-  const data = await fetchCompatJson<{ devices: Device[] }>(`/api/compatibility/devices${qs}`);
+  const data = await fetchTjProxyJson<{ devices: Device[] }>(
+    `/api/compatibility/devices${qs}`,
+    `${CTX}/devices`,
+  );
   return data?.devices ?? [];
 }
 
 export async function fetchCompatibilityOsList(): Promise<OperatingSystem[]> {
-  const data = await fetchCompatJson<{ operatingSystems: OperatingSystem[] }>(
+  const data = await fetchTjProxyJson<{ operatingSystems: OperatingSystem[] }>(
     `/api/compatibility/os`,
+    `${CTX}/os`,
   );
   return data?.operatingSystems ?? [];
 }
 
 export async function fetchDeviceDetail(slug: string): Promise<DeviceDetailPayload | null> {
   const enc = encodeURIComponent(slug);
-  return fetchCompatJson<DeviceDetailPayload>(`/api/compatibility/device/${enc}`);
+  return fetchTjProxyJson<DeviceDetailPayload>(
+    `/api/compatibility/device/${enc}`,
+    `${CTX}/device`,
+  );
 }
 
 export async function fetchOsDetail(
@@ -96,5 +43,8 @@ export async function fetchOsDetail(
   const qs =
     filter?.status != null ? `?status=${encodeURIComponent(filter.status)}` : "";
   const enc = encodeURIComponent(slug);
-  return fetchCompatJson<OsDetailPayload>(`/api/compatibility/os/${enc}${qs}`);
+  return fetchTjProxyJson<OsDetailPayload>(
+    `/api/compatibility/os/${enc}${qs}`,
+    `${CTX}/os-detail`,
+  );
 }
