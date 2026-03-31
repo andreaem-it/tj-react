@@ -10,6 +10,7 @@ import type {
 } from "@/lib/compatibility/types";
 
 const jsonHeaders = { Accept: "application/json" } as const;
+const FETCH_TIMEOUT_MS = 15_000;
 
 /**
  * URL per le fetch SSR: stesso path del proxy (`/api/compatibility/*`).
@@ -28,12 +29,25 @@ function resolveCompatFetchUrl(path: string): string {
 
 async function fetchCompatJson<T>(path: string): Promise<T | null> {
   const url = resolveCompatFetchUrl(path);
-  const res = await fetch(url, { cache: "no-store", headers: jsonHeaders });
-  if (!res.ok) return null;
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    return (await res.json()) as T;
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: jsonHeaders,
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    try {
+      return (await res.json()) as T;
+    } catch {
+      return null;
+    }
   } catch {
+    /** Rete, timeout, TLS, URL non valida: non propagare (in prod RSC mostrerebbe digest generico). */
     return null;
+  } finally {
+    clearTimeout(t);
   }
 }
 

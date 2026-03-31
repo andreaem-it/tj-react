@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/compatibility/StatusBadge";
 import { ExperienceBadge } from "@/components/compatibility/ExperienceBadge";
 import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
 import { fetchDeviceDetail } from "@/lib/compatibility/serverApi";
+import type { DeviceDetailPayload } from "@/lib/compatibility/types";
 
 export const dynamic = "force-dynamic";
 
@@ -12,24 +13,37 @@ const TYPE_LABEL = { iphone: "iPhone", ipad: "iPad", mac: "Mac" } as const;
 
 type Props = { params: Promise<{ slug: string }> };
 
+function isAbsoluteHttpUrl(u: string): boolean {
+  try {
+    const x = new URL(u);
+    return x.protocol === "http:" || x.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchDeviceDetail(decodeURIComponent(slug));
-  if (!data) return { title: "Dispositivo" };
-  const u = data.device.imageUrl;
+  if (!data?.device) return { title: "Dispositivo" };
+  const { device } = data;
+  const typeLabel =
+    device.type in TYPE_LABEL ? TYPE_LABEL[device.type as keyof typeof TYPE_LABEL] : String(device.type);
+  const u = device.imageUrl;
   return {
-    title: `${data.device.name} · compatibilità`,
-    description: `Compatibilità OS per ${data.device.name} (${TYPE_LABEL[data.device.type]}).`,
-    ...(u ? { openGraph: { images: [{ url: u }] } } : {}),
+    title: `${device.name} · compatibilità`,
+    description: `Compatibilità OS per ${device.name} (${typeLabel}).`,
+    ...(u && isAbsoluteHttpUrl(u) ? { openGraph: { images: [{ url: u }] } } : {}),
   };
 }
 
 export default async function DeviceCompatibilityPage({ params }: Props) {
   const { slug } = await params;
-  const data = await fetchDeviceDetail(decodeURIComponent(slug));
-  if (!data) notFound();
+  const detail = await fetchDeviceDetail(decodeURIComponent(slug));
+  if (!detail?.device) notFound();
 
-  const { device, latestSupportedOs, rows } = data;
+  const { device, latestSupportedOs, rows: rowsRaw } = detail as DeviceDetailPayload;
+  const rows = rowsRaw ?? [];
 
   return (
     <div className="w-full max-w-4xl py-8 px-2 sm:px-0">
@@ -41,7 +55,7 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
         <span className="text-[var(--foreground)]">{device.name}</span>
       </nav>
 
-      <header className="mb-8">
+      <header className="mb-8"> 
         <div className="flex flex-col sm:flex-row sm:items-start gap-6">
           {device.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element

@@ -6,7 +6,7 @@ import { ExperienceBadge } from "@/components/compatibility/ExperienceBadge";
 import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
 import { parseStatus } from "@/lib/compatibility/filters";
 import { fetchOsDetail } from "@/lib/compatibility/serverApi";
-import type { CompatibilityStatus } from "@/lib/compatibility/types";
+import type { CompatibilityStatus, OsDetailPayload } from "@/lib/compatibility/types";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchOsDetail(decodeURIComponent(slug));
-  if (!data) return { title: "OS" };
+  if (!data?.os) return { title: "OS" };
   return {
     title: `${data.os.name} · compatibilità dispositivi`,
     description: `Dispositivi compatibili con ${data.os.name}.`,
@@ -38,9 +38,10 @@ export default async function OsCompatibilityPage({ params, searchParams }: Prop
   const sp = await searchParams;
   const status = parseStatus(sp.status ?? null);
   const data = await fetchOsDetail(decodeURIComponent(slug), status ? { status } : undefined);
-  if (!data) notFound();
+  if (!data?.os) notFound();
 
-  const { os, rows } = data;
+  const { os, rows: rowsRaw } = data as OsDetailPayload;
+  const rows = rowsRaw ?? [];
 
   const base = `/compatibility/os/${encodeURIComponent(os.slug)}`;
 
