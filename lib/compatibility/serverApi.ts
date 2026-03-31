@@ -1,4 +1,5 @@
-import { resolvePublicApiUrl } from "@/lib/tjApiClient";
+import { getTjApiBaseUrl } from "@/lib/config/tjApi";
+import { getPublicTjApiBaseUrl } from "@/lib/tjApiClient";
 import type {
   CompatibilityStatus,
   Device,
@@ -9,19 +10,50 @@ import type {
 } from "@/lib/compatibility/types";
 
 const jsonHeaders = { Accept: "application/json" } as const;
+const FETCH_TIMEOUT_MS = 12_000;
 
-async function fetchCompatJson<T>(path: string): Promise<T | null> {
-  const url = resolvePublicApiUrl(path);
-  const res = await fetch(url, { cache: "no-store", headers: jsonHeaders });
-  if (!res.ok) return null;
+/**
+ * URL assoluto verso tj-api (mai path relativo `/api/...`).
+ * Un fetch relativo dai Server Component verso il proxy Next sullo stesso processo
+ * può andare in deadlock e bloccare il tab del browser al reload.
+ */
+function resolveCompatUpstreamUrl(pathWithQuery: string): string | null {
+  const p = pathWithQuery.startsWith("/") ? pathWithQuery : `/${pathWithQuery}`;
+  const server = getTjApiBaseUrl();
+  if (server) return `${server}${p}`;
+  const pub = getPublicTjApiBaseUrl();
+  if (pub) return `${pub}${p}`;
+  return null;
+}
+
+async function fetchCompatJson<T>(pathWithQuery: string): Promise<T | null> {
+  const url = resolveCompatUpstreamUrl(pathWithQuery);
+  if (url == null) {
+    return null;
+  }
+
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    return (await res.json()) as T;
+    const res = await fetch(url, {
+      cache: "no-store",
+      headers: jsonHeaders,
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    try {
+      return (await res.json()) as T;
+    } catch {
+      return null;
+    }
   } catch {
     return null;
+  } finally {
+    clearTimeout(t);
   }
 }
 
-/** Dati pubblici compatibilità (tj-api via proxy `/api/compatibility/*`). */
+/** Dati pubblici compatibilità (tj-api, path `/api/compatibility/*`; il proxy Next resta per il browser). */
 export async function fetchCompatibilityDevices(type?: DeviceType): Promise<Device[]> {
   const qs = type ? `?type=${encodeURIComponent(type)}` : "";
   const data = await fetchCompatJson<{ devices: Device[] }>(`/api/compatibility/devices${qs}`);
