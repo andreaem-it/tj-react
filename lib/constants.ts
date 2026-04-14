@@ -32,7 +32,9 @@ export const API_REQUEST_HEADERS: Record<string, string> = {
 
 /** Log in console ogni chiamata all’API (utile per verificare che si usi api.techjournal.it). */
 export function logApiUrl(url: string): void {
-  console.log("[API]", url);
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[API]", url);
+  }
 }
 
 /** Placeholder blur per next/image: 8×8 grigio (mostrato durante il caricamento). */

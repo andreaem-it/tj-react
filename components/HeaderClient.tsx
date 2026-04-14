@@ -24,7 +24,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="md:hidden flex items-center justify-center p-2 -ml-2 text-foreground hover:text-accent transition-colors shrink-0"
+            className="md:hidden flex items-center justify-center p-2 text-foreground hover:text-accent transition-colors shrink-0"
             aria-label="Apri menu"
             aria-expanded={mobileMenuOpen}
           >

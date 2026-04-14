@@ -16,12 +16,13 @@ export async function GET(request: NextRequest) {
   if (!id) {
     return NextResponse.json({}, { status: 200 });
   }
+  const encodedId = encodeURIComponent(id);
 
   const candidates = [
-    `${IUBENDA_ORIGINS[0]}/embed.json?i=${id}`,
-    `${IUBENDA_ORIGINS[1]}/embed.json?i=${id}`,
-    `${IUBENDA_ORIGINS[0]}/api/embed.json?i=${id}`,
-    `${IUBENDA_ORIGINS[0]}/privacy-policy/${id}/embed.json`,
+    `${IUBENDA_ORIGINS[0]}/embed.json?i=${encodedId}`,
+    `${IUBENDA_ORIGINS[1]}/embed.json?i=${encodedId}`,
+    `${IUBENDA_ORIGINS[0]}/api/embed.json?i=${encodedId}`,
+    `${IUBENDA_ORIGINS[0]}/privacy-policy/${encodedId}/embed.json`,
   ];
 
   for (const url of candidates) {

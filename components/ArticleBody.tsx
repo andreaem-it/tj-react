@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { API_BASE, API_REQUEST_HEADERS, WP_BASE, logApiUrl } from "@/lib/constants";
+import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
 
 const STORAGE_KEY = "article-font-size";
 const MIN_LEVEL = 0;
@@ -25,6 +26,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
   const [level, setLevel] = useState(1);
   const [viewCountFetched, setViewCountFetched] = useState<number | null>(null);
   const viewCount = viewCountProp ?? viewCountFetched;
+  const safeHtml = useMemo(() => sanitizeRichHtml(html), [html]);
 
   useEffect(() => {
     try {
@@ -111,7 +113,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
       </div>
       <div
         className="article-content"
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
       />
     </div>
   );

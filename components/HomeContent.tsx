@@ -88,7 +88,7 @@ export default function HomeContent({
         setHasMore(false);
       }
     } catch {
-      setHasMore(false);
+      // Non disabilitare "Load more" su errore transitorio di rete.
     } finally {
       setIsLoading(false);
     }

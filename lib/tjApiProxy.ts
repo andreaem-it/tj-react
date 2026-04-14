@@ -9,6 +9,9 @@ export type ProxyToTjApiOptions = {
 };
 
 const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000;
+const IS_DEV = process.env.NODE_ENV !== "production";
+const MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024;
+const MAX_RESPONSE_BODY_BYTES = 10 * 1024 * 1024;
 
 /**
  * Header di risposta upstream da ripassare al client (case-insensitive in fetch).
@@ -63,7 +66,7 @@ export async function proxyToTjApi(
   const pathname = request.nextUrl.pathname;
   const base = getTjApiBaseUrl();
   if (!base) {
-    console.log("[WP Proxy]", request.method, pathname, 503);
+    if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 503);
     return NextResponse.json(
       { error: "TJ_API_BASE_URL non configurato" },
       { status: 503 },
@@ -74,12 +77,12 @@ export async function proxyToTjApi(
   try {
     upstreamOrigin = new URL(base).origin;
   } catch {
-    console.log("[WP Proxy]", request.method, pathname, 500);
+    if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 500);
     return NextResponse.json({ error: "TJ_API_BASE_URL non valido" }, { status: 500 });
   }
 
   if (upstreamOrigin === request.nextUrl.origin) {
-    console.log("[WP Proxy]", request.method, pathname, 500);
+    if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 500);
     return NextResponse.json({ error: "Proxy loop detected" }, { status: 500 });
   }
 
@@ -101,10 +104,6 @@ export async function proxyToTjApi(
       headers.set("Accept", accept);
     }
   }
-  const authorization = request.headers.get("authorization");
-  if (authorization) {
-    headers.set("Authorization", authorization);
-  }
   const webhookSecret = request.headers.get("x-tj-webhook-secret");
   if (webhookSecret) {
     headers.set("X-TJ-Webhook-Secret", webhookSecret);
@@ -122,7 +121,18 @@ export async function proxyToTjApi(
   try {
     let body: BodyInit | undefined;
     if (method !== "GET" && method !== "HEAD") {
+      const reqLenHeader = request.headers.get("content-length");
+      const reqLen =
+        typeof reqLenHeader === "string" && reqLenHeader.trim() !== ""
+          ? Number(reqLenHeader)
+          : Number.NaN;
+      if (Number.isFinite(reqLen) && reqLen > MAX_REQUEST_BODY_BYTES) {
+        return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+      }
       const buf = await request.arrayBuffer();
+      if (buf.byteLength > MAX_REQUEST_BODY_BYTES) {
+        return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+      }
       if (buf.byteLength > 0) {
         body = buf;
       }
@@ -138,9 +148,21 @@ export async function proxyToTjApi(
 
     clearTimeout(timeoutId);
 
-    console.log("[WP Proxy]", method, pathname, res.status);
+    if (IS_DEV) console.log("[WP Proxy]", method, pathname, res.status);
+
+    const upstreamLenHeader = res.headers.get("content-length");
+    const upstreamLen =
+      typeof upstreamLenHeader === "string" && upstreamLenHeader.trim() !== ""
+        ? Number(upstreamLenHeader)
+        : Number.NaN;
+    if (Number.isFinite(upstreamLen) && upstreamLen > MAX_RESPONSE_BODY_BYTES) {
+      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+    }
 
     const text = await res.text();
+    if (Buffer.byteLength(text, "utf8") > MAX_RESPONSE_BODY_BYTES) {
+      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+    }
     const upstreamCt = res.headers.get("content-type");
 
     if (isLikelyHtmlBody(text, upstreamCt)) {
@@ -149,7 +171,7 @@ export async function proxyToTjApi(
         {
           error:
             "L'upstream ha risposto con HTML invece di JSON: la richiesta non sta arrivando a tj-api come previsto.",
-          upstreamUrl: url,
+          ...(IS_DEV ? { upstreamUrl: url } : {}),
           hint:
             "TJ_API_BASE_URL deve essere l’URL del backend tj-api (locale es. http://127.0.0.1:3002, produzione l’host api), non il sito front-end.",
         },
@@ -174,7 +196,9 @@ export async function proxyToTjApi(
       err instanceof Error &&
       (err.name === "AbortError" || err.message === "This operation was aborted");
     const status = isAbort ? 504 : 502;
-    console.log("[WP Proxy]", method, pathname, status, err instanceof Error ? err.message : err);
+    if (IS_DEV) {
+      console.log("[WP Proxy]", method, pathname, status, err instanceof Error ? err.message : err);
+    }
     return NextResponse.json(
       { error: isAbort ? "Upstream timeout" : "Upstream error" },
       { status },

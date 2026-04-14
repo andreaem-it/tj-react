@@ -4,7 +4,13 @@ import { getTjApiBaseUrl } from "@/lib/config/tjApi";
 export type ProxyTjApiOptions = {
   /** Se true, usa `Authorization: Bearer <PRICE_RADAR_ADMIN_SECRET>` lato server verso tj-api. */
   admin: boolean;
+  /** Timeout fetch verso tj-api (ms). */
+  timeoutMs?: number;
 };
+
+const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000;
+const MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024;
+const MAX_RESPONSE_BODY_BYTES = 10 * 1024 * 1024;
 
 /**
  * Inoltra la richiesta a tj-api mantenendo lo stesso path e query string.
@@ -48,11 +54,26 @@ export async function proxyPriceRadarToTjApi(
 
   let body: BodyInit | undefined;
   if (request.method !== "GET" && request.method !== "HEAD") {
+    const reqLenHeader = request.headers.get("content-length");
+    const reqLen =
+      typeof reqLenHeader === "string" && reqLenHeader.trim() !== ""
+        ? Number(reqLenHeader)
+        : Number.NaN;
+    if (Number.isFinite(reqLen) && reqLen > MAX_REQUEST_BODY_BYTES) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
     const buf = await request.arrayBuffer();
+    if (buf.byteLength > MAX_REQUEST_BODY_BYTES) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
     if (buf.byteLength > 0) {
       body = buf;
     }
   }
+
+  const timeoutMs = options.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch(url, {
@@ -60,9 +81,23 @@ export async function proxyPriceRadarToTjApi(
       headers,
       body,
       cache: "no-store",
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
+
+    const upstreamLenHeader = res.headers.get("content-length");
+    const upstreamLen =
+      typeof upstreamLenHeader === "string" && upstreamLenHeader.trim() !== ""
+        ? Number(upstreamLenHeader)
+        : Number.NaN;
+    if (Number.isFinite(upstreamLen) && upstreamLen > MAX_RESPONSE_BODY_BYTES) {
+      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+    }
 
     const text = await res.text();
+    if (Buffer.byteLength(text, "utf8") > MAX_RESPONSE_BODY_BYTES) {
+      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+    }
     const outHeaders = new Headers();
     const upstreamCt = res.headers.get("content-type");
     if (upstreamCt) {
@@ -73,7 +108,14 @@ export async function proxyPriceRadarToTjApi(
       status: res.status,
       headers: outHeaders,
     });
-  } catch {
-    return NextResponse.json({ error: "Upstream error" }, { status: 502 });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    const isAbort =
+      err instanceof Error &&
+      (err.name === "AbortError" || err.message === "This operation was aborted");
+    return NextResponse.json(
+      { error: isAbort ? "Upstream timeout" : "Upstream error" },
+      { status: isAbort ? 504 : 502 },
+    );
   }
 }

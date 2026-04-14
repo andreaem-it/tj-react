@@ -4,6 +4,7 @@ import { proxyToTjApi } from "@/lib/tjApiProxy";
 export const dynamic = "force-dynamic";
 
 const MEGAMENU_TTL_MS = 60_000;
+const MEGAMENU_CACHE_MAX_KEYS = 250;
 
 const megamenuCache = new Map<
   string,
@@ -12,6 +13,14 @@ const megamenuCache = new Map<
     ts: number;
   }
 >();
+
+function evictOldestEntries(): void {
+  while (megamenuCache.size > MEGAMENU_CACHE_MAX_KEYS) {
+    const oldestKey = megamenuCache.keys().next().value as string | undefined;
+    if (!oldestKey) break;
+    megamenuCache.delete(oldestKey);
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -44,6 +53,7 @@ export async function GET(
     try {
       const data = JSON.parse(text) as unknown;
       megamenuCache.set(slug, { data, ts: Date.now() });
+      evictOldestEntries();
     } catch {
       /* non JSON: non cache, pass-through sotto */
     }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useIubenda } from "@mep-agency/next-iubenda";
+import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
 
 interface IubendaPolicyContentProps {
   /** ID policy (es. NEXT_PUBLIC_IUBENDA_SITE_ID) */
@@ -35,6 +36,7 @@ export default function IubendaPolicyContent({
 }: IubendaPolicyContentProps) {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const safeContent = useMemo(() => sanitizeRichHtml(data?.content ?? ""), [data?.content]);
   const iubenda = useIubenda();
   const hasProvider =
     typeof iubenda?.showCookiePolicy === "function" &&
@@ -73,13 +75,13 @@ export default function IubendaPolicyContent({
     );
   }
 
-  if (data?.success && data.content) {
+  if (data?.success && safeContent) {
     return (
       <section className="space-y-4">
         <h2 className="text-xl font-semibold text-foreground">{title}</h2>
         <div
           className="prose prose-invert prose-sm max-w-none text-muted [&_a]:text-accent [&_a]:hover:underline"
-          dangerouslySetInnerHTML={{ __html: data.content }}
+          dangerouslySetInnerHTML={{ __html: safeContent }}
         />
         <p className="text-muted text-xs pt-2">
           <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">

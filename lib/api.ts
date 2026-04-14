@@ -47,6 +47,8 @@ interface TjHomeResponse {
 
 /** Fetch tj/v1 via Node https (bypass cache Next.js, per Load more). */
 function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
+  const REQUEST_TIMEOUT_MS = 8_000;
+  const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
   logApiUrl(url);
   return new Promise((resolve, reject) => {
     const u = new URL(url);
@@ -63,8 +65,15 @@ function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
     https
       .get(opts, (res) => {
         let body = "";
+        let bodyBytes = 0;
+        res.setEncoding("utf8");
         res.on("data", (chunk: Buffer) => {
-          body += chunk.toString();
+          const piece = typeof chunk === "string" ? chunk : chunk.toString();
+          body += piece;
+          bodyBytes += Buffer.byteLength(piece, "utf8");
+          if (bodyBytes > MAX_RESPONSE_BYTES) {
+            res.destroy(new Error("TJ API response too large"));
+          }
         });
         res.on("end", () => {
           if (res.statusCode && res.statusCode >= 400) {
@@ -78,8 +87,21 @@ function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
           }
         });
       })
+      .setTimeout(REQUEST_TIMEOUT_MS, function onTimeout() {
+        this.destroy(new Error("TJ API request timeout"));
+      })
       .on("error", reject);
   });
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 8_000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 /** Richiede una singola pagina di post a tj/v1. Usato per Load more (route /api/posts/[page]). */
@@ -160,7 +182,7 @@ async function fetchTjPosts(params: {
 
   const url = `${WP_BASE}/posts?${searchParams.toString()}`;
   logApiUrl(url);
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     headers: API_REQUEST_HEADERS,
     ...(requestCache !== undefined && { cache: requestCache }),
     ...(requestCache === undefined && { next: { revalidate: 60 } }),
@@ -219,7 +241,7 @@ export async function fetchPostsForInitialDisplay(params: {
     });
     return {
       posts: posts.slice(0, INITIAL_POSTS_TARGET),
-      totalPages: Math.max(1, Math.ceil(posts.length / 10)),
+      totalPages: Math.max(1, totalPages),
       pagesConsumed: 1,
     };
   }
@@ -276,7 +298,7 @@ export async function fetchMegamenuFromTj(slug: string): Promise<
 > {
   const url = `${WP_BASE}/megamenu/${encodeURIComponent(slug)}`;
   logApiUrl(url);
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     headers: API_REQUEST_HEADERS,
     next: { revalidate: 300 },
   });
@@ -288,11 +310,6 @@ export async function fetchMegamenuFromTj(slug: string): Promise<
     imageAlt: string;
   }>;
   return Array.isArray(data) ? data : [];
-}
-
-export async function fetchPostsWithEmbed(): Promise<PostWithMeta[]> {
-  const { posts } = await fetchTjPosts({ perPage: 100, page: 1 });
-  return posts;
 }
 
 export async function fetchMostReadPosts(params: {
@@ -342,30 +359,6 @@ export async function fetchRelatedPosts(params: {
   return candidates.slice(0, limit);
 }
 
-export async function fetchTrendingByPeriod(params: {
-  period: "week" | "month";
-  categoryId?: number;
-  limit?: number;
-}): Promise<PostWithMeta[]> {
-  const { period, categoryId, limit = 5 } = params;
-  const days = period === "week" ? 7 : 30;
-  const after = new Date();
-  after.setDate(after.getDate() - days);
-  const { posts } = await fetchTjPosts({
-    perPage: 40,
-    page: 1,
-    after: after.toISOString(),
-    category: categoryId ?? undefined,
-  });
-  const sorted = [...posts].sort((a, b) => {
-    const va = a.viewCount ?? 0;
-    const vb = b.viewCount ?? 0;
-    if (vb !== va) return vb - va;
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
-  return sorted.slice(0, limit);
-}
-
 export async function fetchTrendingWeekAndMonth(params: {
   categoryId?: number;
   limit?: number;
@@ -411,7 +404,7 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null
 
   const urlSingle = `${WP_BASE}/post/${encodeURIComponent(raw)}`;
   logApiUrl(urlSingle);
-  const resSingle = await fetch(urlSingle, {
+  const resSingle = await fetchWithTimeout(urlSingle, {
     headers: API_REQUEST_HEADERS,
     next: { revalidate: 60 },
   });
@@ -424,7 +417,7 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null
     page: "1",
   }).toString()}`;
   logApiUrl(urlList);
-  const resList = await fetch(urlList, {
+  const resList = await fetchWithTimeout(urlList, {
     headers: API_REQUEST_HEADERS,
     next: { revalidate: 60 },
   });
@@ -434,7 +427,7 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {
   const url = `${WP_BASE}/categories`;
   logApiUrl(url);
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     headers: API_REQUEST_HEADERS,
     next: { revalidate: 300 },
   });
@@ -499,7 +492,7 @@ export async function fetchHome(): Promise<TjHomeResponse | null> {
   try {
     const url = `${WP_BASE}/home`;
     logApiUrl(url);
-    const res = await fetch(url, {
+    const res = await fetchWithTimeout(url, {
       headers: API_REQUEST_HEADERS,
       next: { revalidate: 300 },
     });

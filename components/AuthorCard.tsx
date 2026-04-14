@@ -1,3 +1,5 @@
+import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
+
 export type Author = {
   name: string;
   description?: string;
@@ -25,6 +27,8 @@ export default function AuthorCard({ author }: { author: unknown }) {
   if (!isValidAuthor(author)) return null;
 
   const avatarUrl = getAvatarUrl(author.avatar_urls);
+  const safeDescription =
+    typeof author.description === "string" ? sanitizeRichHtml(author.description) : "";
 
   return (
     <div className="flex items-start gap-4">
@@ -40,10 +44,10 @@ export default function AuthorCard({ author }: { author: unknown }) {
       <div className="min-w-0">
         <p className="text-muted text-sm font-semibold uppercase tracking-wide mb-1">Scritto da</p>
         <h4 className="text-foreground font-medium">{author.name}</h4>
-        {author.description && (
+        {safeDescription && (
           <div
             className="text-muted text-sm mt-2 leading-relaxed [&_p]:mb-2 last:[&_p]:mb-0"
-            dangerouslySetInnerHTML={{ __html: author.description }}
+            dangerouslySetInnerHTML={{ __html: safeDescription }}
           />
         )}
       </div>
