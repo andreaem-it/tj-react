@@ -18,7 +18,54 @@ export default function AdSenseScript() {
     const w = window as any;
     w.adsbygoogle = w.adsbygoogle || [];
     w.adsbygoogle.requestNonPersonalizedAds = 1;
-    setLoadScript(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.location.hostname === "localhost") return;
+    let cancelled = false;
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
+    let idleId: number | null = null;
+
+    const enableScript = () => {
+      if (cancelled) return;
+      setLoadScript(true);
+      window.removeEventListener("pointerdown", onFirstInteraction);
+      window.removeEventListener("keydown", onFirstInteraction);
+      window.removeEventListener("scroll", onFirstInteraction);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      if (idleId != null && "cancelIdleCallback" in window) {
+        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+      }
+    };
+
+    const onFirstInteraction = () => {
+      enableScript();
+    };
+
+    window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
+    window.addEventListener("keydown", onFirstInteraction, { once: true });
+    window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+
+    if ("requestIdleCallback" in window) {
+      idleId = (
+        window as Window & {
+          requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
+        }
+      ).requestIdleCallback(enableScript, { timeout: 8000 });
+    } else {
+      fallbackTimer = setTimeout(enableScript, 5000);
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("pointerdown", onFirstInteraction);
+      window.removeEventListener("keydown", onFirstInteraction);
+      window.removeEventListener("scroll", onFirstInteraction);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      if (idleId != null && "cancelIdleCallback" in window) {
+        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+      }
+    };
   }, []);
 
   if (!clientId || !loadScript) return null;

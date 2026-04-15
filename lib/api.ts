@@ -199,7 +199,7 @@ async function fetchTjPosts(params: {
 }
 
 /** Numero di post da caricare in iniziale (hero + griglia). */
-const INITIAL_POSTS_TARGET = 20;
+const INITIAL_POSTS_TARGET = 16;
 
 export async function fetchPosts(params: {
   perPage?: number;
