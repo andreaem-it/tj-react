@@ -62,8 +62,7 @@ function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
         ...API_REQUEST_HEADERS,
       },
     };
-    https
-      .get(opts, (res) => {
+    const req = https.get(opts, (res) => {
         let body = "";
         let bodyBytes = 0;
         res.setEncoding("utf8");
@@ -86,11 +85,11 @@ function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
             reject(e);
           }
         });
-      })
-      .setTimeout(REQUEST_TIMEOUT_MS, function onTimeout() {
-        this.destroy(new Error("TJ API request timeout"));
-      })
-      .on("error", reject);
+      });
+    req.setTimeout(REQUEST_TIMEOUT_MS, () => {
+      req.destroy(new Error("TJ API request timeout"));
+    });
+    req.on("error", reject);
   });
 }
 
