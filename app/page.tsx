@@ -3,9 +3,8 @@ import HomeContent from "@/components/HomeContent";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
-/** Rendering a ogni richiesta per evitare homepage vuota da cache/build. */
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+/** Revalidate breve: migliora TTFB/bfcache mantenendo contenuti aggiornati. */
+export const revalidate = 120;
 
 const siteUrl = SITE_URL.replace(/\/$/, "");
 

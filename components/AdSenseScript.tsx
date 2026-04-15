@@ -25,7 +25,7 @@ export default function AdSenseScript() {
   return (
     <Script
       src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${clientId}`}
-      strategy="afterInteractive"
+      strategy="lazyOnload"
       crossOrigin="anonymous"
     />
   );

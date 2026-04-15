@@ -26,7 +26,7 @@ export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, empty
     <section>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         {posts.map((post, index) => (
-          <ArticleCard key={post.id} post={post} priority={index < 2} />
+          <ArticleCard key={post.id} post={post} priority={index === 0} />
         ))}
       </div>
       {hasMore && (

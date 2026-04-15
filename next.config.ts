@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const usePassthroughImageLoader = process.env.NEXT_IMAGE_PASSTHROUGH === "1";
+
 const nextConfig: NextConfig = {
   transpilePackages: ["@mep-agency/next-iubenda"],
   async rewrites() {
@@ -10,10 +12,27 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*\\.(svg|png|jpg|jpeg|webp|avif|ico|woff2)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=604800, stale-while-revalidate=2592000",
+          },
+        ],
+      },
+    ];
+  },
   images: {
-    /** Evita 402 su Vercel: nessuna richiesta a `/_next/image` (loader restituisce URL diretto). */
-    loader: "custom",
-    loaderFile: "./lib/passthrough-image-loader.ts",
+    ...(usePassthroughImageLoader
+      ? {
+          /** Modalità fallback: evita `/_next/image` quando necessario. */
+          loader: "custom" as const,
+          loaderFile: "./lib/passthrough-image-loader.ts",
+        }
+      : {}),
     remotePatterns: [
       { protocol: "https", hostname: "www.techjournal.it", pathname: "/**" },
       { protocol: "https", hostname: "api.techjournal.it", pathname: "/**" },

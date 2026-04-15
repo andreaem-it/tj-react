@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
 
 export type Author = {
@@ -33,11 +34,12 @@ export default function AuthorCard({ author }: { author: unknown }) {
   return (
     <div className="flex items-start gap-4">
       {avatarUrl && (
-        <img
+        <Image
           src={avatarUrl}
           alt={author.name}
           width={96}
           height={96}
+          sizes="(max-width: 768px) 48px, 96px"
           className="rounded-full object-cover shrink-0 w-12 h-12 md:w-[96px] md:h-[96px]"
         />
       )}

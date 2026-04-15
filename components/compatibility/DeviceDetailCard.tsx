@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Device, OperatingSystem } from "@/lib/compatibility/types";
 
 function formatSpecLabel(key: string): string {
@@ -105,10 +106,12 @@ export function DeviceDetailCard({ device, latestSupportedOs }: Props) {
     <section className="mb-10 rounded-xl border border-[var(--border)] bg-[var(--content-bg)] p-4 sm:p-6">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
         {device.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={device.imageUrl}
             alt=""
+            width={100}
+            height={100}
+            sizes="(max-width: 640px) 88px, 100px"
             className="h-auto w-[88px] max-w-[120px] shrink-0 rounded-lg border border-[var(--border)] object-contain sm:w-[100px]"
           />
         ) : null}

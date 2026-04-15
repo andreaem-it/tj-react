@@ -33,6 +33,12 @@ export default function ArticleCard({ post, variant = "default", size, priority 
   const href = `/${categoryUrlSlug}/${post.slug}`;
   const categoryHref = `/${categoryUrlSlug}`;
   const showHeroImage = variant === "hero" && post.imageUrl && !heroImageError;
+  const heroSizes =
+    size === "large"
+      ? "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 50vw"
+      : size === "medium"
+        ? "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+        : "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw";
 
   if (variant === "strip") {
     return (
@@ -71,7 +77,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
             alt={post.imageAlt}
             fill
             className="object-cover transition-transform group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes={heroSizes}
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             priority={priority}
@@ -113,7 +119,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
             alt={post.imageAlt}
             fill
             className="object-cover transition-transform group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             priority={priority}

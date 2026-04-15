@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { parseDeviceType } from "@/lib/compatibility/filters";
@@ -102,8 +103,14 @@ export default async function CompatibilityIndexPage({
                           className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
                         >
                           {d.imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={d.imageUrl} alt="" style={DEVICE_LIST_THUMB_STYLE} />
+                            <Image
+                              src={d.imageUrl}
+                              alt=""
+                              width={50}
+                              height={50}
+                              sizes="50px"
+                              style={DEVICE_LIST_THUMB_STYLE}
+                            />
                           ) : null}
                           <div className="min-w-0 flex-1 flex flex-col gap-0.5">
                             <span className="font-medium">{d.name}</span>
@@ -134,8 +141,14 @@ export default async function CompatibilityIndexPage({
                         className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
                       >
                         {d.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={d.imageUrl} alt="" style={DEVICE_LIST_THUMB_STYLE} />
+                          <Image
+                            src={d.imageUrl}
+                            alt=""
+                            width={50}
+                            height={50}
+                            sizes="50px"
+                            style={DEVICE_LIST_THUMB_STYLE}
+                          />
                         ) : null}
                         <div className="min-w-0 flex-1 flex flex-col gap-0.5">
                           <span className="font-medium">{d.name}</span>
