@@ -4,6 +4,7 @@ import OfferteSidebar from "./OfferteSidebar";
 import TrendingSidebar from "./TrendingSidebar";
 import MostReadSidebar from "./MostReadSidebar";
 import TrendingByPeriodSidebar from "./TrendingByPeriodSidebar";
+import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
 import type { PostWithMeta } from "@/lib/api";
 
 interface HomeContentProps {
