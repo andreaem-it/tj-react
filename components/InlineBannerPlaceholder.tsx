@@ -27,6 +27,8 @@ export default function InlineBannerPlaceholder({
         adSlot={adSlot}
         adFormat="auto"
         fullWidthResponsive
+        deferUntilVisible
+        rootMargin="250px"
         className={`shrink-0 ${className}`}
         style={{ width: widthStyle, minHeight: `${height}px` }}
       />

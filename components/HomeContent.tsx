@@ -51,17 +51,34 @@ export default function HomeContent({
 
   useEffect(() => {
     let cancelled = false;
-    fetchSocialStats({ refresh: true })
-      .then((data) => {
-        if (cancelled || !data) return;
-        setSocialStats({
-          facebook: data.facebook?.followers ?? null,
-          instagram: data.instagram?.followers ?? null,
-        });
-      })
-      .catch(() => {});
+    const run = () => {
+      fetchSocialStats({ refresh: true })
+        .then((data) => {
+          if (cancelled || !data) return;
+          setSocialStats({
+            facebook: data.facebook?.followers ?? null,
+            instagram: data.instagram?.followers ?? null,
+          });
+        })
+        .catch(() => {});
+    };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const id = (
+        window as Window & {
+          requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
+        }
+      ).requestIdleCallback(run, { timeout: 3000 });
+      return () => {
+        cancelled = true;
+        if ("cancelIdleCallback" in window) {
+          (window as Window & { cancelIdleCallback: (idleId: number) => void }).cancelIdleCallback(id);
+        }
+      };
+    }
+    const t = setTimeout(run, 1200);
     return () => {
       cancelled = true;
+      clearTimeout(t);
     };
   }, []);
 

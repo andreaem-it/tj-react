@@ -18,6 +18,10 @@ export interface AdSenseUnitProps {
   /** Stile del container (es. minHeight per evitare layout shift) */
   style?: React.CSSProperties;
   className?: string;
+  /** Se true, inizializza l'ad solo quando entra in viewport. */
+  deferUntilVisible?: boolean;
+  /** Margine observer viewport (es. "300px") */
+  rootMargin?: string;
 }
 
 const placeholderClassName =
@@ -34,10 +38,14 @@ export default function AdSenseUnit({
   fullWidthResponsive = true,
   style,
   className = "",
+  deferUntilVisible = true,
+  rootMargin = "300px",
 }: AdSenseUnitProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const insRef = useRef<HTMLModElement>(null);
   const pushedRef = useRef(false);
   const [useRealAd, setUseRealAd] = useState(false);
+  const [isVisible, setIsVisible] = useState(!deferUntilVisible);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
@@ -46,7 +54,31 @@ export default function AdSenseUnit({
   }, []);
 
   useEffect(() => {
-    if (!useRealAd || !adSlot || !insRef.current) return;
+    if (!useRealAd || !deferUntilVisible || isVisible) return;
+    const target = wrapperRef.current;
+    if (!target) return;
+    if (!("IntersectionObserver" in window)) {
+      setIsVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [useRealAd, deferUntilVisible, isVisible, rootMargin]);
+
+  useEffect(() => {
+    if (!useRealAd || !isVisible || !adSlot || !insRef.current) return;
     const push = (): boolean => {
       if (typeof window === "undefined" || pushedRef.current) return false;
       const w = window as any;
@@ -71,7 +103,7 @@ export default function AdSenseUnit({
       if (push()) clearInterval(interval);
     }, 300);
     return () => clearInterval(interval);
-  }, [adSlot, useRealAd]);
+  }, [adSlot, useRealAd, isVisible]);
 
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
   if (!clientId?.trim() || !adSlot?.trim()) return null;
@@ -89,7 +121,7 @@ export default function AdSenseUnit({
   }
 
   return (
-    <div className={className} style={style}>
+    <div ref={wrapperRef} className={className} style={style}>
       <ins
         ref={insRef}
         className="adsbygoogle"

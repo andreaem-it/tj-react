@@ -1,10 +1,12 @@
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import HeaderSkeleton from "@/components/HeaderSkeleton";
 import Footer from "@/components/Footer";
-import ScrollToTop from "@/components/ScrollToTop";
 import BannerPlaceholder from "@/components/BannerPlaceholder";
-import NewsletterModal from "@/components/NewsletterModal";
+
+const ScrollToTop = dynamic(() => import("@/components/ScrollToTop"), { ssr: false });
+const NewsletterModal = dynamic(() => import("@/components/NewsletterModal"), { ssr: false });
 
 export default function AppShell({
   children,
