@@ -50,6 +50,7 @@ export default function HomeContent({
               emptyGridIsExpected={emptyGridIsExpected}
             />
           <HomeLoadMoreGrid
+            initialPosts={initialGridPosts}
             initialTotalPages={initialTotalPages}
             initialPagesConsumed={initialPagesConsumed}
             categoryId={categoryId}

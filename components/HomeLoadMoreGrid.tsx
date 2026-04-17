@@ -7,21 +7,17 @@ import type { PostWithMeta } from "@/lib/api";
 import { fetchPosts } from "@/lib/tjApiClient";
 
 interface HomeLoadMoreGridProps {
-  initialPosts: PostWithMeta[];
+  /** Compatibilità retro: alcuni callsite passano ancora i post iniziali SSR. */
+  initialPosts?: PostWithMeta[];
   initialTotalPages: number;
   initialPagesConsumed: number;
   categoryId?: number;
   emptyGridIsExpected: boolean;
 }
 
-export default function HomeLoadMoreGrid({
-  initialPosts,
-  initialTotalPages,
-  initialPagesConsumed,
-  categoryId,
-  emptyGridIsExpected,
-}: HomeLoadMoreGridProps) {
-  const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts);
+export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
+  const { initialTotalPages, initialPagesConsumed, categoryId, emptyGridIsExpected } = props;
+  const [gridPosts, setGridPosts] = useState<PostWithMeta[]>([]);
   const [hasMore, setHasMore] = useState(initialPagesConsumed < initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
   const nextPageRef = useRef(initialPagesConsumed + 1);
