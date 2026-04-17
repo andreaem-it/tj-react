@@ -25,7 +25,7 @@ export default function ArticleStructuredData({
   const fullUrl = url.startsWith("http") ? url : `${BASE}${url.startsWith("/") ? "" : "/"}${url}`;
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "NewsArticle",
+    "@type": "Article",
     headline,
     ...(description && { description }),
     ...(imageUrl && {
@@ -36,13 +36,16 @@ export default function ArticleStructuredData({
     }),
     datePublished,
     ...(dateModified && { dateModified }),
+    inLanguage: "it-IT",
     author: {
       "@type": "Person",
       name: authorName,
+      url: `${BASE}/chi-siamo`,
     },
     publisher: {
       "@type": "Organization",
       name: "TechJournal",
+      url: BASE,
       logo: {
         "@type": "ImageObject",
         url: LOGO_URL,

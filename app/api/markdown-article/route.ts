@@ -51,6 +51,7 @@ export async function GET(request: Request) {
     headers: {
       "content-type": "text/markdown; charset=utf-8",
       "x-content-format": "markdown",
+      "last-modified": new Date(post.date).toUTCString(),
     },
   });
 }

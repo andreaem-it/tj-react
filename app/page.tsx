@@ -73,15 +73,34 @@ export default async function HomePage() {
   }
 
   return (
-    <HomeContent
-      initialPosts={initialPosts}
-      initialTotalPages={totalPages}
-      initialPagesConsumed={pagesConsumed}
-      offertePosts={offertePosts}
-      trendingPosts={trendingPosts}
-      mostReadPosts={mostReadPosts}
-      weekTrendingPosts={weekTrendingPosts}
-      monthTrendingPosts={monthTrendingPosts}
-    />
+    <>
+      <HomeContent
+        initialPosts={initialPosts}
+        initialTotalPages={totalPages}
+        initialPagesConsumed={pagesConsumed}
+        offertePosts={offertePosts}
+        trendingPosts={trendingPosts}
+        mostReadPosts={mostReadPosts}
+        weekTrendingPosts={weekTrendingPosts}
+        monthTrendingPosts={monthTrendingPosts}
+      />
+      <form
+        action="/search"
+        method="get"
+        className="sr-only"
+        tool-name="search-articles"
+        tool-description="Search TechJournal articles by keyword"
+      >
+        <label htmlFor="webmcp-home-search">Search query</label>
+        <input
+          id="webmcp-home-search"
+          type="search"
+          name="q"
+          tool-param-description="Keyword to search in article titles and content"
+          defaultValue=""
+        />
+        <button type="submit">Search</button>
+      </form>
+    </>
   );
 }

@@ -1,10 +1,18 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+const DEPLOY_LAST_MODIFIED = new Date().toUTCString();
+
 const VALID_SITEMAP_PATHS = new Set(["/sitemap.xml"]);
 const VALID_WELL_KNOWN_PATHS = new Set([
   "/.well-known/api-catalog",
   "/.well-known/agent-skills/index.json",
+  "/.well-known/agent.json",
+  "/.well-known/webmcp.json",
+  "/.well-known/webmcp",
+  "/.well-known/mcp.json",
+  "/.well-known/mcp",
+  "/.well-known/mcp-discovery",
 ]);
 
 const EXCLUDED_MARKDOWN_PREFIXES = new Set([
@@ -57,21 +65,38 @@ function appendAgentLinkHeaders(response: NextResponse): void {
   response.headers.append("Link", '</.well-known/api-catalog>; rel="api-catalog"');
 }
 
+function appendFreshnessHeaders(response: NextResponse): void {
+  if (!response.headers.has("Last-Modified")) {
+    response.headers.set("Last-Modified", DEPLOY_LAST_MODIFIED);
+  }
+}
+
+function appendSecurityHeaders(response: NextResponse): void {
+  response.headers.set("Content-Security-Policy", "frame-ancestors 'none'");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isInvalidSitemapPath(pathname)) {
-    return new NextResponse("Not Found", {
+    const response = new NextResponse("Not Found", {
       status: 404,
       headers: { "content-type": "text/plain; charset=utf-8" },
     });
+    appendSecurityHeaders(response);
+    return response;
   }
 
   if (isInvalidWellKnownPath(pathname)) {
-    return new NextResponse("Not Found", {
+    const response = new NextResponse("Not Found", {
       status: 404,
       headers: { "content-type": "text/plain; charset=utf-8" },
     });
+    appendSecurityHeaders(response);
+    return response;
   }
 
   if (wantsMarkdown(request)) {
@@ -81,13 +106,17 @@ export function middleware(request: NextRequest) {
       markdownUrl.pathname = "/api/markdown-article";
       markdownUrl.searchParams.set("category", article.category);
       markdownUrl.searchParams.set("slug", article.articleSlug);
-      return NextResponse.rewrite(markdownUrl);
+      const response = NextResponse.rewrite(markdownUrl);
+      appendSecurityHeaders(response);
+      return response;
     }
   }
 
   const response = NextResponse.next();
+  appendSecurityHeaders(response);
   if (isHtmlRequest(request)) {
     appendAgentLinkHeaders(response);
+    appendFreshnessHeaders(response);
   }
 
   return response;

@@ -78,9 +78,16 @@ export default function NewsletterModal() {
           <p className="text-muted text-sm mb-3">
             Ricevi le migliori notizie, offerte e guide direttamente nella tua inbox.
           </p>
-          <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2">
+          <form
+            onSubmit={onSubmit}
+            className="flex flex-col sm:flex-row gap-2"
+            tool-name="newsletter-subscribe"
+            tool-description="Subscribe a user email to TechJournal newsletter updates"
+          >
             <input
               type="email"
+              name="email"
+              tool-param-description="Email address to subscribe"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}

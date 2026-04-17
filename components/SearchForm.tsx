@@ -18,12 +18,18 @@ export default function SearchForm({ defaultQuery = "" }: { defaultQuery?: strin
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-xl">
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-xl"
+      tool-name="search-articles"
+      tool-description="Search TechJournal articles by keyword"
+    >
       <div className="flex gap-2">
         <input
           ref={inputRef}
           type="search"
           name="q"
+          tool-param-description="Keyword to search in article titles and content"
           defaultValue={q}
           placeholder="Cerca articoli..."
           className="flex-1 rounded-lg border border-border bg-surface-overlay px-4 py-3 text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"

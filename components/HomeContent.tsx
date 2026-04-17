@@ -1,5 +1,6 @@
 import HeroSection from "./HeroSection";
 import HomeLoadMoreGrid from "./HomeLoadMoreGrid";
+import PostsGridStatic from "./PostsGridStatic";
 import OfferteSidebar from "./OfferteSidebar";
 import TrendingSidebar from "./TrendingSidebar";
 import MostReadSidebar from "./MostReadSidebar";
@@ -33,19 +34,26 @@ export default function HomeContent({
 }: HomeContentProps) {
   const heroPosts = initialPosts.slice(0, 4);
   const initialGridPosts = initialPosts.slice(4);
+  const emptyGridIsExpected = initialPosts.length > 0 && initialPosts.length <= 4;
 
   return (
     <div className="max-w-7xl mx-auto px-0 md:px-4 py-6">
+      <h1 className="text-foreground text-2xl md:text-3xl font-bold mb-5 px-2 md:px-0">
+        TechJournal: notizie su Apple, Tech e Gadget
+      </h1>
       {/* Sezione in testa: tutta la larghezza, 4 articoli (1 grande + 3 a destra). La sidebar inizia sotto. */}
       <HeroSection posts={heroPosts} />
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">
+            <PostsGridStatic
+              posts={initialGridPosts}
+              emptyGridIsExpected={emptyGridIsExpected}
+            />
           <HomeLoadMoreGrid
-            initialPosts={initialGridPosts}
             initialTotalPages={initialTotalPages}
             initialPagesConsumed={initialPagesConsumed}
             categoryId={categoryId}
-            emptyGridIsExpected={initialPosts.length > 0 && initialPosts.length <= 4}
+              emptyGridIsExpected={emptyGridIsExpected}
           />
         </div>
         <div className="flex flex-col gap-6 lg:w-[320px] shrink-0">

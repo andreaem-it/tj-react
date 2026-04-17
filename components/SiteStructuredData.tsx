@@ -38,6 +38,16 @@ export default function SiteStructuredData() {
           "query-input": "required name=search_term_string",
         },
       },
+      {
+        "@type": "Service",
+        "@id": `${base}/#editorial-service`,
+        name: "TechJournal Editorial Service",
+        serviceType: "Technology News Publishing",
+        provider: { "@id": `${base}/#organization` },
+        areaServed: "IT",
+        availableLanguage: ["it-IT"],
+        url: base,
+      },
     ],
   };
 

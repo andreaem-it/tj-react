@@ -1,0 +1,35 @@
+# TechJournal (techjournal.it) - LLM Access Guide
+
+Site: https://www.techjournal.it
+Type: Italian technology news website
+Primary language: it-IT
+
+## Canonical discovery
+- Sitemap: https://www.techjournal.it/sitemap.xml
+- Robots: https://www.techjournal.it/robots.txt
+- Feed: https://www.techjournal.it/feed.xml
+
+## Machine-readable endpoints
+- API catalog: https://www.techjournal.it/.well-known/api-catalog
+- Agent skills: https://www.techjournal.it/.well-known/agent-skills/index.json
+- Agent card: https://www.techjournal.it/.well-known/agent.json
+- API status: https://www.techjournal.it/api/status
+
+## API and docs
+- Service description: https://www.techjournal.it/api
+- Service docs: https://www.techjournal.it/docs
+
+## Content negotiation
+- Article pages support markdown when request header includes:
+  Accept: text/markdown
+- Scope: article detail pages only
+
+## Key sections
+- Home: https://www.techjournal.it/
+- Search: https://www.techjournal.it/search
+- Price Radar: https://www.techjournal.it/price-radar
+
+## Notes for crawlers and agents
+- Respect robots directives and crawl responsibly.
+- Prefer canonical URLs and structured data where available.
+- For near-real-time API availability, check /api/status before bulk requests.

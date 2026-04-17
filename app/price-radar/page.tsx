@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PriceRadarContent from "@/components/PriceRadarContent";
+import PriceRadarStructuredData from "@/components/PriceRadarStructuredData";
 import { SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -25,5 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default function PriceRadarPage() {
-  return <PriceRadarContent />;
+  return (
+    <>
+      <PriceRadarStructuredData />
+      <PriceRadarContent />
+    </>
+  );
 }

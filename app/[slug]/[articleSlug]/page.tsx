@@ -47,6 +47,9 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     title: `${post.title} | TechJournal`,
     description,
     alternates: { canonical },
+    authors: [{ name: post.authorName, url: `${SITE_URL.replace(/\/$/, "")}/chi-siamo` }],
+    creator: post.authorName,
+    publisher: "TechJournal",
     openGraph: {
       title: post.title,
       description,
@@ -55,6 +58,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       images: [{ url: image, width: 1200, height: 630, alt: post.imageAlt || post.title }],
       type: "article",
       publishedTime: post.date,
+      modifiedTime: post.date,
       authors: [post.authorName],
     },
     twitter: {
@@ -62,6 +66,11 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       title: post.title,
       description,
       images: [image],
+    },
+    other: {
+      "article:published_time": post.date,
+      "article:modified_time": post.date,
+      "last-modified": post.date,
     },
   };
 }
@@ -129,8 +138,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           )}
           <div className="text-left min-w-0">
-            <p className="text-foreground text-sm font-medium wrap-anywhere">Di {post.authorName}</p>
-            <p className="text-muted text-sm">{formatDate(post.date)}</p>
+            <p className="text-foreground text-sm font-medium wrap-anywhere">
+              Di{" "}
+              <Link href="/chi-siamo" rel="author" className="hover:underline">
+                {post.authorName}
+              </Link>
+            </p>
+            <time className="text-muted text-sm" dateTime={post.date}>
+              {formatDate(post.date)}
+            </time>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-end min-w-0 max-w-full">
