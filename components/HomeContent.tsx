@@ -38,7 +38,7 @@ export default function HomeContent({
 
   return (
     <div className="max-w-7xl mx-auto px-0 md:px-4 py-6">
-      <h1 className="text-foreground text-2xl md:text-3xl font-bold mb-5 px-2 md:px-0">
+      <h1 className="sr-only">
         TechJournal: notizie su Apple, Tech e Gadget
       </h1>
       {/* Sezione in testa: tutta la larghezza, 4 articoli (1 grande + 3 a destra). La sidebar inizia sotto. */}
