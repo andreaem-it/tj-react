@@ -54,6 +54,7 @@ export async function GET(request: Request) {
       "x-content-format": "markdown",
       "x-markdown-tokens": String(estimateMarkdownTokens(markdown)),
       "last-modified": new Date(post.date).toUTCString(),
+      Link: `</api>; rel="service-desc", </docs>; rel="service-doc", </.well-known/api-catalog>; rel="api-catalog"`,
     },
   });
 }

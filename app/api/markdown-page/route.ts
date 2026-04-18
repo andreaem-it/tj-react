@@ -8,6 +8,11 @@ function stripNonContentTags(html: string): string {
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
 }
 
+function extractMainHtml(html: string): string {
+  const match = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+  return match?.[1] ?? html;
+}
+
 function extractTitle(html: string): string {
   const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   if (!match || !match[1]) return "TechJournal";
@@ -50,7 +55,8 @@ export async function GET(request: Request) {
   }
 
   const html = await upstream.text();
-  const cleanedHtml = stripNonContentTags(html);
+  const focusedHtml = extractMainHtml(html);
+  const cleanedHtml = stripNonContentTags(focusedHtml);
   const title = extractTitle(cleanedHtml);
   const markdownBody = htmlToMarkdown(cleanedHtml);
   const markdown = [`# ${title}`, "", `Source: ${path}`, "", markdownBody].join("\n").trim();
@@ -61,6 +67,7 @@ export async function GET(request: Request) {
       "content-type": "text/markdown; charset=utf-8",
       "x-content-format": "markdown",
       "x-markdown-tokens": String(estimateMarkdownTokens(markdown)),
+      Link: `</api>; rel="service-desc", </docs>; rel="service-doc", </.well-known/api-catalog>; rel="api-catalog"`,
     },
   });
 

@@ -17,6 +17,8 @@ const VALID_WELL_KNOWN_PATHS = new Set([
   "/.well-known/openid-configuration",
   "/.well-known/oauth-authorization-server",
   "/.well-known/oauth-protected-resource",
+  "/.well-known/agents.json",
+  "/.well-known/llms.txt",
 ]);
 
 const EXCLUDED_MARKDOWN_PREFIXES = new Set([
@@ -121,6 +123,8 @@ export function middleware(request: NextRequest) {
       markdownUrl.searchParams.set("slug", article.articleSlug);
       const response = NextResponse.rewrite(markdownUrl);
       appendSecurityHeaders(response);
+      appendAgentLinkHeaders(response);
+      appendFreshnessHeaders(response);
       return response;
     }
 
@@ -136,6 +140,8 @@ export function middleware(request: NextRequest) {
       markdownUrl.searchParams.set("path", pathname);
       const response = NextResponse.rewrite(markdownUrl);
       appendSecurityHeaders(response);
+      appendAgentLinkHeaders(response);
+      appendFreshnessHeaders(response);
       return response;
     }
   }
