@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import { SITE_URL } from "@/lib/constants";
-import { htmlToMarkdown } from "@/lib/markdown";
+import { estimateMarkdownTokens, htmlToMarkdown } from "@/lib/markdown";
 
 function badRequest(message: string): NextResponse {
   return NextResponse.json({ error: message }, { status: 400 });
@@ -45,12 +45,14 @@ export async function GET(request: Request) {
     "",
     htmlToMarkdown(post.content),
   ].filter((part) => part.length > 0);
+  const markdown = markdownParts.join("\n");
 
-  return new NextResponse(markdownParts.join("\n"), {
+  return new NextResponse(markdown, {
     status: 200,
     headers: {
       "content-type": "text/markdown; charset=utf-8",
       "x-content-format": "markdown",
+      "x-markdown-tokens": String(estimateMarkdownTokens(markdown)),
       "last-modified": new Date(post.date).toUTCString(),
     },
   });

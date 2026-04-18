@@ -7,6 +7,7 @@ export async function GET() {
     {
       version: "1.0",
       discovery: `${base}/.well-known/mcp.json`,
+      serverCard: `${base}/.well-known/mcp/server-card.json`,
     },
     {
       headers: { "content-type": "application/json; charset=utf-8" },

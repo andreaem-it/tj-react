@@ -13,6 +13,10 @@ const VALID_WELL_KNOWN_PATHS = new Set([
   "/.well-known/mcp.json",
   "/.well-known/mcp",
   "/.well-known/mcp-discovery",
+  "/.well-known/mcp/server-card.json",
+  "/.well-known/openid-configuration",
+  "/.well-known/oauth-authorization-server",
+  "/.well-known/oauth-protected-resource",
 ]);
 
 const EXCLUDED_MARKDOWN_PREFIXES = new Set([
@@ -34,6 +38,7 @@ function isInvalidWellKnownPath(pathname: string): boolean {
 }
 
 function wantsMarkdown(request: NextRequest): boolean {
+  if (request.headers.get("x-skip-markdown-rewrite") === "1") return false;
   const accept = request.headers.get("accept");
   return typeof accept === "string" && accept.includes("text/markdown");
 }
@@ -51,18 +56,26 @@ function looksLikeArticlePath(pathname: string): { category: string; articleSlug
   return { category, articleSlug };
 }
 
-function isHtmlRequest(request: NextRequest): boolean {
-  const dest = request.headers.get("sec-fetch-dest");
-  if (dest === "document") return true;
-
-  const accept = request.headers.get("accept");
-  return typeof accept === "string" && accept.includes("text/html");
-}
-
 function appendAgentLinkHeaders(response: NextResponse): void {
   response.headers.append("Link", '</api>; rel="service-desc"');
   response.headers.append("Link", '</docs>; rel="service-doc"');
   response.headers.append("Link", '</.well-known/api-catalog>; rel="api-catalog"');
+  response.headers.append(
+    "Link",
+    '</.well-known/oauth-authorization-server>; rel="oauth2-metadata"'
+  );
+  response.headers.append(
+    "Link",
+    '</.well-known/openid-configuration>; rel="openid-configuration"'
+  );
+  response.headers.append(
+    "Link",
+    '</.well-known/oauth-protected-resource>; rel="oauth-protected-resource"'
+  );
+  response.headers.append(
+    "Link",
+    '</.well-known/mcp/server-card.json>; rel="mcp-server-card"'
+  );
 }
 
 function appendFreshnessHeaders(response: NextResponse): void {
@@ -110,14 +123,27 @@ export function middleware(request: NextRequest) {
       appendSecurityHeaders(response);
       return response;
     }
+
+    const isPageLikePath =
+      pathname !== "/favicon.ico" &&
+      !pathname.startsWith("/_next/") &&
+      !pathname.startsWith("/api/") &&
+      !/\.[a-z0-9]+$/i.test(pathname);
+
+    if (isPageLikePath) {
+      const markdownUrl = request.nextUrl.clone();
+      markdownUrl.pathname = "/api/markdown-page";
+      markdownUrl.searchParams.set("path", pathname);
+      const response = NextResponse.rewrite(markdownUrl);
+      appendSecurityHeaders(response);
+      return response;
+    }
   }
 
   const response = NextResponse.next();
   appendSecurityHeaders(response);
-  if (isHtmlRequest(request)) {
-    appendAgentLinkHeaders(response);
-    appendFreshnessHeaders(response);
-  }
+  appendAgentLinkHeaders(response);
+  appendFreshnessHeaders(response);
 
   return response;
 }

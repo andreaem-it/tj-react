@@ -61,3 +61,13 @@ export function htmlToMarkdown(html: string): string {
 
   return markdown;
 }
+
+/**
+ * Stima leggera del numero di token Markdown (approssimazione utile per header diagnostico).
+ * Regola pratica: ~4 caratteri per token.
+ */
+export function estimateMarkdownTokens(markdown: string): number {
+  const normalized = markdown.trim();
+  if (!normalized) return 0;
+  return Math.max(1, Math.ceil(normalized.length / 4));
+}

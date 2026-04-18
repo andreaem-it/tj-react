@@ -6,6 +6,10 @@ export async function GET() {
 
   const discovery = {
     mcpVersion: "1.0",
+    serverInfo: {
+      name: "TechJournal MCP Server",
+      version: "1.0.0",
+    },
     name: "TechJournal MCP Discovery",
     servers: [
       {
@@ -16,6 +20,7 @@ export async function GET() {
       },
     ],
     links: {
+      serverCard: `${base}/.well-known/mcp/server-card.json`,
       openapi: `${base}/api/openapi.json`,
       docs: `${base}/docs`,
       status: `${base}/api/status`,
