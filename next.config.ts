@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
-const usePassthroughImageLoader = process.env.NEXT_IMAGE_PASSTHROUGH === "1";
+/**
+ * Safe-by-default: bypass `/_next/image` to avoid production outages when
+ * external image optimization returns 402 (quota/billing).
+ *
+ * Set NEXT_IMAGE_PASSTHROUGH=0 to explicitly re-enable Next/Vercel optimizer.
+ */
+const usePassthroughImageLoader = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@mep-agency/next-iubenda"],
