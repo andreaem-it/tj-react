@@ -223,7 +223,7 @@ const jsonHeaders: HeadersInit = { Accept: "application/json" };
 /** Lista prodotti Price Radar (GET). */
 export async function fetchPriceRadarProducts(): Promise<PriceRadarProductsJson> {
   const res = await fetchWithFallback(
-    "/api/price-radar/products",
+    "/api/price-radar/products?status=active",
     { headers: jsonHeaders },
     "price-radar products",
     TIMEOUT_PRICE_RADAR_MS,
