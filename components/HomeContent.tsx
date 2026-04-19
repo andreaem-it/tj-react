@@ -1,6 +1,5 @@
 import HeroSection from "./HeroSection";
 import HomeLoadMoreGrid from "./HomeLoadMoreGrid";
-import PostsGridStatic from "./PostsGridStatic";
 import OfferteSidebar from "./OfferteSidebar";
 import TrendingSidebar from "./TrendingSidebar";
 import MostReadSidebar from "./MostReadSidebar";
@@ -36,6 +35,9 @@ export default function HomeContent({
   const heroPosts = initialPosts.slice(0, HERO_POSTS_TARGET);
   const initialGridPosts = initialPosts.slice(HERO_POSTS_TARGET);
   const emptyGridIsExpected = initialPosts.length > 0 && initialPosts.length <= HERO_POSTS_TARGET;
+  const homeSidebarSlot =
+    process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME_SIDEBAR ??
+    process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_SIDEBAR;
 
   return (
     <div className="max-w-7xl mx-auto px-0 md:px-4 py-6">
@@ -46,16 +48,12 @@ export default function HomeContent({
       <HeroSection posts={heroPosts} />
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">
-            <PostsGridStatic
-              posts={initialGridPosts}
-              emptyGridIsExpected={emptyGridIsExpected}
-            />
           <HomeLoadMoreGrid
             initialPosts={initialGridPosts}
             initialTotalPages={initialTotalPages}
             initialPagesConsumed={initialPagesConsumed}
             categoryId={categoryId}
-              emptyGridIsExpected={emptyGridIsExpected}
+            emptyGridIsExpected={emptyGridIsExpected}
           />
         </div>
         <div className="flex flex-col gap-6 lg:w-[320px] shrink-0">
@@ -90,7 +88,7 @@ export default function HomeContent({
           <InlineBannerPlaceholder
             width="100%"
             height={250}
-            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME_SIDEBAR}
+            adSlot={homeSidebarSlot}
           />
           <MostReadSidebar posts={mostReadPosts} />
           <TrendingByPeriodSidebar weekPosts={weekTrendingPosts} monthPosts={monthTrendingPosts} />

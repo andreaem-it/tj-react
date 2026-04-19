@@ -10,6 +10,13 @@ export default function AppShell({
 }: {
   children: React.ReactNode;
 }) {
+  const leftSkyscraperSlot =
+    process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_LEFT ??
+    process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_RIGHT;
+  const rightSkyscraperSlot =
+    process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_RIGHT ??
+    process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_LEFT;
+
   return (
     <>
       <Suspense fallback={<HeaderSkeleton />}>
@@ -20,7 +27,7 @@ export default function AppShell({
           side="left"
           width={160}
           minHeight={600}
-          adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_LEFT}
+          adSlot={leftSkyscraperSlot}
         />
         <div className="flex-1 min-w-0 flex justify-center">
           {children}
@@ -29,7 +36,7 @@ export default function AppShell({
           side="right"
           width={160}
           minHeight={600}
-          adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_RIGHT}
+          adSlot={rightSkyscraperSlot}
         />
       </main>
       <Footer />

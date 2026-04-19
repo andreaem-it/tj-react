@@ -26,7 +26,7 @@ export default function BannerPlaceholder({
         adSlot={adSlot}
         adFormat="vertical"
         fullWidthResponsive={false}
-        deferUntilVisible
+        deferUntilVisible={false}
         rootMargin="400px"
         style={{ minHeight: `${Math.min(minHeight, 600)}px` }}
       />

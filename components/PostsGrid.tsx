@@ -14,6 +14,22 @@ interface PostsGridProps {
 
 export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, emptyGridIsExpected }: PostsGridProps) {
   if (posts.length === 0) {
+    if (hasMore) {
+      return (
+        <section>
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={onLoadMore}
+              disabled={isLoading}
+              className="px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity"
+            >
+              {isLoading ? "Caricamento..." : "More Posts"}
+            </button>
+          </div>
+        </section>
+      );
+    }
     if (!hasMore && !emptyGridIsExpected) {
       return (
         <p className="text-muted py-8 text-center">Nessun articolo trovato.</p>
@@ -28,6 +44,7 @@ export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, empty
         {posts.map((post, index) => (
           <ArticleCard key={post.id} post={post} priority={index === 0} />
         ))}
+        {posts.length % 2 !== 0 && <div className="hidden md:block" aria-hidden />}
       </div>
       {hasMore && (
         <div className="mt-8 flex justify-center">
