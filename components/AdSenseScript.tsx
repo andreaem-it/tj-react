@@ -6,6 +6,7 @@ import Script from "next/script";
 const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
 const ADSENSE_NEED_EVENT = "techjournal:adsense-needed";
 const eagerAdSenseLoad = process.env.NEXT_PUBLIC_ADSENSE_EAGER_LOAD === "1";
+const ADSENSE_FAILSAFE_MS = 3500;
 
 /**
  * Carica lo script di Google AdSense una sola volta (usare in layout).
@@ -25,6 +26,7 @@ export default function AdSenseScript() {
   useEffect(() => {
     if (typeof window === "undefined" || window.location.hostname === "localhost") return;
     let cancelled = false;
+    let failSafeTimer: ReturnType<typeof setTimeout> | null = null;
 
     const enableScript = () => {
       if (cancelled) return;
@@ -34,6 +36,7 @@ export default function AdSenseScript() {
         window.removeEventListener("keydown", onFirstInteraction);
         window.removeEventListener("scroll", onFirstInteraction);
       }
+      if (failSafeTimer) clearTimeout(failSafeTimer);
       window.removeEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript);
     };
 
@@ -50,6 +53,9 @@ export default function AdSenseScript() {
       window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
     }
     window.addEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript, { once: true });
+    // Failsafe revenue guard: se nessuno slot emette l'evento in tempi brevi,
+    // carica comunque AdSense per evitare giornate senza impression.
+    failSafeTimer = setTimeout(enableScript, ADSENSE_FAILSAFE_MS);
 
     return () => {
       cancelled = true;
@@ -58,6 +64,7 @@ export default function AdSenseScript() {
         window.removeEventListener("keydown", onFirstInteraction);
         window.removeEventListener("scroll", onFirstInteraction);
       }
+      if (failSafeTimer) clearTimeout(failSafeTimer);
       window.removeEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript);
     };
   }, []);
