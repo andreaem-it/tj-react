@@ -19,7 +19,7 @@ function TechJournalLogo() {
       role="img"
       aria-label="TechJournal"
     >
-      <path fill="#fff" d="M0 0h2048v408H0z" />
+      <path d="M0 0h2048v408H0z" />
       <path
         fill="#febb00"
         d="M960.8 335.3c16.8-.7 37.1-.2 54.1-.2h99.4l300.5.1 369.9-.1c62.3 0 124.6-.1 186.9.1 11.3 0 20.2 5.9 21.8 17.7.7 5.6-.9 11.2-4.3 15.7-4.2 5.3-8.5 7.2-15 7.9l-678.7-.1-220.5-.1-69.7.1c-13.9 0-27.7.2-41.5-.4-10.3-.4-14-5.1-20.6-12.7-.3-4.5 0-10.7.1-15.4 4.3-6.2 10.3-10.7 17.6-12.7z"
@@ -32,10 +32,7 @@ function TechJournalLogo() {
         fill="#7e7a73"
         d="M1053.3 111.4c.5-.1 1.1-.1 1.6-.2 21.3-2.1 47.8 4.8 65 19 39.3 32.4 42.3 98.4 14 139-14.6 20.9-38.9 32.1-64.7 34.6-24.4 1.7-44.8-1.6-64.8-16.7-54-40.8-45.5-141.7 18.8-168.3 10.5-4.3 18.9-5.7 30.1-7.4z"
       />
-      <path
-        fill="#fff"
-        d="M1056.4 134.2c79.5-4.1 84.7 141 6 146.3-67.3 6.8-90-130.7-6-146.3z"
-      />
+      <path fill="none" d="M1056.4 134.2c79.5-4.1 84.7 141 6 146.3-67.3 6.8-90-130.7-6-146.3z"/>
     </svg>
   );
 }
@@ -104,12 +101,12 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
           <Link href="/" className="flex items-center shrink-0 min-w-0">
             <TechJournalLogo />
           </Link>
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             <a
               href="https://www.facebook.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-foreground hover:text-accent transition-colors"
+              className="hidden md:inline-flex text-foreground hover:text-accent transition-colors"
               aria-label="Facebook"
             >
               <span className="text-lg font-semibold">f</span>
@@ -118,7 +115,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               href="https://www.instagram.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-foreground hover:text-accent transition-colors"
+              className="hidden md:inline-flex text-foreground hover:text-accent transition-colors"
               aria-label="Instagram"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
