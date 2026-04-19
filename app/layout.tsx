@@ -1,22 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import HeaderSkeleton from "@/components/HeaderSkeleton";
-import Footer from "@/components/Footer";
-import ScrollToTop from "@/components/ScrollToTop";
-import BannerPlaceholder from "@/components/BannerPlaceholder";
-import NewsletterModal from "@/components/NewsletterModal";
 import IubendaProviderWrapper from "@/components/IubendaProviderWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import TrackingConsentGate from "@/components/TrackingConsentGate";
 import AdSenseScript from "@/components/AdSenseScript";
 import AppShell from "@/components/AppShell";
 import SiteStructuredData from "@/components/SiteStructuredData";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import DeferredTelemetry from "@/components/DeferredTelemetry";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -93,17 +84,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" className={`dark ${inter.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="//pagead2.googlesyndication.com" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+        <link rel="preconnect" href="https://region1.google-analytics.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="//region1.google-analytics.com" />
+        <link rel="preconnect" href="https://cs.iubenda.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="//cs.iubenda.com" />
+        <link rel="preconnect" href="https://idb.iubenda.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="//idb.iubenda.com" />
+        <link rel="preconnect" href="https://static.techjournal.it" crossOrigin="" />
+        <link rel="dns-prefetch" href="//static.techjournal.it" />
+      </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased font-sans">
-        <IubendaProviderWrapper>
-          <SiteStructuredData />
-          <GoogleAnalytics />
-          <GoogleAnalyticsPageView />
-          <TrackingConsentGate />
-          <AdSenseScript />
-          <AppShell>{children}</AppShell>
-          <Analytics />
-          <SpeedInsights />
-        </IubendaProviderWrapper>
+        <IubendaProviderWrapper />
+        <SiteStructuredData />
+        <GoogleAnalytics />
+        <GoogleAnalyticsPageView />
+        <AdSenseScript />
+        <AppShell>{children}</AppShell>
+        <DeferredTelemetry />
       </body>
     </html>
   );

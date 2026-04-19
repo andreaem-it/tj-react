@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useIubenda } from "@mep-agency/next-iubenda";
 
+const GA_NEED_EVENT = "techjournal:ga-needed";
+
 /**
  * Integrazione next-iubenda con tracciamento:
  * - GA: __iubendaGaConsentUpdate quando l'utente accetta cookie "measurement".
@@ -19,6 +21,7 @@ export default function TrackingConsentGate() {
   useEffect(() => {
     if (allowMeasurement && typeof window !== "undefined" && (window as any).__iubendaGaConsentUpdate) {
       (window as any).__iubendaGaConsentUpdate();
+      window.dispatchEvent(new Event(GA_NEED_EVENT));
     }
   }, [allowMeasurement]);
 

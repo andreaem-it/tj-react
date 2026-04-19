@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import Script from "next/script";
 
 const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
+const ADSENSE_NEED_EVENT = "techjournal:adsense-needed";
 
 /**
  * Carica lo script di Google AdSense una sola volta (usare in layout).
@@ -23,8 +24,6 @@ export default function AdSenseScript() {
   useEffect(() => {
     if (typeof window === "undefined" || window.location.hostname === "localhost") return;
     let cancelled = false;
-    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
-    let idleId: number | null = null;
 
     const enableScript = () => {
       if (cancelled) return;
@@ -32,39 +31,27 @@ export default function AdSenseScript() {
       window.removeEventListener("pointerdown", onFirstInteraction);
       window.removeEventListener("keydown", onFirstInteraction);
       window.removeEventListener("scroll", onFirstInteraction);
-      if (fallbackTimer) clearTimeout(fallbackTimer);
-      if (idleId != null && "cancelIdleCallback" in window) {
-        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
-      }
+      window.removeEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript);
     };
 
     const onFirstInteraction = () => {
+      enableScript();
+    };
+    const onAdSlotNeedsScript = () => {
       enableScript();
     };
 
     window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
     window.addEventListener("keydown", onFirstInteraction, { once: true });
     window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
-
-    if ("requestIdleCallback" in window) {
-      idleId = (
-        window as Window & {
-          requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
-        }
-      ).requestIdleCallback(enableScript, { timeout: 8000 });
-    } else {
-      fallbackTimer = setTimeout(enableScript, 5000);
-    }
+    window.addEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript, { once: true });
 
     return () => {
       cancelled = true;
       window.removeEventListener("pointerdown", onFirstInteraction);
       window.removeEventListener("keydown", onFirstInteraction);
       window.removeEventListener("scroll", onFirstInteraction);
-      if (fallbackTimer) clearTimeout(fallbackTimer);
-      if (idleId != null && "cancelIdleCallback" in window) {
-        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
-      }
+      window.removeEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript);
     };
   }, []);
 
