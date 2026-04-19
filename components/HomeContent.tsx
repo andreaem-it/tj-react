@@ -31,7 +31,7 @@ export default function HomeContent({
   monthTrendingPosts,
   categoryId,
 }: HomeContentProps) {
-  const HERO_POSTS_TARGET = 3;
+  const HERO_POSTS_TARGET = 4;
   const heroPosts = initialPosts.slice(0, HERO_POSTS_TARGET);
   const initialGridPosts = initialPosts.slice(HERO_POSTS_TARGET);
   const emptyGridIsExpected = initialPosts.length > 0 && initialPosts.length <= HERO_POSTS_TARGET;
