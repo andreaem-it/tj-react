@@ -39,6 +39,8 @@ export default function ArticleCardStatic({ post, priority }: ArticleCardStaticP
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             priority={priority}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "low"}
           />
         ) : (
           <div className="absolute inset-0 bg-sidebar-bg" />

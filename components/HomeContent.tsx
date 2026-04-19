@@ -32,9 +32,10 @@ export default function HomeContent({
   monthTrendingPosts,
   categoryId,
 }: HomeContentProps) {
-  const heroPosts = initialPosts.slice(0, 4);
-  const initialGridPosts = initialPosts.slice(4);
-  const emptyGridIsExpected = initialPosts.length > 0 && initialPosts.length <= 4;
+  const HERO_POSTS_TARGET = 3;
+  const heroPosts = initialPosts.slice(0, HERO_POSTS_TARGET);
+  const initialGridPosts = initialPosts.slice(HERO_POSTS_TARGET);
+  const emptyGridIsExpected = initialPosts.length > 0 && initialPosts.length <= HERO_POSTS_TARGET;
 
   return (
     <div className="max-w-7xl mx-auto px-0 md:px-4 py-6">

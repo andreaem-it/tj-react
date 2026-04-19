@@ -53,6 +53,8 @@ export default function ArticleCard({ post, variant = "default", size, priority 
               sizes="(max-width: 768px) 50vw, 20vw"
               placeholder="blur"
               blurDataURL={BLUR_DATA_URL}
+            loading="lazy"
+            fetchPriority="low"
             />
           )}
         </div>
@@ -81,6 +83,8 @@ export default function ArticleCard({ post, variant = "default", size, priority 
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             priority={priority}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "low"}
             onError={() => setHeroImageError(true)}
           />
         ) : (
@@ -123,6 +127,8 @@ export default function ArticleCard({ post, variant = "default", size, priority 
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             priority={priority}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "low"}
           />
         ) : (
           <div className="absolute inset-0 bg-sidebar-bg" />

@@ -20,7 +20,7 @@ export default function PostsGridStatic({ posts, emptyGridIsExpected }: PostsGri
     <section>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         {posts.map((post, index) => (
-          <ArticleCardStatic key={post.id} post={post} priority={index === 0} />
+          <ArticleCardStatic key={post.id} post={post} />
         ))}
       </div>
     </section>

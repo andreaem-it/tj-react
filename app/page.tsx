@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 const emptyPosts: PostWithMeta[] = [];
-const INITIAL_POSTS_TARGET = 20;
+const INITIAL_POSTS_TARGET = 12;
 
 export default async function HomePage() {
   let initialPosts = emptyPosts;
