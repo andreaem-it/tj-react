@@ -5,6 +5,7 @@ import Script from "next/script";
 
 const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
 const ADSENSE_NEED_EVENT = "techjournal:adsense-needed";
+const eagerAdSenseLoad = process.env.NEXT_PUBLIC_ADSENSE_EAGER_LOAD === "1";
 
 /**
  * Carica lo script di Google AdSense una sola volta (usare in layout).
@@ -28,9 +29,11 @@ export default function AdSenseScript() {
     const enableScript = () => {
       if (cancelled) return;
       setLoadScript(true);
-      window.removeEventListener("pointerdown", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("scroll", onFirstInteraction);
+      if (eagerAdSenseLoad) {
+        window.removeEventListener("pointerdown", onFirstInteraction);
+        window.removeEventListener("keydown", onFirstInteraction);
+        window.removeEventListener("scroll", onFirstInteraction);
+      }
       window.removeEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript);
     };
 
@@ -41,16 +44,20 @@ export default function AdSenseScript() {
       enableScript();
     };
 
-    window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
-    window.addEventListener("keydown", onFirstInteraction, { once: true });
-    window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+    if (eagerAdSenseLoad) {
+      window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
+      window.addEventListener("keydown", onFirstInteraction, { once: true });
+      window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+    }
     window.addEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript, { once: true });
 
     return () => {
       cancelled = true;
-      window.removeEventListener("pointerdown", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("scroll", onFirstInteraction);
+      if (eagerAdSenseLoad) {
+        window.removeEventListener("pointerdown", onFirstInteraction);
+        window.removeEventListener("keydown", onFirstInteraction);
+        window.removeEventListener("scroll", onFirstInteraction);
+      }
       window.removeEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript);
     };
   }, []);

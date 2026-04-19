@@ -5,6 +5,9 @@ import Script from "next/script";
 
 const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
 const GA_NEED_EVENT = "techjournal:ga-needed";
+const hasIubendaConfig =
+  Boolean(process.env.NEXT_PUBLIC_IUBENDA_SITE_ID?.trim()) &&
+  Boolean(process.env.NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID?.trim());
 
 /**
  * Google Analytics 4 con Consent Mode v2.
@@ -32,16 +35,20 @@ export default function GoogleAnalytics() {
     const onFirstInteraction = () => enable();
     const onGaNeeded = () => enable();
 
-    window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
-    window.addEventListener("keydown", onFirstInteraction, { once: true });
-    window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+    if (!hasIubendaConfig) {
+      window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
+      window.addEventListener("keydown", onFirstInteraction, { once: true });
+      window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+    }
     window.addEventListener(GA_NEED_EVENT, onGaNeeded, { once: true });
 
     return () => {
       cancelled = true;
-      window.removeEventListener("pointerdown", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("scroll", onFirstInteraction);
+      if (!hasIubendaConfig) {
+        window.removeEventListener("pointerdown", onFirstInteraction);
+        window.removeEventListener("keydown", onFirstInteraction);
+        window.removeEventListener("scroll", onFirstInteraction);
+      }
       window.removeEventListener(GA_NEED_EVENT, onGaNeeded);
     };
   }, []);
