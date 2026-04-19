@@ -15,6 +15,7 @@ const API_ORIGIN = (() => {
     return API_BASE.replace(/\/$/, "");
   }
 })();
+const VIEW_INCREMENT_STORAGE_PREFIX = "article-view-incremented";
 
 interface ArticleBodyProps {
   html: string;
@@ -41,7 +42,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
   }, []);
 
   useEffect(() => {
-    if (viewCountProp != null || !postId) return;
+    if (!postId) return;
     const ctrl = new AbortController();
     const tryFetch = async (url: string) => {
       logApiUrl(url);
@@ -57,13 +58,40 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
     };
     (async () => {
       const n =
+        (await tryFetch(`/api/views/${postId}`)) ??
         (await tryFetch(`${WP_BASE}/views/${postId}`)) ??
         (await tryFetch(`${API_ORIGIN}/wp-json/pvc/v1/posts/${postId}`)) ??
         (await tryFetch(`${API_ORIGIN}/wp-json/post-views-counter/v1/views/${postId}`));
       if (n != null) setViewCountFetched(n);
     })();
     return () => ctrl.abort();
-  }, [postId, viewCountProp]);
+  }, [postId]);
+
+  useEffect(() => {
+    if (!postId || typeof window === "undefined") return;
+    const key = `${VIEW_INCREMENT_STORAGE_PREFIX}:${postId}`;
+    if (sessionStorage.getItem(key) === "1") return;
+
+    sessionStorage.setItem(key, "1");
+    const ctrl = new AbortController();
+    void fetch(`/api/views/${postId}`, {
+      method: "POST",
+      headers: API_REQUEST_HEADERS,
+      signal: ctrl.signal,
+      keepalive: true,
+    })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = await res.json();
+        const n = typeof data?.views === "number" ? data.views : Number(data?.views);
+        if (Number.isFinite(n) && n >= 0) setViewCountFetched(n);
+      })
+      .catch(() => {
+        // ignore transient network errors
+      });
+
+    return () => ctrl.abort();
+  }, [postId]);
 
   const persist = (value: number) => {
     setLevel(value);
