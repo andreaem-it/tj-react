@@ -33,9 +33,20 @@ function formatLastPriceUpdate(value: string): string | null {
 /** Domini Amazon supportati da next/image */
 const ALLOWED_IMAGE_HOSTS = ["m.media-amazon.com", "images-na.ssl-images-amazon.com", "images-eu.ssl-images-amazon.com"];
 
-function isAllowedImageUrl(url: string): boolean {
+function normalizeImageUrl(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (/^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(trimmed)) return `https://${trimmed}`;
+  if (trimmed.startsWith("http://")) return `https://${trimmed.slice("http://".length)}`;
+  return trimmed;
+}
+
+function isAllowedNextImageUrl(url: string): boolean {
   try {
-    const host = new URL(url).hostname;
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:") return false;
+    const host = parsed.hostname;
     return ALLOWED_IMAGE_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
   } catch {
     return false;
@@ -45,16 +56,17 @@ function isAllowedImageUrl(url: string): boolean {
 export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
   const discountPercent = Math.round(offer.discount_percent);
   const isSignificantDiscount = discountPercent >= 15;
-  const useNextImage = offer.image && isAllowedImageUrl(offer.image);
+  const imageUrl = offer.image ? normalizeImageUrl(offer.image) : null;
+  const useNextImage = Boolean(imageUrl && isAllowedNextImageUrl(imageUrl));
   const lastPriceUpdate = formatLastPriceUpdate(offer.created_at);
 
   return (
     <article className="group relative flex flex-col h-full bg-content-bg rounded-xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-accent/40 transition-all duration-300">
       <div className="relative aspect-square bg-sidebar-bg overflow-hidden">
-        {offer.image ? (
+        {imageUrl ? (
           useNextImage ? (
             <Image
-              src={offer.image}
+              src={imageUrl}
               alt={offer.title}
               fill
               className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
@@ -65,7 +77,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={offer.image}
+              src={imageUrl}
               alt={offer.title}
               loading="lazy"
               decoding="async"
