@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PostsGrid from "./PostsGrid";
 import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
 import type { PostWithMeta } from "@/lib/api";
@@ -23,8 +23,9 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
   );
   const [isLoading, setIsLoading] = useState(false);
   const nextPageRef = useRef(initialPagesConsumed + 1);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const onLoadMore = useCallback(async () => {
+  const loadNextPage = useCallback(async () => {
     if (isLoading || !hasMore) return;
     const pageToFetch = nextPageRef.current;
     setIsLoading(true);
@@ -48,6 +49,41 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
     }
   }, [categoryId, hasMore, isLoading]);
 
+  const onLoadMore = useCallback(() => {
+    void loadNextPage();
+  }, [loadNextPage]);
+
+  // Infinite scroll: carica automaticamente quando il fondo entra in viewport.
+  useEffect(() => {
+    if (!hasMore || isLoading) return;
+    const node = sentinelRef.current;
+    if (!node) return;
+    if (!("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            void loadNextPage();
+            break;
+          }
+        }
+      },
+      { rootMargin: "500px 0px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading, loadNextPage, gridPosts.length]);
+
+  // Se la griglia è dispari e ci sono altre pagine, prova a bilanciare automaticamente.
+  useEffect(() => {
+    if (isLoading || !hasMore) return;
+    if (gridPosts.length > 0 && gridPosts.length % 2 !== 0) {
+      void loadNextPage();
+    }
+  }, [gridPosts.length, hasMore, isLoading, loadNextPage]);
+
   return (
     <>
       <InlineBannerPlaceholder
@@ -63,6 +99,7 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
         isLoading={isLoading}
         emptyGridIsExpected={emptyGridIsExpected}
       />
+      <div ref={sentinelRef} className="h-px w-full" aria-hidden />
     </>
   );
 }
