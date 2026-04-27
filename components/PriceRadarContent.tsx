@@ -56,7 +56,7 @@ function mapSqliteProductsToOffers(products: PriceRadarProductListItem[]): TechR
     image: p.image_url ?? "",
     url: p.url,
     asin: p.asin,
-    created_at: p.last_checked_at ?? p.last_price_change_at ?? new Date().toISOString(),
+    created_at: p.last_price_change_at ?? p.last_checked_at ?? new Date().toISOString(),
     productId: p.id,
   }));
 }
@@ -128,10 +128,13 @@ export default function PriceRadarContent() {
     setLoading(true);
     setError(null);
     try {
-      const data = PRICE_RADAR_ENABLED
-        ? await fetchLiveOffers()
-        : PRICE_RADAR_SQLITE_ENABLED
-          ? await fetchSqliteOffers()
+      // Fonte unica preferita: endpoint Price Radar su tj-api.
+      // Se entrambe le feature sono abilitate, usiamo comunque /api/price-radar/*
+      // per evitare disallineamenti tra feed legacy e dati aggiornati via POST.
+      const data = PRICE_RADAR_SQLITE_ENABLED
+        ? await fetchSqliteOffers()
+        : PRICE_RADAR_ENABLED
+          ? await fetchLiveOffers()
           : await fetchBetaOffers();
       setOffers(data);
     } catch (e) {
@@ -212,9 +215,14 @@ export default function PriceRadarContent() {
       <header className="mb-10">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-foreground text-3xl md:text-4xl font-bold">Price Radar</h1>
-          {PRICE_RADAR_SQLITE_ENABLED && !PRICE_RADAR_ENABLED && (
+          {PRICE_RADAR_SQLITE_ENABLED && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/35">
-              Live DB
+              Live API
+            </span>
+          )}
+          {PRICE_RADAR_ENABLED && !PRICE_RADAR_SQLITE_ENABLED && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/35">
+              Legacy Feed
             </span>
           )}
           {PRICE_RADAR_BETA_ENABLED && !PRICE_RADAR_ENABLED && !PRICE_RADAR_SQLITE_ENABLED && (

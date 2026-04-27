@@ -18,6 +18,18 @@ function formatPrice(value: number): string {
   }).format(value);
 }
 
+function formatLastPriceUpdate(value: string): string | null {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 /** Domini Amazon supportati da next/image */
 const ALLOWED_IMAGE_HOSTS = ["m.media-amazon.com", "images-na.ssl-images-amazon.com", "images-eu.ssl-images-amazon.com"];
 
@@ -34,6 +46,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
   const discountPercent = Math.round(offer.discount_percent);
   const isSignificantDiscount = discountPercent >= 15;
   const useNextImage = offer.image && isAllowedImageUrl(offer.image);
+  const lastPriceUpdate = formatLastPriceUpdate(offer.created_at);
 
   return (
     <article className="group relative flex flex-col h-full bg-content-bg rounded-xl overflow-hidden border border-border shadow-md hover:shadow-xl hover:border-accent/40 transition-all duration-300">
@@ -87,6 +100,11 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
           <p className="text-foreground font-bold text-lg">
             Prezzo attuale: <span className="text-accent">{formatPrice(offer.price)}</span>
           </p>
+          {lastPriceUpdate && (
+            <p className="text-muted text-[10px] leading-tight">
+              Ultimo aggiornamento prezzo: {lastPriceUpdate}
+            </p>
+          )}
         </div>
 
         <a
