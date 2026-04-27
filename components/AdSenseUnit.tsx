@@ -26,6 +26,7 @@ export interface AdSenseUnitProps {
 
 const placeholderClassName =
   "rounded border border-dashed border-border bg-surface-overlay flex items-center justify-center text-muted text-xs";
+const ADSENSE_NEED_EVENT = "techjournal:adsense-needed";
 
 /**
  * Unità pubblicitaria Google AdSense. Richiede che AdSenseScript sia caricato nel layout
@@ -44,6 +45,7 @@ export default function AdSenseUnit({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const insRef = useRef<HTMLModElement>(null);
   const pushedRef = useRef(false);
+  const requestedScriptRef = useRef(false);
   const [useRealAd, setUseRealAd] = useState(false);
   const [isVisible, setIsVisible] = useState(!deferUntilVisible);
 
@@ -79,10 +81,18 @@ export default function AdSenseUnit({
 
   useEffect(() => {
     if (!useRealAd || !isVisible || !adSlot || !insRef.current) return;
+    const requestScriptLoad = () => {
+      if (typeof window === "undefined" || requestedScriptRef.current) return;
+      requestedScriptRef.current = true;
+      window.dispatchEvent(new Event(ADSENSE_NEED_EVENT));
+    };
     const push = (): boolean => {
       if (typeof window === "undefined" || pushedRef.current) return false;
       const w = window as any;
-      if (!w.adsbygoogle) return false;
+      if (!w.adsbygoogle) {
+        requestScriptLoad();
+        return false;
+      }
       try {
         w.adsbygoogle.push({});
         pushedRef.current = true;
@@ -91,6 +101,8 @@ export default function AdSenseUnit({
         return false;
       }
     };
+    // Richiede subito il caricamento dello script non appena lo slot entra in gioco.
+    requestScriptLoad();
     if (push()) return;
     let attempts = 0;
     const maxAttempts = 75;

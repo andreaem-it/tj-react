@@ -27,11 +27,12 @@ export default function AdSenseScript() {
     if (typeof window === "undefined" || window.location.hostname === "localhost") return;
     let cancelled = false;
     let failSafeTimer: ReturnType<typeof setTimeout> | null = null;
+    const waitForUserInteraction = !eagerAdSenseLoad;
 
     const enableScript = () => {
       if (cancelled) return;
       setLoadScript(true);
-      if (eagerAdSenseLoad) {
+      if (waitForUserInteraction) {
         window.removeEventListener("pointerdown", onFirstInteraction);
         window.removeEventListener("keydown", onFirstInteraction);
         window.removeEventListener("scroll", onFirstInteraction);
@@ -47,19 +48,24 @@ export default function AdSenseScript() {
       enableScript();
     };
 
-    if (eagerAdSenseLoad) {
+    if (waitForUserInteraction) {
       window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
       window.addEventListener("keydown", onFirstInteraction, { once: true });
       window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
     }
     window.addEventListener(ADSENSE_NEED_EVENT, onAdSlotNeedsScript, { once: true });
-    // Failsafe revenue guard: se nessuno slot emette l'evento in tempi brevi,
-    // carica comunque AdSense per evitare giornate senza impression.
-    failSafeTimer = setTimeout(enableScript, ADSENSE_FAILSAFE_MS);
+    if (waitForUserInteraction) {
+      // Failsafe revenue guard: se nessuno slot emette l'evento in tempi brevi,
+      // carica comunque AdSense per evitare giornate senza impression.
+      failSafeTimer = setTimeout(enableScript, ADSENSE_FAILSAFE_MS);
+    } else {
+      // Modalità eager: carica subito lo script per evitare slot vuoti.
+      enableScript();
+    }
 
     return () => {
       cancelled = true;
-      if (eagerAdSenseLoad) {
+      if (waitForUserInteraction) {
         window.removeEventListener("pointerdown", onFirstInteraction);
         window.removeEventListener("keydown", onFirstInteraction);
         window.removeEventListener("scroll", onFirstInteraction);
@@ -73,7 +79,7 @@ export default function AdSenseScript() {
   return (
     <Script
       src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${clientId}`}
-      strategy="lazyOnload"
+      strategy="afterInteractive"
       crossOrigin="anonymous"
     />
   );
