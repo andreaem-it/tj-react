@@ -72,7 +72,6 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
     const key = `${VIEW_INCREMENT_STORAGE_PREFIX}:${postId}`;
     if (sessionStorage.getItem(key) === "1") return;
 
-    sessionStorage.setItem(key, "1");
     const ctrl = new AbortController();
     void fetch(`/api/views/${postId}`, {
       method: "POST",
@@ -84,7 +83,10 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
         if (!res.ok) return;
         const data = await res.json();
         const n = typeof data?.views === "number" ? data.views : Number(data?.views);
-        if (Number.isFinite(n) && n >= 0) setViewCountFetched(n);
+        if (Number.isFinite(n) && n >= 0) {
+          setViewCountFetched(n);
+          sessionStorage.setItem(key, "1");
+        }
       })
       .catch(() => {
         // ignore transient network errors
