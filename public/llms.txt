@@ -1,35 +1,152 @@
-# TechJournal (techjournal.it) - LLM Access Guide
+# TechJournal (techjournal.it) - LLM & Agent Access Guide
 
 Site: https://www.techjournal.it
 Type: Italian technology news website
 Primary language: it-IT
+Content type: News, guides, product analysis
 
-## Canonical discovery
+---
+
+## Discovery
+
 - Sitemap: https://www.techjournal.it/sitemap.xml
 - Robots: https://www.techjournal.it/robots.txt
-- Feed: https://www.techjournal.it/feed.xml
+- RSS Feed: https://www.techjournal.it/feed.xml
+
+---
 
 ## Machine-readable endpoints
+
 - API catalog: https://www.techjournal.it/.well-known/api-catalog
 - Agent skills: https://www.techjournal.it/.well-known/agent-skills/index.json
 - Agent card: https://www.techjournal.it/.well-known/agent.json
 - API status: https://www.techjournal.it/api/status
 
-## API and docs
-- Service description: https://www.techjournal.it/api
-- Service docs: https://www.techjournal.it/docs
+---
 
-## Content negotiation
-- Article pages support markdown when request header includes:
-  Accept: text/markdown
-- Scope: article detail pages only
+## API Access
 
-## Key sections
-- Home: https://www.techjournal.it/
-- Search: https://www.techjournal.it/search
-- Price Radar: https://www.techjournal.it/price-radar
+Base: https://www.techjournal.it/api
 
-## Notes for crawlers and agents
-- Respect robots directives and crawl responsibly.
-- Prefer canonical URLs and structured data where available.
-- For near-real-time API availability, check /api/status before bulk requests.
+Documentation: https://www.techjournal.it/docs
+
+Availability:
+- Check /api/status before batch requests
+- Public read-only data
+
+Recommended rate:
+- Max 1 request per second
+
+---
+
+## Content Structure
+
+Article URL pattern:
+https://www.techjournal.it/{category}/{slug}
+
+Each article contains:
+- title
+- author
+- publish_date
+- updated_date
+- category
+- tags
+- featured_image
+- content (HTML)
+- structured data (JSON-LD)
+
+---
+
+## Content Negotiation
+
+To retrieve article in markdown:
+
+Header:
+Accept: text/markdown
+
+Scope:
+- Article pages only
+
+---
+
+## Common Agent Tasks
+
+### 1. Fetch latest articles
+
+Preferred:
+- Use RSS feed:
+  https://www.techjournal.it/feed.xml
+
+Alternative:
+- Parse homepage:
+  https://www.techjournal.it/
+
+---
+
+### 2. Read full article
+
+Steps:
+1. Retrieve article URL
+2. Request with:
+   Accept: text/markdown
+3. Fallback to HTML if markdown not available
+
+---
+
+### 3. Discover topics
+
+- Use category pages
+- Extract tags from article metadata
+
+---
+
+### 4. Monitor updates
+
+- Poll RSS feed periodically
+- Compare publish_date
+
+---
+
+## Example Article (normalized JSON)
+
+Example structure an agent should build after parsing:
+
+{
+  "title": "Example article title",
+  "url": "https://www.techjournal.it/category/example-article",
+  "author": "Author Name",
+  "publish_date": "2026-04-25T10:00:00+02:00",
+  "updated_date": "2026-04-25T12:00:00+02:00",
+  "category": "Technology",
+  "tags": ["AI", "Apple"],
+  "featured_image": "https://www.techjournal.it/image.jpg",
+  "content_markdown": "...",
+  "content_html": "..."
+}
+
+---
+
+## Priority Content
+
+1. Homepage (latest content)
+2. Article pages (primary data)
+3. Category pages (navigation)
+4. Price Radar (secondary structured data)
+
+---
+
+## Crawling Guidelines
+
+- Respect robots.txt
+- Prefer canonical URLs
+- Avoid duplicate query parameters
+- Do not crawl pagination aggressively
+
+---
+
+## Notes for AI Agents
+
+- Prefer markdown for NLP tasks
+- Use JSON-LD when available for metadata
+- Use RSS for freshness
+- Validate API availability before automated workflows
