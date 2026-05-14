@@ -8,6 +8,7 @@ import AppShell from "@/components/AppShell";
 import SiteStructuredData from "@/components/SiteStructuredData";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import DeferredTelemetry from "@/components/DeferredTelemetry";
+import { SITE_THEME_BOOTSTRAP_SCRIPT } from "@/lib/siteTheme";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -73,8 +74,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it" className={`dark ${inter.variable}`}>
+    <html lang="it" className={inter.variable} suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: SITE_THEME_BOOTSTRAP_SCRIPT }} />
         <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="" />
         <link rel="dns-prefetch" href="//pagead2.googlesyndication.com" />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />

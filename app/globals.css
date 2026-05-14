@@ -192,34 +192,60 @@ body {
   font-size: 1.25rem;
 }
 
-/* Widget preferenze iubenda: stile allineato al design (come pulsante Torna su) e posizione sopra di esso */
-.iubenda-tp-btn[data-tp-float="bottom-right"],
-.iubenda-uspr-btn[data-tp-float="bottom-right"] {
-  /* Posizione: sopra il pulsante Torna su, stesso right */
-  bottom: 5.5rem !important;
-  right: 1.5rem !important;
-  /* Dimensioni come Torna su (w-12 h-12) */
+/**
+ * Pulsante floating iubenda: geometria + colori da variabili CSS del tema (html.dark / tema chiaro).
+ * Integrato con ThemeToggle e con floatingPreferencesButtonColor in IubendaProviderWrapper.
+ */
+.iubenda-tp-btn[data-tp-float="bottom-left"],
+.iubenda-uspr-btn[data-tp-float="bottom-left"] {
+  bottom: 1.5rem !important;
+  left: 1.5rem !important;
+  right: auto !important;
   width: 3rem !important;
   height: 3rem !important;
   min-width: 3rem !important;
   min-height: 3rem !important;
-  /* Stile in linea con sidebar-bg, border, rounded-lg, shadow-lg */
-  background-color: var(--sidebar-bg) !important;
   background-size: 1.25rem 1.25rem !important;
   background-position: center !important;
+  border-radius: 0.5rem !important;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s !important;
+  filter: none !important;
+}
+
+html.dark .iubenda-tp-btn[data-tp-float="bottom-left"],
+html.dark .iubenda-uspr-btn[data-tp-float="bottom-left"] {
+  color-scheme: dark;
+  background-color: var(--sidebar-bg) !important;
   color: var(--foreground) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 0.5rem !important;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s !important;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.35),
+    0 4px 6px -4px rgb(0 0 0 / 0.25) !important;
 }
-.iubenda-tp-btn[data-tp-float="bottom-right"]:hover,
-.iubenda-uspr-btn[data-tp-float="bottom-right"]:hover {
+
+html:not(.dark) .iubenda-tp-btn[data-tp-float="bottom-left"],
+html:not(.dark) .iubenda-uspr-btn[data-tp-float="bottom-left"] {
+  color-scheme: light;
+  background-color: var(--sidebar-bg) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.08),
+    0 4px 6px -4px rgb(0 0 0 / 0.06) !important;
+}
+
+html.dark .iubenda-tp-btn[data-tp-float="bottom-left"]:hover,
+html.dark .iubenda-uspr-btn[data-tp-float="bottom-left"]:hover {
   background-color: var(--content-bg) !important;
   color: var(--accent) !important;
 }
-/* Icona iubenda: non applicare filter al pulsante (l’icona è background-image, deve restare visibile) */
-.iubenda-tp-btn[data-tp-float="bottom-right"],
-.iubenda-uspr-btn[data-tp-float="bottom-right"] {
-  filter: none !important;
+
+html:not(.dark) .iubenda-tp-btn[data-tp-float="bottom-left"]:hover,
+html:not(.dark) .iubenda-uspr-btn[data-tp-float="bottom-left"]:hover {
+  background-color: var(--content-bg) !important;
+  color: var(--accent) !important;
 }

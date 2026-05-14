@@ -40,7 +40,7 @@ export default function HomeContent({
     process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_SIDEBAR;
 
   return (
-    <div className="max-w-7xl mx-auto px-0 md:px-4 py-6">
+    <div className="max-w-7xl mx-auto px-[5px] md:px-4 py-6">
       <h1 className="sr-only">
         TechJournal: notizie su Apple, Tech e Gadget
       </h1>

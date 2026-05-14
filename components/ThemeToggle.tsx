@@ -1,39 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type Theme = "light" | "dark";
-
-const STORAGE_KEY = "theme";
-
-function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-  if (stored === "light" || stored === "dark") return stored;
-  const prefersDark =
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
-  return prefersDark ? "dark" : "light";
-}
+import {
+  SITE_THEME_STORAGE_KEY,
+  type SiteTheme,
+  getStoredOrPreferredTheme,
+  applySiteThemeToDocument,
+} from "@/lib/siteTheme";
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<SiteTheme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const initial = getInitialTheme();
+    const initial = getStoredOrPreferredTheme();
     setTheme(initial);
-    const root = document.documentElement;
-    root.classList.toggle("dark", initial === "dark");
+    applySiteThemeToDocument(initial);
   }, []);
 
   const toggleTheme = () => {
     setTheme((prev) => {
-      const next: Theme = prev === "dark" ? "light" : "dark";
-      const root = document.documentElement;
-      root.classList.toggle("dark", next === "dark");
-      window.localStorage.setItem(STORAGE_KEY, next);
+      const next: SiteTheme = prev === "dark" ? "light" : "dark";
+      applySiteThemeToDocument(next);
+      window.localStorage.setItem(SITE_THEME_STORAGE_KEY, next);
       return next;
     });
   };
