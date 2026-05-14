@@ -35,7 +35,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-2 py-3 md:px-4 flex items-center justify-between gap-4">
         <Link
           href={articleHref}
           className="text-muted hover:text-accent text-sm font-medium transition-colors"
@@ -44,7 +44,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
         </Link>
         <span className="text-muted text-xs">Modalità lettura</span>
       </div>
-      <article className="flex-1 w-full max-w-2xl mx-auto px-0 md:px-4 py-8 md:py-12">
+      <article className="flex-1 w-full max-w-2xl mx-auto px-2 md:px-4 py-8 md:py-12">
         <header className="mb-8">
           <Link
             href={`/${postCategoryUrlSlug}`}

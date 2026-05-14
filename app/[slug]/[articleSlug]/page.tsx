@@ -108,7 +108,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   ];
 
   const heroContent = (
-    <div className="relative z-10 flex flex-col items-center text-center px-4 sm:px-5 md:px-6 py-8 md:py-12 w-full max-w-full min-w-0 box-border">
+    <div className="relative z-10 flex flex-col items-center text-center px-2 sm:px-5 md:px-6 py-8 md:py-12 w-full max-w-full min-w-0 box-border">
       <div className="w-full max-w-full min-w-0 flex justify-center mb-4">
         <Breadcrumbs items={breadcrumbItems} />
       </div>
@@ -208,12 +208,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               {heroContent}
             </header>
           ) : (
-            <header className="w-full max-w-full min-w-0 p-6 md:p-8 pb-4 box-border">
+            <header className="w-full max-w-full min-w-0 px-3 pt-6 pb-4 md:p-8 box-border">
               {heroContent}
             </header>
           )}
 
-          <div className="p-6 md:p-8 pt-6">
+          <div className="px-3 py-6 md:p-8">
             <ArticleBody html={post.content} viewCount={post.viewCount} postId={post.id} />
             <InlineBannerPlaceholder
               width="100%"
@@ -222,7 +222,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP}
             />
           </div>
-          <footer className="mt-8 pt-6 pb-6 border-t border-border px-6 md:px-8">
+          <footer className="mt-8 pt-6 pb-6 border-t border-border px-3 md:px-8">
             {author ? (
               <div className="p-4 rounded-lg bg-sidebar-bg/50">
                 <AuthorCard author={author} />
