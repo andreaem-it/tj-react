@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { fetchPosts, fetchCategories, getCategoryUrlSlugFromWpSlug, getCategoryUrlSlug } from "@/lib/api";
+import { postModifiedIso } from "@/lib/postDates";
 import { SITE_URL } from "@/lib/constants";
+import { fetchSitemapJson } from "@/lib/sitemapFetch";
 
 /** Rigenerazione sitemap (ISR). Gli URL articolo usano fetch senza cache pagina per elenco aggiornato a ogni build della route. */
 export const revalidate = 3600;
@@ -58,7 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
         entries.push({
           url: `${base}${path}`,
-          lastModified: new Date(post.date),
+          lastModified: new Date(postModifiedIso(post)),
           changeFrequency: "weekly",
           priority: 0.7,
         });
@@ -69,6 +71,67 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch {
     // API irraggiungibile: sitemap senza post
   }
+
+  try {
+    const devicesPayload = await fetchSitemapJson<{ devices?: Array<{ slug?: string }> }>(
+      "/api/compatibility/devices",
+    );
+    for (const d of devicesPayload?.devices ?? []) {
+      const slug = typeof d.slug === "string" ? d.slug.trim() : "";
+      if (!slug) continue;
+      entries.push({
+        url: `${base}/compatibility/device/${encodeURIComponent(slug)}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.75,
+      });
+    }
+  } catch {
+    // backend irraggiungibile
+  }
+
+  try {
+    const osPayload = await fetchSitemapJson<{ operatingSystems?: Array<{ slug?: string }> }>(
+      "/api/compatibility/os",
+    );
+    for (const os of osPayload?.operatingSystems ?? []) {
+      const slug = typeof os.slug === "string" ? os.slug.trim() : "";
+      if (!slug) continue;
+      entries.push({
+        url: `${base}/compatibility/os/${encodeURIComponent(slug)}`,
+        lastModified: now,
+        changeFrequency: "weekly",
+        priority: 0.75,
+      });
+    }
+  } catch {
+    // backend irraggiungibile
+  }
+
+  try {
+    const prPayload = await fetchSitemapJson<{ products?: Array<{ asin?: string }> }>(
+      "/api/price-radar/products?status=active",
+    );
+    for (const p of prPayload?.products ?? []) {
+      const asin = typeof p.asin === "string" ? p.asin.trim() : "";
+      if (asin.length < 5) continue;
+      entries.push({
+        url: `${base}/price-radar/${encodeURIComponent(asin)}`,
+        lastModified: now,
+        changeFrequency: "daily",
+        priority: 0.65,
+      });
+    }
+  } catch {
+    // backend irraggiungibile
+  }
+
+  entries.push({
+    url: `${base}/docs`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.35,
+  });
 
   entries.push(
     { url: `${base}/chi-siamo`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },

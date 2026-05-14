@@ -25,7 +25,7 @@ export default function OfferteSidebar({ posts }: OfferteSidebarProps) {
                 src={post.imageUrl}
                 alt={post.imageAlt}
                 fill
-                className="object-cover transition-transform group-hover:scale-105"
+                className="object-cover transition-transform md:group-hover:scale-105"
                 sizes="320px"
                 placeholder="blur"
                 blurDataURL={BLUR_DATA_URL}

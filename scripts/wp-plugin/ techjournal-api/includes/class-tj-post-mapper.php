@@ -47,6 +47,7 @@ class TJ_Post_Mapper {
         return [
             'id' => $post->ID,
             'date' => is_string($date) ? $date : gmdate('c', strtotime($post->post_date)),
+            'modified' => $this->get_post_modified_iso($post),
             'slug' => $post->post_name,
             'link' => get_permalink($post),
             'title' => $this->decode_text($post->post_title),
@@ -183,6 +184,22 @@ class TJ_Post_Mapper {
         }
 
         return $content;
+    }
+
+    /**
+     * Data/ora ultima modifica in formato ISO 8601 (UTC).
+     */
+    private function get_post_modified_iso(\WP_Post $post): string {
+        $gmt = get_post_modified_time('c', true, $post);
+        if (is_string($gmt) && $gmt !== '') {
+            return $gmt;
+        }
+        $local = get_post_modified_time('c', false, $post);
+        if (is_string($local) && $local !== '') {
+            return $local;
+        }
+
+        return gmdate('c', strtotime((string) $post->post_date));
     }
 
     /**

@@ -34,7 +34,7 @@ export default function OffertePage({ posts }: OffertePageProps) {
                         src={post.imageUrl}
                         alt={post.imageAlt}
                         fill
-                        className="object-cover transition-transform group-hover:scale-[1.02]"
+                        className="object-cover transition-transform md:group-hover:scale-[1.02]"
                         sizes="(max-width: 768px) 100vw, 288px"
                         placeholder="blur"
                         blurDataURL={BLUR_DATA_URL}

@@ -14,6 +14,8 @@ export interface WPCategory {
 export interface PostWithMeta {
   id: number;
   date: string;
+  /** Ultima modifica (ISO 8601). Esposto dal plugin WP `tj/v1`; assente finché il plugin non è aggiornato. */
+  modified?: string;
   slug: string;
   link: string;
   title: string;

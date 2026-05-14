@@ -32,16 +32,6 @@ export const metadata: Metadata = {
     template: "%s | TechJournal",
   },
   description: "Ultime notizie su Apple, iPhone, Mac, app e tecnologia.",
-  keywords: [
-    "Apple",
-    "iPhone",
-    "Mac",
-    "tech",
-    "notizie",
-    "gadget",
-    "app",
-    "TechJournal",
-  ],
   metadataBase: new URL(siteUrl),
   alternates: {
     types: {

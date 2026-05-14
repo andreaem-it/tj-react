@@ -1,8 +1,11 @@
-import { fetchPosts } from "@/lib/api";
-import { getCategoryUrlSlugFromWpSlug } from "@/lib/api";
+import { fetchPosts, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import { SITE_URL } from "@/lib/constants";
+import { postModifiedIso } from "@/lib/postDates";
 
 export const revalidate = 3600;
+
+/** Articoli nel feed (prima pagina API). */
+const FEED_POSTS_LIMIT = 100;
 
 function escapeXml(s: string): string {
   return s
@@ -17,12 +20,18 @@ export async function GET() {
   const base = SITE_URL.replace(/\/$/, "");
   let posts: Awaited<ReturnType<typeof fetchPosts>>["posts"] = [];
   try {
-    const result = await fetchPosts({ perPage: 50, page: 1 });
+    const result = await fetchPosts({ perPage: FEED_POSTS_LIMIT, page: 1 });
     posts = result.posts;
   } catch {
     // API irraggiungibile: feed vuoto
   }
-  const lastBuild = posts.length > 0 ? new Date(posts[0].date) : new Date();
+  let lastBuildMs = 0;
+  for (const post of posts) {
+    const m = new Date(postModifiedIso(post)).getTime();
+    if (Number.isFinite(m)) lastBuildMs = Math.max(lastBuildMs, m);
+  }
+  const lastBuild =
+    posts.length > 0 && lastBuildMs > 0 ? new Date(lastBuildMs) : new Date();
 
   const items = posts
     .map((post) => {

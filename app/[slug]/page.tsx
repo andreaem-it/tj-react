@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 import { SITE_URL } from "@/lib/constants";
+import { postModifiedIso } from "@/lib/postDates";
 import type { Metadata } from "next";
 
 export const revalidate = 300;
@@ -34,12 +35,25 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
     const canonical = `${SITE_URL.replace(/\/$/, "")}${path}`;
     const description = post.excerpt?.slice(0, 160) || post.title;
+    const modifiedIso = postModifiedIso(post);
     return {
       title: `${post.title} | TechJournal`,
       description,
       alternates: { canonical },
-      openGraph: { title: post.title, description, url: canonical, siteName: "TechJournal" },
+      openGraph: {
+        title: post.title,
+        description,
+        url: canonical,
+        siteName: "TechJournal",
+        type: "article",
+        publishedTime: post.date,
+        modifiedTime: modifiedIso,
+      },
       twitter: { card: "summary_large_image", title: post.title, description },
+      other: {
+        "article:published_time": post.date,
+        "article:modified_time": modifiedIso,
+      },
     };
   }
   const categories = await fetchCategories();

@@ -20,6 +20,7 @@
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
+    "isomorphic-dompurify": "^3.13.0",
     "jose": "^6.2.2",
     "next": "16.1.6",
     "react": "19.0.0",

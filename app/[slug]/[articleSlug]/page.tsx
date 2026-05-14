@@ -15,6 +15,7 @@ import RelatedArticlesSlider from "@/components/RelatedArticlesSlider";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ArticleStructuredData from "@/components/ArticleStructuredData";
 import { BLUR_DATA_URL, SITE_URL } from "@/lib/constants";
+import { postModifiedIso } from "@/lib/postDates";
 import InlineBannerPlaceholder from "@/components/InlineBannerPlaceholder";
 import type { Metadata } from "next";
 
@@ -42,6 +43,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const canonical = `${SITE_URL.replace(/\/$/, "")}${path}`;
   const description = post.excerpt?.slice(0, 160) || post.title;
   const image = post.imageUrl || `${SITE_URL}/og-default.png`;
+  const modifiedIso = postModifiedIso(post);
 
   return {
     title: `${post.title} | TechJournal`,
@@ -58,7 +60,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       images: [{ url: image, width: 1200, height: 630, alt: post.imageAlt || post.title }],
       type: "article",
       publishedTime: post.date,
-      modifiedTime: post.date,
+      modifiedTime: modifiedIso,
       authors: [post.authorName],
     },
     twitter: {
@@ -69,8 +71,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     },
     other: {
       "article:published_time": post.date,
-      "article:modified_time": post.date,
-      "last-modified": post.date,
+      "article:modified_time": modifiedIso,
+      "last-modified": modifiedIso,
     },
   };
 }
@@ -97,6 +99,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         : null;
   const articleHref = `/${postCategoryUrlSlug}/${post.slug}`;
   const shareUrl = `${SITE_URL.replace(/\/$/, "")}${articleHref}/`;
+  const modifiedIso = postModifiedIso(post);
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -183,7 +186,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         description={post.excerpt}
         imageUrl={post.imageUrl}
         datePublished={post.date}
-        dateModified={post.date}
+        dateModified={modifiedIso}
         authorName={post.authorName}
         url={articleHref}
       />

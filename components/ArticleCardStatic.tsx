@@ -34,7 +34,7 @@ export default function ArticleCardStatic({ post, priority }: ArticleCardStaticP
             src={post.imageUrl}
             alt={post.imageAlt}
             fill
-            className="object-cover transition-transform group-hover:scale-105"
+            className="object-cover transition-transform md:group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}

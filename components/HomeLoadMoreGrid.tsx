@@ -18,9 +18,7 @@ interface HomeLoadMoreGridProps {
 export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
   const { initialPosts = [], initialTotalPages, initialPagesConsumed, categoryId, emptyGridIsExpected } = props;
   const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts);
-  const [hasMore, setHasMore] = useState(
-    initialPagesConsumed < initialTotalPages || initialPosts.length >= 8
-  );
+  const [hasMore, setHasMore] = useState(initialPagesConsumed < initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
   const nextPageRef = useRef(initialPagesConsumed + 1);
   const sentinelRef = useRef<HTMLDivElement | null>(null);

@@ -80,7 +80,7 @@ function MegamenuPanel({
                     src={post.imageUrl}
                     alt={post.imageAlt}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform"
+                    className="object-cover md:group-hover:scale-105 transition-transform"
                     sizes="200px"
                     placeholder="blur"
                     blurDataURL={BLUR_DATA_URL}
