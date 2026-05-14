@@ -1,15 +1,26 @@
 import type { MetadataRoute } from "next";
-import { fetchPosts, fetchCategories, getCategoryUrlSlugFromWpSlug, getCategoryUrlSlug } from "@/lib/api";
+import {
+  fetchPosts,
+  fetchCategories,
+  getCategoryUrlSlugFromWpSlug,
+  getCategoryUrlSlug,
+  type PostWithMeta,
+} from "@/lib/api";
 import { postModifiedIso } from "@/lib/postDates";
 import { SITE_URL } from "@/lib/constants";
 import { fetchSitemapJson } from "@/lib/sitemapFetch";
 
-/** Rigenerazione sitemap (ISR). Gli URL articolo usano fetch senza cache pagina per elenco aggiornato a ogni build della route. */
-export const revalidate = 3600;
+/**
+ * Nessuna pre-generazione al build: su Vercel la sitemap superava il timeout (60s) con molte pagine API.
+ * La route viene calcolata on-demand e può essere messa in cache dal CDN del provider.
+ */
+export const dynamic = "force-dynamic";
 
 const POSTS_PER_SITEMAP_PAGE = 100;
 /** Limite di sicurezza se l’API restituisce totalPages errato (max ~5M URL teorici; Google consiglia max 50k per file). */
 const MAX_POST_LIST_PAGES = 500;
+/** Parallelismo richieste liste post (riduce tempo totale rispetto al loop sequenziale). */
+const POST_FETCH_CONCURRENCY = 8;
 
 function dedupeByUrl(entries: MetadataRoute.Sitemap): MetadataRoute.Sitemap {
   const map = new Map<string, MetadataRoute.Sitemap[number]>();
@@ -17,6 +28,28 @@ function dedupeByUrl(entries: MetadataRoute.Sitemap): MetadataRoute.Sitemap {
     map.set(e.url, e);
   }
   return [...map.values()];
+}
+
+async function fetchPostsPagesBatched(
+  pages: number[],
+): Promise<PostWithMeta[]> {
+  const out: PostWithMeta[] = [];
+  for (let i = 0; i < pages.length; i += POST_FETCH_CONCURRENCY) {
+    const slice = pages.slice(i, i + POST_FETCH_CONCURRENCY);
+    const chunks = await Promise.all(
+      slice.map((page) =>
+        fetchPosts({
+          perPage: POSTS_PER_SITEMAP_PAGE,
+          page,
+          requestCache: "no-store",
+        }).catch(() => ({ posts: [] as PostWithMeta[], totalPages: 1 })),
+      ),
+    );
+    for (const c of chunks) {
+      out.push(...c.posts);
+    }
+  }
+  return out;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -46,84 +79,74 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  let page = 1;
-  let totalPages = 1;
   try {
-    do {
-      const { posts, totalPages: tp } = await fetchPosts({
-        perPage: POSTS_PER_SITEMAP_PAGE,
-        page,
-        requestCache: "no-store",
+    const first = await fetchPosts({
+      perPage: POSTS_PER_SITEMAP_PAGE,
+      page: 1,
+      requestCache: "no-store",
+    });
+    const totalPages = Math.min(MAX_POST_LIST_PAGES, Math.max(1, first.totalPages));
+    const pageNumbers =
+      totalPages <= 1 ? [1] : [1, ...Array.from({ length: totalPages - 1 }, (_, i) => i + 2)];
+    const postsList =
+      totalPages <= 1
+        ? first.posts
+        : [
+            ...first.posts,
+            ...(await fetchPostsPagesBatched(pageNumbers.slice(1))),
+          ];
+    for (const post of postsList) {
+      const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
+      entries.push({
+        url: `${base}${path}`,
+        lastModified: new Date(postModifiedIso(post)),
+        changeFrequency: "weekly",
+        priority: 0.7,
       });
-      totalPages = Math.max(1, tp);
-      for (const post of posts) {
-        const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
-        entries.push({
-          url: `${base}${path}`,
-          lastModified: new Date(postModifiedIso(post)),
-          changeFrequency: "weekly",
-          priority: 0.7,
-        });
-      }
-      if (posts.length === 0) break;
-      page += 1;
-    } while (page <= totalPages && page <= MAX_POST_LIST_PAGES);
+    }
   } catch {
     // API irraggiungibile: sitemap senza post
   }
 
-  try {
-    const devicesPayload = await fetchSitemapJson<{ devices?: Array<{ slug?: string }> }>(
-      "/api/compatibility/devices",
-    );
-    for (const d of devicesPayload?.devices ?? []) {
-      const slug = typeof d.slug === "string" ? d.slug.trim() : "";
-      if (!slug) continue;
-      entries.push({
-        url: `${base}/compatibility/device/${encodeURIComponent(slug)}`,
-        lastModified: now,
-        changeFrequency: "weekly",
-        priority: 0.75,
-      });
-    }
-  } catch {
-    // backend irraggiungibile
-  }
-
-  try {
-    const osPayload = await fetchSitemapJson<{ operatingSystems?: Array<{ slug?: string }> }>(
-      "/api/compatibility/os",
-    );
-    for (const os of osPayload?.operatingSystems ?? []) {
-      const slug = typeof os.slug === "string" ? os.slug.trim() : "";
-      if (!slug) continue;
-      entries.push({
-        url: `${base}/compatibility/os/${encodeURIComponent(slug)}`,
-        lastModified: now,
-        changeFrequency: "weekly",
-        priority: 0.75,
-      });
-    }
-  } catch {
-    // backend irraggiungibile
-  }
-
-  try {
-    const prPayload = await fetchSitemapJson<{ products?: Array<{ asin?: string }> }>(
+  const [devicesPayload, osPayload, prPayload] = await Promise.all([
+    fetchSitemapJson<{ devices?: Array<{ slug?: string }> }>("/api/compatibility/devices"),
+    fetchSitemapJson<{ operatingSystems?: Array<{ slug?: string }> }>("/api/compatibility/os"),
+    fetchSitemapJson<{ products?: Array<{ asin?: string }> }>(
       "/api/price-radar/products?status=active",
-    );
-    for (const p of prPayload?.products ?? []) {
-      const asin = typeof p.asin === "string" ? p.asin.trim() : "";
-      if (asin.length < 5) continue;
-      entries.push({
-        url: `${base}/price-radar/${encodeURIComponent(asin)}`,
-        lastModified: now,
-        changeFrequency: "daily",
-        priority: 0.65,
-      });
-    }
-  } catch {
-    // backend irraggiungibile
+    ),
+  ]);
+
+  for (const d of devicesPayload?.devices ?? []) {
+    const slug = typeof d.slug === "string" ? d.slug.trim() : "";
+    if (!slug) continue;
+    entries.push({
+      url: `${base}/compatibility/device/${encodeURIComponent(slug)}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    });
+  }
+
+  for (const os of osPayload?.operatingSystems ?? []) {
+    const slug = typeof os.slug === "string" ? os.slug.trim() : "";
+    if (!slug) continue;
+    entries.push({
+      url: `${base}/compatibility/os/${encodeURIComponent(slug)}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    });
+  }
+
+  for (const p of prPayload?.products ?? []) {
+    const asin = typeof p.asin === "string" ? p.asin.trim() : "";
+    if (asin.length < 5) continue;
+    entries.push({
+      url: `${base}/price-radar/${encodeURIComponent(asin)}`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.65,
+    });
   }
 
   entries.push({
