@@ -72,7 +72,11 @@ export default function IubendaProviderWrapper({}: Record<string, never>) {
   const invalid =
     !siteId || !cookiePolicyId || Number.isNaN(siteIdNum) || Number.isNaN(cookiePolicyIdNum);
 
-  const theme = useSyncExternalStore(subscribeSiteThemeClass, getSiteThemeFromDom, () => "dark");
+  const theme = useSyncExternalStore<SiteTheme>(
+    subscribeSiteThemeClass,
+    getSiteThemeFromDom,
+    (): SiteTheme => "dark",
+  );
 
   const bannerConfig = useMemo(
     () => buildBannerConfig(theme, siteIdNum, cookiePolicyIdNum),
