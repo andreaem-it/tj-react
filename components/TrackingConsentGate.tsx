@@ -29,7 +29,8 @@ export default function TrackingConsentGate() {
      */
     window.dispatchEvent(new Event(GA_NEED_EVENT));
 
-    let intervalId: ReturnType<typeof window.setInterval> | undefined;
+    // In DOM i timer restituiscono `number`; con @types/node `ReturnType<typeof setInterval>` diventa Timeout e rompe il build.
+    let intervalId: number | undefined;
     const tryGrant = (): boolean => {
       const grant = (window as any).__iubendaGaConsentUpdate as (() => void) | undefined;
       if (typeof grant !== "function") return false;
@@ -46,7 +47,7 @@ export default function TrackingConsentGate() {
       }, 50);
     }
 
-    const stop = window.setTimeout(() => {
+    const stop: number = window.setTimeout(() => {
       if (intervalId != null) window.clearInterval(intervalId);
     }, 15_000);
 
