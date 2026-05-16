@@ -19,10 +19,41 @@ export default function TrackingConsentGate() {
   const allowMarketing = hasBeenLoaded && gdprPurposes.marketing;
 
   useEffect(() => {
-    if (allowMeasurement && typeof window !== "undefined" && (window as any).__iubendaGaConsentUpdate) {
-      (window as any).__iubendaGaConsentUpdate();
-      window.dispatchEvent(new Event(GA_NEED_EVENT));
+    if (!allowMeasurement || typeof window === "undefined") return;
+
+    /**
+     * GoogleAnalytics carica gli script solo dopo GA_NEED_EVENT. Con Iubenda,
+     * __iubendaGaConsentUpdate viene definito nello stesso momento in cui gli
+     * script si montano: se richiedessimo prima la callback, sarebbe un deadlock
+     * e GA non riceverebbe mai dati.
+     */
+    window.dispatchEvent(new Event(GA_NEED_EVENT));
+
+    let intervalId: ReturnType<typeof window.setInterval> | undefined;
+    const tryGrant = (): boolean => {
+      const grant = (window as any).__iubendaGaConsentUpdate as (() => void) | undefined;
+      if (typeof grant !== "function") return false;
+      grant();
+      return true;
+    };
+
+    if (!tryGrant()) {
+      intervalId = window.setInterval(() => {
+        if (tryGrant() && intervalId != null) {
+          window.clearInterval(intervalId);
+          intervalId = undefined;
+        }
+      }, 50);
     }
+
+    const stop = window.setTimeout(() => {
+      if (intervalId != null) window.clearInterval(intervalId);
+    }, 15_000);
+
+    return () => {
+      window.clearTimeout(stop);
+      if (intervalId != null) window.clearInterval(intervalId);
+    };
   }, [allowMeasurement]);
 
   useEffect(() => {
