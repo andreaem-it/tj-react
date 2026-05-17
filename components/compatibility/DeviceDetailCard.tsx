@@ -2,10 +2,96 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Device, OperatingSystem } from "@/lib/compatibility/types";
 
-function formatSpecLabel(key: string): string {
-  const s = key.replace(/_/g, " ").trim();
-  if (!s) return key;
-  return s.charAt(0).toUpperCase() + s.slice(1);
+/** Normalizza chiave specs (camelCase / MAIUSCOLO / underscore) per lookup. */
+function normalizeSpecKey(key: string): string {
+  return key.replace(/[\s_-]/g, "").toLowerCase();
+}
+
+/**
+ * Etichette UI italiane per chiavi comunemente importate da JSON (bulk / ChatGPT).
+ * Chiavi in minuscolo dopo `normalizeSpecKey`.
+ */
+const SPEC_LABEL_IT: Record<string, string> = {
+  ramgb: "Memoria RAM (GB)",
+  ram: "Memoria RAM",
+  memorygb: "Memoria (GB)",
+  display: "Schermo",
+  schermo: "Schermo",
+  screen: "Schermo",
+  connector: "Connettore",
+  connectortype: "Tipo di connettore",
+  port: "Porta",
+  biometrics: "Biometria",
+  biometricsecurity: "Sicurezza biometrica",
+  storageoptionsgb: "Capacità disponibili (GB)",
+  storagegb: "Storage (GB)",
+  storagetiers: "Tagli di storage",
+  battery: "Batteria",
+  batterymah: "Capacità batteria (mAh)",
+  batterycapacity: "Capacità batteria",
+  chipset: "Chip",
+  soc: "SoC",
+  cpu: "Processore",
+  gpu: "GPU",
+  weight: "Peso",
+  weightg: "Peso (g)",
+  dimensions: "Dimensioni",
+  cellular: "Connessioni cellulari",
+  wifi: "Wi‑Fi",
+  bluetooth: "Bluetooth",
+  ultrawideband: "Ultra Wideband",
+  iprating: "Certificazione IP",
+  waterproof: "Resistenza all’acqua",
+  charging: "Ricarica",
+  videorecording: "Registrazione video",
+  cameraprimary: "Fotocamera principale",
+  camerafrontal: "Fotocamera frontale",
+  colors: "Colori disponibili",
+  colorazioni: "Colori disponibili",
+};
+
+/** Valori: normalizzazioni leggere per termini tecnici ricorrenti nel testo. */
+const SPEC_VALUE_FRAGMENT_IT: [RegExp, string][] = [
+  [/super retina xdr/gi, "Super Retina XDR"],
+  [/promotion\b/gi, "ProMotion"],
+  [/oled\b/gi, "OLED"],
+  [/lcd\b/gi, "LCD"],
+  [/^\s*face\s*id\s*$/i, "Face ID"],
+  [/^\s*touch\s*id\s*$/i, "Touch ID"],
+  [/^\s*lightning\s*$/i, "Lightning"],
+  [/usb[-\s]?c\b/gi, "USB‑C"],
+];
+
+function translateSpecDisplayString(raw: string): string {
+  let s = raw.trim();
+  for (const [re, rep] of SPEC_VALUE_FRAGMENT_IT) {
+    s = s.replace(re, rep);
+  }
+  s = s.replace(/^\s*thunderbolt\s*(\d+)?\s*$/i, (_, grp: string | undefined) =>
+    grp ? `Thunderbolt ${grp}` : "Thunderbolt",
+  );
+  return s;
+}
+
+function formatSimpleSpecBadge(item: unknown): string {
+  if (item === null) return "—";
+  if (typeof item === "string") return translateSpecDisplayString(item);
+  return String(item);
+}
+
+function translateSpecLabel(key: string): string {
+  const n = normalizeSpecKey(key);
+  if (SPEC_LABEL_IT[n]) return SPEC_LABEL_IT[n];
+  /** Fallback leggibile da camelCase / snake_case */
+  let split = key
+    .replace(/_/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .trim();
+  if (!split) return key;
+  split = split.replace(/\s+/g, " ");
+  const lower = split.toLowerCase();
+  return split.charAt(0).toUpperCase() + lower.slice(1);
 }
 
 function isRedundantSpec(key: string, value: unknown, device: Device): boolean {
@@ -45,7 +131,11 @@ function SpecValue({ value }: { value: unknown }) {
     );
   }
   if (typeof value === "string") {
-    return <span className="break-words text-[var(--article-text)]">{value}</span>;
+    return (
+      <span className="break-words text-[var(--article-text)]">
+        {translateSpecDisplayString(value)}
+      </span>
+    );
   }
   if (Array.isArray(value)) {
     const simple = value.every(
@@ -63,7 +153,7 @@ function SpecValue({ value }: { value: unknown }) {
               key={i}
               className="rounded-md border border-[var(--border)] bg-[var(--surface-overlay)] px-2.5 py-1 text-sm text-[var(--article-text)]"
             >
-              {item === null ? "—" : String(item)}
+              {formatSimpleSpecBadge(item)}
             </li>
           ))}
         </ul>
@@ -81,7 +171,7 @@ function SpecValue({ value }: { value: unknown }) {
       <div className="space-y-2 border-l-2 border-[var(--border)] pl-3">
         {Object.entries(o).map(([k, v]) => (
           <div key={k} className="grid gap-0.5 sm:grid-cols-[minmax(0,0.38fr)_minmax(0,1fr)] sm:gap-3">
-            <span className="text-xs text-[var(--muted)]">{formatSpecLabel(k)}</span>
+            <span className="text-xs text-[var(--muted)]">{translateSpecLabel(k)}</span>
             <div className="text-sm">
               <SpecValue value={v} />
             </div>
@@ -180,7 +270,7 @@ export function DeviceDetailCard({ device, latestSupportedOs }: Props) {
                   className={`rounded-lg border border-[var(--border)] bg-[var(--surface-overlay)] p-3 sm:min-h-0 ${wideCard ? "sm:col-span-2" : ""}`}
                 >
                   <div className="mb-1.5 text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
-                    {formatSpecLabel(key)}
+                    {translateSpecLabel(key)}
                   </div>
                   <div className="min-w-0">
                     <SpecValue value={value} />
