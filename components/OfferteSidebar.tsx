@@ -18,6 +18,7 @@ export default function OfferteSidebar({ posts }: OfferteSidebarProps) {
           <Link
             key={post.id}
             href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
+            prefetch={false}
             className="block group overflow-hidden rounded-lg aspect-video relative bg-content-bg"
           >
             {post.imageUrl && (

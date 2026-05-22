@@ -6,6 +6,7 @@ import {
   fetchPosts,
   fetchRelatedPosts,
   getCategoryUrlSlugFromWpSlug,
+  type PostWithMeta,
 } from "@/lib/api";
 import ShareButtons from "@/components/ShareButtons";
 import TrendingSidebar from "@/components/TrendingSidebar";
@@ -101,8 +102,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const [allPosts, relatedPosts] = await Promise.all([
-    fetchPosts({ perPage: 15 }).then((r) => r.posts),
-    fetchRelatedPosts({ baseSlug: articleSlug, categoryId: post.categoryId, limit: 12 }),
+    fetchPosts({ perPage: 15 })
+      .then((r) => r.posts)
+      .catch((): PostWithMeta[] => []),
+    fetchRelatedPosts({ baseSlug: articleSlug, categoryId: post.categoryId, limit: 12 }).catch(
+      (): PostWithMeta[] => [],
+    ),
   ]);
   const author =
     post.authorName && post.authorAvatarUrl

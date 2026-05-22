@@ -21,6 +21,7 @@ export default function MostReadSidebar({ posts, title = "Più letti" }: MostRea
             <div className="min-w-0">
               <Link
                 href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
+                prefetch={false}
                 className="group block"
               >
                 <p className="text-muted text-xs font-semibold uppercase tracking-wide">

@@ -187,12 +187,17 @@ async function fetchTjPosts(params: {
 
   const url = `${WP_BASE}/posts?${searchParams.toString()}`;
   logApiUrl(url);
-  const res = await fetchWithTimeout(url, {
-    headers: API_REQUEST_HEADERS,
-    ...(requestCache !== undefined && { cache: requestCache }),
-    ...(requestCache === undefined && { next: { revalidate: TJ_FETCH_REVALIDATE } }),
-  });
-  if (!res.ok) throw new Error(`TJ API error: ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(url, {
+      headers: API_REQUEST_HEADERS,
+      ...(requestCache !== undefined && { cache: requestCache }),
+      ...(requestCache === undefined && { next: { revalidate: TJ_FETCH_REVALIDATE } }),
+    });
+  } catch {
+    return { posts: [], totalPages: 1 };
+  }
+  if (!res.ok) return { posts: [], totalPages: 1 };
   const data = (await res.json()) as TjPostsResponse;
   const headerStr = res.headers.get("X-TJ-Total-Pages");
   const fromHeader =
@@ -413,20 +418,24 @@ export const fetchPostBySlug = cache(async (slug: string): Promise<PostWithMeta 
     next: { revalidate: TJ_FETCH_REVALIDATE },
   } as const;
 
-  const urlSingle = `${WP_BASE}/post/${encodeURIComponent(raw)}`;
-  logApiUrl(urlSingle);
-  const resSingle = await fetchWithTimeout(urlSingle, fetchOpts);
-  const fromSingle = await tryParsePost(resSingle);
-  if (fromSingle) return fromSingle;
+  try {
+    const urlSingle = `${WP_BASE}/post/${encodeURIComponent(raw)}`;
+    logApiUrl(urlSingle);
+    const resSingle = await fetchWithTimeout(urlSingle, fetchOpts);
+    const fromSingle = await tryParsePost(resSingle);
+    if (fromSingle) return fromSingle;
 
-  const urlList = `${WP_BASE}/posts?${new URLSearchParams({
-    slug: raw,
-    per_page: "1",
-    page: "1",
-  }).toString()}`;
-  logApiUrl(urlList);
-  const resList = await fetchWithTimeout(urlList, fetchOpts);
-  return tryParsePost(resList);
+    const urlList = `${WP_BASE}/posts?${new URLSearchParams({
+      slug: raw,
+      per_page: "1",
+      page: "1",
+    }).toString()}`;
+    logApiUrl(urlList);
+    const resList = await fetchWithTimeout(urlList, fetchOpts);
+    return tryParsePost(resList);
+  } catch {
+    return null;
+  }
 });
 
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {

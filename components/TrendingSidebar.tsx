@@ -17,7 +17,11 @@ export default function TrendingSidebar({ posts, currentSlug, currentPost }: Tre
       <ul className="divide-y divide-border">
         {list.map((post) => (
           <li key={post.id} className="py-3 first:pt-0">
-            <Link href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`} className="group block">
+            <Link
+              href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
+              prefetch={false}
+              className="group block"
+            >
               <span className="text-muted text-xs font-semibold uppercase tracking-wide">
                 {post.categoryName}
               </span>

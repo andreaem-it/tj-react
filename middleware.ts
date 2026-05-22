@@ -159,6 +159,6 @@ export const config = {
      * Escludi asset statici e risposte “solo testo/XML” frequenti per bot e Search Console.
      * La middleware non deve intercettare sitemap/robots/feed per ridurre edge cases con WAF/challenge.
      */
-    "/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|ads\\.txt|feed\\.xml|llms\\.txt).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|ads\\.txt|feed\\.xml|llms\\.txt|manifest\\.webmanifest|.*\\.webmanifest|.*\\.(?:svg|png|jpe?g|gif|webp|ico|woff2?)).*)",
   ],
 };

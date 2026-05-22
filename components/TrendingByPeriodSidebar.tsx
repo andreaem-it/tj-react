@@ -19,6 +19,7 @@ function PostList({ posts, title }: { posts: PostWithMeta[]; title: string }) {
             </span>
             <Link
               href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
+              prefetch={false}
               className="text-foreground text-sm font-medium line-clamp-2 hover:text-accent transition-colors min-w-0"
             >
               {post.title}

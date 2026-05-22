@@ -28,7 +28,7 @@ export default function ArticleCardStatic({ post, priority }: ArticleCardStaticP
 
   return (
     <article className="flex flex-col group">
-      <Link href={href} className="block overflow-hidden rounded-lg aspect-[16/10] relative bg-content-bg">
+      <Link href={href} prefetch={false} className="block overflow-hidden rounded-lg aspect-[16/10] relative bg-content-bg">
         {post.imageUrl ? (
           <Image
             src={post.imageUrl}
@@ -50,7 +50,7 @@ export default function ArticleCardStatic({ post, priority }: ArticleCardStaticP
         <Link href={categoryHref} className="text-accent text-xs font-semibold uppercase tracking-wide hover:underline">
           {post.categoryName}
         </Link>
-        <Link href={href}>
+        <Link href={href} prefetch={false}>
           <h2 className="text-foreground font-bold text-base mt-1 line-clamp-2 min-h-11 hover:text-accent transition-colors">
             {post.title}
           </h2>

@@ -26,7 +26,11 @@ export default function OffertePage({ posts }: OffertePageProps) {
               key={post.id}
               className="bg-content-bg rounded-xl overflow-hidden border border-border hover:border-accent/30 transition-colors"
             >
-              <Link href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`} className="block group">
+              <Link
+                href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
+                prefetch={false}
+                className="block group"
+              >
                 <div className="flex flex-col md:flex-row">
                   {post.imageUrl && (
                     <div className="relative w-full md:w-72 shrink-0 aspect-video md:aspect-square bg-sidebar-bg">
