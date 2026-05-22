@@ -25,24 +25,8 @@ const nextConfig: NextConfig = {
       { key: "X-Frame-Options", value: "DENY" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     ];
-    const agentLinkHeader = {
-      key: "Link",
-      value: [
-        '</api>; rel="service-desc"',
-        '</docs>; rel="service-doc"',
-        '</.well-known/api-catalog>; rel="api-catalog"',
-        '</.well-known/oauth-authorization-server>; rel="oauth2-metadata"',
-        '</.well-known/openid-configuration>; rel="openid-configuration"',
-        '</.well-known/oauth-protected-resource>; rel="oauth-protected-resource"',
-        '</.well-known/mcp/server-card.json>; rel="mcp-server-card"',
-      ].join(", "),
-    };
 
     return [
-      {
-        source: "/:path*",
-        headers: [...securityHeaders, agentLinkHeader],
-      },
       {
         source: "/manifest.webmanifest",
         headers: [
@@ -54,29 +38,28 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/:category/:articleSlug",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, s-maxage=300, stale-while-revalidate=600",
-          },
-        ],
-      },
-      {
         source: "/:path*\\.(svg|png|jpg|jpeg|webp|avif|ico|woff2)",
         headers: [
           {
             key: "Cache-Control",
             value: "public, max-age=604800, stale-while-revalidate=2592000",
           },
+          ...securityHeaders,
         ],
+      },
+      {
+        source: "/api/:path*",
+        headers: securityHeaders,
+      },
+      {
+        source: "/docs",
+        headers: securityHeaders,
       },
     ];
   },
   images: {
     ...(usePassthroughImageLoader
       ? {
-          /** Modalità fallback: evita `/_next/image` quando necessario. */
           loader: "custom" as const,
           loaderFile: "./lib/passthrough-image-loader.ts",
         }

@@ -22,6 +22,8 @@ import type { Metadata } from "next";
 
 export const revalidate = 300;
 export const dynamicParams = true;
+/** Serve HTML prerenderizzato a build quando possibile (evita lambda che fallisce su Vercel). */
+export const dynamic = "force-static";
 
 export async function generateStaticParams() {
   try {

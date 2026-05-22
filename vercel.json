@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_BASE": "https://api.techjournal.it",
+      "NEXT_PUBLIC_SITE_URL": "https://www.techjournal.it",
+      "NEXT_PUBLIC_WP_BASE": "https://api.techjournal.it/wp-json/tj/v1"
+    }
+  }
+}
