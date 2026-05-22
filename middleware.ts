@@ -41,8 +41,7 @@ function isInvalidWellKnownPath(pathname: string): boolean {
 
 function wantsMarkdown(request: NextRequest): boolean {
   if (request.headers.get("x-skip-markdown-rewrite") === "1") return false;
-  const accept = request.headers.get("accept");
-  return typeof accept === "string" && accept.includes("text/markdown");
+  return request.headers.get("x-agent-markdown") === "1";
 }
 
 function looksLikeArticlePath(pathname: string): { category: string; articleSlug: string } | null {

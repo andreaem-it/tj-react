@@ -19,7 +19,20 @@ import { postModifiedIso } from "@/lib/postDates";
 import InlineBannerPlaceholder from "@/components/InlineBannerPlaceholder";
 import type { Metadata } from "next";
 
-export const revalidate = 60;
+export const revalidate = 300;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const { posts } = await fetchPosts({ perPage: 100, page: 1 });
+    return posts.map((post) => ({
+      slug: getCategoryUrlSlugFromWpSlug(post.categorySlug),
+      articleSlug: post.slug,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 interface ArticlePageProps {
   params: Promise<{ slug: string; articleSlug: string }>;

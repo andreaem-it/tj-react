@@ -3,6 +3,11 @@ import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import { SITE_URL } from "@/lib/constants";
 import { estimateMarkdownTokens, htmlToMarkdown } from "@/lib/markdown";
 
+export const revalidate = 300;
+
+const MARKDOWN_CACHE_CONTROL =
+  "public, s-maxage=300, stale-while-revalidate=86400";
+
 function badRequest(message: string): NextResponse {
   return NextResponse.json({ error: message }, { status: 400 });
 }
@@ -51,6 +56,7 @@ export async function GET(request: Request) {
     status: 200,
     headers: {
       "content-type": "text/markdown; charset=utf-8",
+      "cache-control": MARKDOWN_CACHE_CONTROL,
       "x-content-format": "markdown",
       "x-markdown-tokens": String(estimateMarkdownTokens(markdown)),
       "last-modified": new Date(post.date).toUTCString(),

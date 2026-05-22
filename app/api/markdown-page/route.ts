@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { estimateMarkdownTokens, htmlToMarkdown } from "@/lib/markdown";
 
+export const revalidate = 300;
+
+const MARKDOWN_CACHE_CONTROL =
+  "public, s-maxage=300, stale-while-revalidate=86400";
+
 function stripNonContentTags(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, "")
@@ -44,7 +49,7 @@ export async function GET(request: Request) {
       Accept: "text/html",
       "x-skip-markdown-rewrite": "1",
     },
-    cache: "no-store",
+    next: { revalidate: 300 },
   });
 
   if (!upstream.ok) {
@@ -65,6 +70,7 @@ export async function GET(request: Request) {
     status: 200,
     headers: {
       "content-type": "text/markdown; charset=utf-8",
+      "cache-control": MARKDOWN_CACHE_CONTROL,
       "x-content-format": "markdown",
       "x-markdown-tokens": String(estimateMarkdownTokens(markdown)),
       Link: `</api>; rel="service-desc", </docs>; rel="service-doc", </.well-known/api-catalog>; rel="api-catalog"`,

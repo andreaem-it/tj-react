@@ -1,6 +1,10 @@
 import https from "node:https";
+import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { API_BASE, API_REQUEST_HEADERS, WP_BASE, logApiUrl } from "@/lib/constants";
+
+/** TTL Data Cache / ISR allineato al plugin WP (`CACHE_TTL = 300`). */
+export const TJ_FETCH_REVALIDATE = 300;
 
 export interface WPCategory {
   id: number;
@@ -186,7 +190,7 @@ async function fetchTjPosts(params: {
   const res = await fetchWithTimeout(url, {
     headers: API_REQUEST_HEADERS,
     ...(requestCache !== undefined && { cache: requestCache }),
-    ...(requestCache === undefined && { next: { revalidate: 60 } }),
+    ...(requestCache === undefined && { next: { revalidate: TJ_FETCH_REVALIDATE } }),
   });
   if (!res.ok) throw new Error(`TJ API error: ${res.status}`);
   const data = (await res.json()) as TjPostsResponse;
@@ -348,8 +352,9 @@ export async function fetchRelatedPosts(params: {
   categoryId: number;
   limit?: number;
 }): Promise<PostWithMeta[]> {
-  const { baseSlug, categoryId, limit = 4 } = params;
-  const { posts } = await fetchTjPosts({ perPage: 30, page: 1, category: categoryId });
+  const { baseSlug, categoryId, limit = 12 } = params;
+  const perPage = Math.min(50, limit + 3);
+  const { posts } = await fetchTjPosts({ perPage, page: 1, category: categoryId });
   const candidates = posts.filter((p) => p.slug !== baseSlug);
   candidates.sort((a, b) => {
     const va = a.viewCount ?? 0;
@@ -386,7 +391,7 @@ export async function fetchTrendingWeekAndMonth(params: {
   return { week, month };
 }
 
-export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null> {
+export const fetchPostBySlug = cache(async (slug: string): Promise<PostWithMeta | null> => {
   const raw = typeof slug === "string" ? slug.trim() : "";
   if (!raw) return null;
 
@@ -403,12 +408,14 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null
     return null;
   };
 
+  const fetchOpts = {
+    headers: API_REQUEST_HEADERS,
+    next: { revalidate: TJ_FETCH_REVALIDATE },
+  } as const;
+
   const urlSingle = `${WP_BASE}/post/${encodeURIComponent(raw)}`;
   logApiUrl(urlSingle);
-  const resSingle = await fetchWithTimeout(urlSingle, {
-    headers: API_REQUEST_HEADERS,
-    next: { revalidate: 60 },
-  });
+  const resSingle = await fetchWithTimeout(urlSingle, fetchOpts);
   const fromSingle = await tryParsePost(resSingle);
   if (fromSingle) return fromSingle;
 
@@ -418,12 +425,9 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null
     page: "1",
   }).toString()}`;
   logApiUrl(urlList);
-  const resList = await fetchWithTimeout(urlList, {
-    headers: API_REQUEST_HEADERS,
-    next: { revalidate: 60 },
-  });
+  const resList = await fetchWithTimeout(urlList, fetchOpts);
   return tryParsePost(resList);
-}
+});
 
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {
   const url = `${WP_BASE}/categories`;

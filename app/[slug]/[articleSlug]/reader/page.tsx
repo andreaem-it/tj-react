@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import ArticleBody from "@/components/ArticleBody";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 interface ReaderPageProps {
   params: Promise<{ slug: string; articleSlug: string }>;

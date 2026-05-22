@@ -10,11 +10,8 @@ import { postModifiedIso } from "@/lib/postDates";
 import { SITE_URL } from "@/lib/constants";
 import { fetchSitemapJson } from "@/lib/sitemapFetch";
 
-/**
- * Nessuna pre-generazione al build: su Vercel la sitemap superava il timeout (60s) con molte pagine API.
- * La route viene calcolata on-demand e può essere messa in cache dal CDN del provider.
- */
-export const dynamic = "force-dynamic";
+/** Sitemap rigenerata al massimo ogni ora; evita force-dynamic e no-store su ogni crawl. */
+export const revalidate = 3600;
 
 const POSTS_PER_SITEMAP_PAGE = 100;
 /** Limite di sicurezza se l’API restituisce totalPages errato (max ~5M URL teorici; Google consiglia max 50k per file). */
@@ -41,7 +38,6 @@ async function fetchPostsPagesBatched(
         fetchPosts({
           perPage: POSTS_PER_SITEMAP_PAGE,
           page,
-          requestCache: "no-store",
         }).catch(() => ({ posts: [] as PostWithMeta[], totalPages: 1 })),
       ),
     );
@@ -83,7 +79,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const first = await fetchPosts({
       perPage: POSTS_PER_SITEMAP_PAGE,
       page: 1,
-      requestCache: "no-store",
     });
     const totalPages = Math.min(MAX_POST_LIST_PAGES, Math.max(1, first.totalPages));
     const pageNumbers =
