@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import TjLink from "@/components/TjLink";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { fetchMegamenu as fetchMegamenuFromApi, type MegamenuPost } from "@/lib/tjApiClient";
@@ -69,7 +69,7 @@ function MegamenuPanel({
       <div className="grid grid-cols-5 gap-4">
         {slice.map((post, i) =>
           post.slug ? (
-            <Link
+            <TjLink
               key={post.slug}
               href={`/${categorySlug}/${post.slug}`}
               className="flex flex-col min-w-0 rounded overflow-hidden hover:bg-surface-overlay group"
@@ -92,18 +92,18 @@ function MegamenuPanel({
               <span className="text-sm text-foreground group-hover:text-accent line-clamp-3 mt-2 px-1">
                 {post.title}
               </span>
-            </Link>
+            </TjLink>
           ) : (
             <div key={`empty-${i}`} className="flex flex-col min-w-0 rounded overflow-hidden bg-content-bg/30 aspect-4/3" aria-hidden />
           )
         )}
       </div>
-      <Link
+      <TjLink
         href={categoryHref}
         className="inline-block mt-3 px-4 py-2 text-sm font-medium text-accent hover:bg-surface-overlay rounded"
       >
         Tutti gli articoli {label}
-      </Link>
+      </TjLink>
     </div>
   );
 }
@@ -185,7 +185,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
               const categoryHref = `/${slug}`;
 
               return (
-                <Link
+                <TjLink
                   key={slug}
                   href={categoryHref}
                   className="text-foreground hover:text-accent transition-colors text-base font-medium flex items-center gap-0.5 py-1"
@@ -195,21 +195,21 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                   <svg className="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
                     <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                   </svg>
-                </Link>
+                </TjLink>
               );
             }
 
             return (
-              <Link
+              <TjLink
                 key={item.href}
                 href={item.href}
                 className="text-foreground hover:text-accent transition-colors text-base font-medium py-1"
               >
                 {item.label}
-              </Link>
+              </TjLink>
             );
           })}
-          <Link
+          <TjLink
             href="/search"
             className="ml-auto text-foreground hover:text-accent transition-colors p-1"
             aria-label="Cerca"
@@ -217,7 +217,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-          </Link>
+          </TjLink>
         </nav>
 
         {/* Megamenu fisso sotto la barra: stessa posizione per tutte le voci */}
@@ -265,24 +265,24 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                   "href" in item && item.href ? item.href : item.slug ? `/${item.slug}` : "/";
                 return (
                   <li key={"href" in item ? item.href : item.slug ?? ""}>
-                    <Link
+                    <TjLink
                       href={href}
                       className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}
-                    </Link>
+                    </TjLink>
                   </li>
                 );
               })}
               <li className="border-t border-border mt-2 pt-2">
-                <Link
+                <TjLink
                   href="/search"
                   className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Cerca
-                </Link>
+                </TjLink>
               </li>
             </ul>
           </nav>

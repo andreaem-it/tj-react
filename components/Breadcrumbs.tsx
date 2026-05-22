@@ -1,4 +1,4 @@
-import Link from "next/link";
+import TjLink from "@/components/TjLink";
 import { SITE_URL } from "@/lib/constants";
 
 export type BreadcrumbItem = { label: string; href?: string };
@@ -39,12 +39,12 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
                 /
               </span>}
               {item.href ? (
-                <Link
+                <TjLink
                   href={item.href}
                   className="hover:text-accent transition-colors wrap-anywhere text-center min-w-0 max-w-full"
                 >
                   {item.label}
-                </Link>
+                </TjLink>
               ) : (
                 <span className="text-foreground wrap-anywhere text-center min-w-0 max-w-full">
                   {item.label}

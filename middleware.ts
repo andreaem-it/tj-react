@@ -92,8 +92,23 @@ function appendSecurityHeaders(response: NextResponse): void {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 }
 
+function isNextDataRequest(request: NextRequest): boolean {
+  return (
+    request.headers.get("rsc") === "1" ||
+    request.headers.get("next-router-prefetch") === "1" ||
+    request.headers.get("next-router-state-tree") != null
+  );
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  /** Prefetch/RSC: niente rewrite markdown né header Link extra (meno edge + meno invocazioni). */
+  if (isNextDataRequest(request)) {
+    const response = NextResponse.next();
+    appendSecurityHeaders(response);
+    return response;
+  }
 
   if (isInvalidSitemapPath(pathname)) {
     const response = new NextResponse("Not Found", {

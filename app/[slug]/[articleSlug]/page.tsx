@@ -1,6 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import TjLink from "@/components/TjLink";
 import {
   fetchPostBySlug,
   fetchPosts,
@@ -39,6 +39,14 @@ interface ArticlePageProps {
   params: Promise<{ slug: string; articleSlug: string }>;
 }
 
+function authorInitials(name: string): string {
+  const t = name.trim();
+  if (!t) return "TJ";
+  const parts = t.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return t.slice(0, 2).toUpperCase();
+}
+
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const now = new Date();
@@ -49,9 +57,10 @@ function formatDate(dateStr: string): string {
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  const { articleSlug } = await params;
-  const post = await fetchPostBySlug(articleSlug);
-  if (!post) return { title: "Pagina non trovata" };
+  try {
+    const { articleSlug } = await params;
+    const post = await fetchPostBySlug(articleSlug);
+    if (!post) return { title: "Pagina non trovata" };
 
   const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
   const canonical = `${SITE_URL.replace(/\/$/, "")}${path}`;
@@ -89,9 +98,21 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       "last-modified": modifiedIso,
     },
   };
+  } catch {
+    return { title: "Pagina non trovata" };
+  }
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function ArticlePage(props: ArticlePageProps) {
+  try {
+    return await ArticlePageContent(props);
+  } catch (err) {
+    console.error("[article-page]", err);
+    notFound();
+  }
+}
+
+async function ArticlePageContent({ params }: ArticlePageProps) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
   const post = await fetchPostBySlug(articleSlug);
   if (!post) notFound();
@@ -102,7 +123,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const [allPosts, relatedPosts] = await Promise.all([
-    fetchPosts({ perPage: 15 })
+    fetchPosts({ perPage: 8 })
       .then((r) => r.posts)
       .catch((): PostWithMeta[] => []),
     fetchRelatedPosts({ baseSlug: articleSlug, categoryId: post.categoryId, limit: 12 }).catch(
@@ -130,12 +151,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <div className="w-full max-w-full min-w-0 flex justify-center mb-4">
         <Breadcrumbs items={breadcrumbItems} />
       </div>
-      <Link
+      <TjLink
         href={`/${postCategoryUrlSlug}`}
         className="text-muted text-sm font-semibold uppercase tracking-wide hover:underline wrap-anywhere max-w-full px-1"
       >
         {post.categoryName}
-      </Link>
+      </TjLink>
       <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-1 mb-2 max-w-3xl w-full min-w-0 wrap-anywhere hyphens-auto">
         {post.title}
       </h1>
@@ -155,15 +176,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             />
           ) : (
             <div className="w-10 h-10 rounded-full bg-surface-overlay flex items-center justify-center text-muted text-sm font-medium shrink-0">
-              {post.authorName.slice(0, 2).toUpperCase()}
+              {authorInitials(post.authorName)}
             </div>
           )}
           <div className="text-left min-w-0">
             <p className="text-foreground text-sm font-medium wrap-anywhere">
               Di{" "}
-              <Link href="/chi-siamo" rel="author" className="hover:underline">
+              <TjLink href="/chi-siamo" rel="author" className="hover:underline">
                 {post.authorName}
-              </Link>
+              </TjLink>
             </p>
             <time className="text-muted text-sm" dateTime={post.date}>
               {formatDate(post.date)}
@@ -172,12 +193,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
         <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-end min-w-0 max-w-full">
           <ShareButtons title={post.title} url={shareUrl} variant="light" />
-          <Link
+          <TjLink
             href={`/${postCategoryUrlSlug}/${post.slug}/reader`}
             className="text-muted hover:text-accent text-sm font-medium transition-colors text-center sm:text-left"
           >
             Modalità lettura
-          </Link>
+          </TjLink>
         </div>
       </div>
 
@@ -257,7 +278,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   />
                 ) : (
                   <div className="w-12 h-12 md:w-[96px] md:h-[96px] rounded-full bg-content-bg flex items-center justify-center text-muted text-sm font-medium shrink-0">
-                    {post.authorName.slice(0, 2).toUpperCase()}
+                    {authorInitials(post.authorName)}
                   </div>
                 )}
                 <div className="min-w-0">

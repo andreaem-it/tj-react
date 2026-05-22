@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import TjLink from "@/components/TjLink";
 import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import ArticleBody from "@/components/ArticleBody";
 
@@ -22,6 +22,15 @@ export async function generateMetadata({ params }: ReaderPageProps) {
 }
 
 export default async function ReaderPage({ params }: ReaderPageProps) {
+  try {
+    return await ReaderPageContent(params);
+  } catch (err) {
+    console.error("[article-reader]", err);
+    notFound();
+  }
+}
+
+async function ReaderPageContent(params: Promise<{ slug: string; articleSlug: string }>) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
   const post = await fetchPostBySlug(articleSlug);
   if (!post) notFound();
@@ -36,22 +45,22 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-2 py-3 md:px-4 flex items-center justify-between gap-4">
-        <Link
+        <TjLink
           href={articleHref}
           className="text-muted hover:text-accent text-sm font-medium transition-colors"
         >
           ← Torna all&apos;articolo
-        </Link>
+        </TjLink>
         <span className="text-muted text-xs">Modalità lettura</span>
       </div>
       <article className="flex-1 w-full max-w-2xl mx-auto px-2 md:px-4 py-8 md:py-12">
         <header className="mb-8">
-          <Link
+          <TjLink
             href={`/${postCategoryUrlSlug}`}
             className="text-accent text-sm font-semibold uppercase tracking-wide hover:underline"
           >
             {post.categoryName}
-          </Link>
+          </TjLink>
           <h1 className="text-foreground text-2xl md:text-3xl font-bold mt-2 mb-3 leading-tight">
             {post.title}
           </h1>

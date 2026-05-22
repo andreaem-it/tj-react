@@ -31,6 +31,15 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: "/:category/:articleSlug",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=300, stale-while-revalidate=600",
+          },
+        ],
+      },
+      {
         source: "/:path*\\.(svg|png|jpg|jpeg|webp|avif|ico|woff2)",
         headers: [
           {

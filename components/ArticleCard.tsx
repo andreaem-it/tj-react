@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import TjLink from "@/components/TjLink";
 import { useState } from "react";
 import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
 import { BLUR_DATA_URL } from "@/lib/constants";
@@ -42,7 +42,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
 
   if (variant === "strip") {
     return (
-      <Link href={href} prefetch={false} className="group block">
+      <TjLink href={href} className="group block">
         <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-content-bg mb-2">
           {post.imageUrl && (
             <Image
@@ -61,7 +61,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
         <h2 className="text-foreground font-semibold text-sm line-clamp-2 group-hover:text-accent transition-colors">
           {post.title}
         </h2>
-      </Link>
+      </TjLink>
     );
   }
 
@@ -69,9 +69,8 @@ export default function ArticleCard({ post, variant = "default", size, priority 
     const titleLines = size === "large" ? 2 : size === "medium" ? 3 : 2;
     const titleSize = size === "large" ? "text-base md:text-xl" : size === "medium" ? "text-sm md:text-base" : "text-xs md:text-sm";
     return (
-      <Link
+      <TjLink
         href={href}
-        prefetch={false}
         className="group block absolute inset-0 overflow-hidden rounded-lg w-full bg-sidebar-bg lg:min-h-0"
       >
         {showHeroImage ? (
@@ -111,13 +110,13 @@ export default function ArticleCard({ post, variant = "default", size, priority 
             </span>
           </span>
         </div>
-      </Link>
+      </TjLink>
     );
   }
 
   return (
     <article className="flex flex-col group">
-      <Link href={href} prefetch={false} className="block overflow-hidden rounded-lg aspect-[16/10] relative bg-content-bg">
+      <TjLink href={href} className="block overflow-hidden rounded-lg aspect-[16/10] relative bg-content-bg">
         {post.imageUrl ? (
           <Image
             src={post.imageUrl}
@@ -134,19 +133,19 @@ export default function ArticleCard({ post, variant = "default", size, priority 
         ) : (
           <div className="absolute inset-0 bg-sidebar-bg" />
         )}
-      </Link>
+      </TjLink>
       <div className="pt-2">
-        <Link
+        <TjLink
           href={categoryHref}
           className="text-accent text-xs font-semibold uppercase tracking-wide hover:underline"
         >
           {post.categoryName}
-        </Link>
-        <Link href={href} prefetch={false}>
+        </TjLink>
+        <TjLink href={href}>
           <h2 className="text-foreground font-bold text-base mt-1 line-clamp-2 min-h-11 hover:text-accent transition-colors">
             {post.title}
           </h2>
-        </Link>
+        </TjLink>
         <time className="text-muted text-sm mt-1 block" dateTime={post.date}>
           {formatDate(post.date)}
         </time>

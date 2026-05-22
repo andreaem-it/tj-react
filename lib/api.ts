@@ -396,21 +396,34 @@ export async function fetchTrendingWeekAndMonth(params: {
   return { week, month };
 }
 
-export const fetchPostBySlug = cache(async (slug: string): Promise<PostWithMeta | null> => {
+function normalizePostAuthor(post: PostWithMeta): PostWithMeta {
+  const name =
+    typeof post.authorName === "string" && post.authorName.trim().length > 0
+      ? post.authorName.trim()
+      : "Redazione";
+  return name === post.authorName ? post : { ...post, authorName: name };
+}
+
+async function fetchPostBySlugFromApi(slug: string): Promise<PostWithMeta | null> {
   const raw = typeof slug === "string" ? slug.trim() : "";
   if (!raw) return null;
 
   const tryParsePost = async (res: Response): Promise<PostWithMeta | null> => {
     if (!res.ok) return null;
-    const data = (await res.json()) as PostWithMeta | TjPostsResponse | null;
-    if (!data || typeof data !== "object") return null;
-    if ("posts" in data && Array.isArray(data.posts)) {
-      return data.posts[0] ?? null;
+    try {
+      const data = (await res.json()) as PostWithMeta | TjPostsResponse | null;
+      if (!data || typeof data !== "object") return null;
+      if ("posts" in data && Array.isArray(data.posts)) {
+        const first = data.posts[0];
+        return first ? normalizePostAuthor(first) : null;
+      }
+      if ("slug" in data && typeof (data as PostWithMeta).slug === "string") {
+        return normalizePostAuthor(data as PostWithMeta);
+      }
+      return null;
+    } catch {
+      return null;
     }
-    if ("slug" in data && typeof (data as PostWithMeta).slug === "string") {
-      return data as PostWithMeta;
-    }
-    return null;
   };
 
   const fetchOpts = {
@@ -433,6 +446,20 @@ export const fetchPostBySlug = cache(async (slug: string): Promise<PostWithMeta 
     logApiUrl(urlList);
     const resList = await fetchWithTimeout(urlList, fetchOpts);
     return tryParsePost(resList);
+  } catch {
+    return null;
+  }
+}
+
+const fetchPostBySlugCached = (slug: string) =>
+  unstable_cache(() => fetchPostBySlugFromApi(slug), ["tj-post-by-slug", slug], {
+    revalidate: TJ_FETCH_REVALIDATE,
+  })();
+
+/** Dedup per request + Data Cache tra richieste ISR/RSC. */
+export const fetchPostBySlug = cache(async (slug: string): Promise<PostWithMeta | null> => {
+  try {
+    return await fetchPostBySlugCached(slug);
   } catch {
     return null;
   }
