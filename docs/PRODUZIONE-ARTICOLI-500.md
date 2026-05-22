@@ -6,6 +6,35 @@
 - In Rete: prima **429** con `x-vercel-mitigated: challenge`, poi **500**
 - La **home** può funzionare mentre **tutti gli articoli** falliscono
 
+## Causa reale (log Vercel 22:42 UTC)
+
+```
+Error: Failed to load external module jsdom … ERR_REQUIRE_ESM
+page: '/mac/macbook-pro-oled-samsung-soglia-resa-produttiva'
+```
+
+`isomorphic-dompurify` → `jsdom` in SSR **rompe tutte le pagine articolo** (500).
+
+Fix: `lib/sanitizeRichHtml.ts` senza jsdom (commit dopo `5fd691e`).
+
+## Causa 429 su `/_next/static/*.js` (ChunkLoadError / MIME text/html)
+
+Managed rule Vercel **`bot_filter` → action: `challenge`** (Firewall → Bot Management).
+I chunk JS/CSS ricevono HTML challenge → browser rifiuta MIME type.
+
+### Disattivare challenge (obbligatorio)
+
+1. Vercel → progetto **tj-react** → **Firewall** → **Rules**
+2. Sezione **Bot Management** → **Bot Protection**: passa da **Challenge** a **Log**
+3. **Publish** le modifiche
+4. (Opzionale) Menu `⋯` → **Disable Attack Mode** se attivo
+
+Oppure da terminale (interattivo, non da agent):
+
+```bash
+vercel firewall attack-mode disable
+```
+
 ## Causa 1 (obbligatoria): Attack Mode su Vercel
 
 Non è nelle "Firewall rules" personalizzate. È **Attack Mode / Attack Challenge**:
