@@ -1,29 +1,24 @@
 import Image from "next/image";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import {
   fetchPostBySlug,
   fetchPosts,
-  fetchRelatedPosts,
   getCategoryUrlSlugFromWpSlug,
-  type PostWithMeta,
 } from "@/lib/api";
 import ShareButtons from "@/components/ShareButtons";
-import TrendingSidebar from "@/components/TrendingSidebar";
-import AuthorCard from "@/components/AuthorCard";
 import ArticleBody from "@/components/ArticleBody";
-import RelatedArticlesSlider from "@/components/RelatedArticlesSlider";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ArticleStructuredData from "@/components/ArticleStructuredData";
+import { ArticleRelatedPosts, ArticleSidebar } from "@/components/ArticlePageExtras";
+import InlineBannerPlaceholder from "@/components/InlineBannerPlaceholder";
 import { BLUR_DATA_URL, SITE_URL } from "@/lib/constants";
 import { postModifiedIso } from "@/lib/postDates";
-import InlineBannerPlaceholder from "@/components/InlineBannerPlaceholder";
 import type { Metadata } from "next";
 
 export const revalidate = 300;
 export const dynamicParams = true;
-/** Serve HTML prerenderizzato a build quando possibile (evita lambda che fallisce su Vercel). */
-export const dynamic = "force-static";
+export const maxDuration = 60;
 
 export async function generateStaticParams() {
   try {
@@ -52,17 +47,15 @@ function authorInitials(name: string): string {
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffHours = Math.floor(diffMs / 3600000);
+  const diffHours = Math.floor((now.getTime() - d.getTime()) / 3600000);
   if (diffHours < 24) return `Pubblicato ${diffHours} ore fa`;
   return `Pubblicato il ${d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}`;
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  try {
-    const { articleSlug } = await params;
-    const post = await fetchPostBySlug(articleSlug);
-    if (!post) return { title: "Pagina non trovata" };
+  const { articleSlug } = await params;
+  const post = await fetchPostBySlug(articleSlug);
+  if (!post) return { title: "Pagina non trovata" };
 
   const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
   const canonical = `${SITE_URL.replace(/\/$/, "")}${path}`;
@@ -74,9 +67,6 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     title: `${post.title} | TechJournal`,
     description,
     alternates: { canonical },
-    authors: [{ name: post.authorName, url: `${SITE_URL.replace(/\/$/, "")}/chi-siamo` }],
-    creator: post.authorName,
-    publisher: "TechJournal",
     openGraph: {
       title: post.title,
       description,
@@ -86,7 +76,6 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       type: "article",
       publishedTime: post.date,
       modifiedTime: modifiedIso,
-      authors: [post.authorName],
     },
     twitter: {
       card: "summary_large_image",
@@ -94,122 +83,43 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       description,
       images: [image],
     },
-    other: {
-      "article:published_time": post.date,
-      "article:modified_time": modifiedIso,
-      "last-modified": modifiedIso,
-    },
   };
-  } catch {
-    return { title: "Pagina non trovata" };
-  }
+}
+
+function ArticleUnavailable() {
+  return (
+    <div className="max-w-3xl mx-auto py-16 px-4 text-center">
+      <h1 className="text-2xl font-bold text-foreground mb-2">Articolo non disponibile</h1>
+      <p className="text-muted mb-6">
+        Il contenuto non è raggiungibile in questo momento. Riprova tra poco.
+      </p>
+      <TjLink href="/" className="text-accent hover:underline font-medium">
+        Torna alla home
+      </TjLink>
+    </div>
+  );
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
   const post = await fetchPostBySlug(articleSlug);
-  if (!post) notFound();
+  if (!post) return <ArticleUnavailable />;
 
   const postCategoryUrlSlug = getCategoryUrlSlugFromWpSlug(post.categorySlug);
   if (categoryUrlSlug !== postCategoryUrlSlug) {
     redirect(`/${postCategoryUrlSlug}/${articleSlug}`);
   }
 
-  const [allPosts, relatedPosts] = await Promise.all([
-    fetchPosts({ perPage: 8 })
-      .then((r) => r.posts)
-      .catch((): PostWithMeta[] => []),
-    fetchRelatedPosts({ baseSlug: articleSlug, categoryId: post.categoryId, limit: 12 }).catch(
-      (): PostWithMeta[] => [],
-    ),
-  ]);
-  const author =
-    post.authorName && post.authorAvatarUrl
-      ? { name: post.authorName, avatar_urls: { 96: post.authorAvatarUrl } as Record<string, string> }
-      : post.authorName
-        ? { name: post.authorName, avatar_urls: {} as Record<string, string> }
-        : null;
   const articleHref = `/${postCategoryUrlSlug}/${post.slug}`;
   const shareUrl = `${SITE_URL.replace(/\/$/, "")}${articleHref}/`;
   const modifiedIso = postModifiedIso(post);
+  const sidebarAdSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_SIDEBAR;
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: post.categoryName, href: `/${postCategoryUrlSlug}` },
     { label: post.title },
   ];
-
-  const heroContent = (
-    <div className="relative z-10 flex flex-col items-center text-center px-2 sm:px-5 md:px-6 py-8 md:py-12 w-full max-w-full min-w-0 box-border">
-      <div className="w-full max-w-full min-w-0 flex justify-center mb-4">
-        <Breadcrumbs items={breadcrumbItems} />
-      </div>
-      <TjLink
-        href={`/${postCategoryUrlSlug}`}
-        className="text-muted text-sm font-semibold uppercase tracking-wide hover:underline wrap-anywhere max-w-full px-1"
-      >
-        {post.categoryName}
-      </TjLink>
-      <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-1 mb-2 max-w-3xl w-full min-w-0 wrap-anywhere hyphens-auto">
-        {post.title}
-      </h1>
-      <p className="text-muted text-base max-w-2xl w-full min-w-0 wrap-anywhere hyphens-auto">
-        {post.excerpt}
-      </p>
-
-      <div className="mt-6 w-full max-w-full min-w-0 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-3 min-w-0 max-w-full justify-center sm:justify-start">
-          {post.authorAvatarUrl ? (
-            <Image
-              src={post.authorAvatarUrl}
-              alt=""
-              width={40}
-              height={40}
-              className="rounded-full object-cover shrink-0"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-surface-overlay flex items-center justify-center text-muted text-sm font-medium shrink-0">
-              {authorInitials(post.authorName)}
-            </div>
-          )}
-          <div className="text-left min-w-0">
-            <p className="text-foreground text-sm font-medium wrap-anywhere">
-              Di{" "}
-              <TjLink href="/chi-siamo" rel="author" className="hover:underline">
-                {post.authorName}
-              </TjLink>
-            </p>
-            <time className="text-muted text-sm" dateTime={post.date}>
-              {formatDate(post.date)}
-            </time>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-end min-w-0 max-w-full">
-          <ShareButtons title={post.title} url={shareUrl} variant="light" />
-          <TjLink
-            href={`/${postCategoryUrlSlug}/${post.slug}/reader`}
-            className="text-muted hover:text-accent text-sm font-medium transition-colors text-center sm:text-left"
-          >
-            Modalità lettura
-          </TjLink>
-        </div>
-      </div>
-
-      {post.imageUrl && (
-        <div className="mt-6 w-full max-w-3xl min-w-0 relative aspect-video rounded-lg overflow-hidden bg-content-bg">
-          <Image
-            src={post.imageUrl}
-            alt={post.imageAlt}
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 800px"
-            placeholder="blur"
-            blurDataURL={BLUR_DATA_URL}
-          />
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <div className="max-w-7xl mx-auto w-full min-w-0 py-8">
@@ -224,26 +134,58 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0 w-full max-w-full bg-content-bg rounded-lg overflow-hidden">
-          {post.imageUrl ? (
-            <header className="relative w-full max-w-full min-h-[340px] md:min-h-[400px] flex flex-col justify-end rounded-t-lg overflow-hidden pb-6 min-w-0">
-              <Image
-                src={post.imageUrl}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 800px"
-                priority
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-              />
-              <div className="absolute inset-0 bg-black/80" />
-              {heroContent}
-            </header>
-          ) : (
-            <header className="w-full max-w-full min-w-0 px-3 pt-6 pb-4 md:p-8 box-border">
-              {heroContent}
-            </header>
-          )}
+          <header className="w-full max-w-full min-w-0 px-3 pt-6 pb-4 md:p-8 box-border">
+            <Breadcrumbs items={breadcrumbItems} />
+            <TjLink
+              href={`/${postCategoryUrlSlug}`}
+              className="text-muted text-sm font-semibold uppercase tracking-wide hover:underline wrap-anywhere max-w-full"
+            >
+              {post.categoryName}
+            </TjLink>
+            <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-2 mb-3 max-w-3xl wrap-anywhere">
+              {post.title}
+            </h1>
+            <p className="text-muted text-base max-w-2xl wrap-anywhere">{post.excerpt}</p>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted">
+              {post.authorAvatarUrl ? (
+                <Image
+                  src={post.authorAvatarUrl}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <span className="w-10 h-10 rounded-full bg-surface-overlay flex items-center justify-center text-xs font-medium shrink-0">
+                  {authorInitials(post.authorName)}
+                </span>
+              )}
+              <span>
+                Di{" "}
+                <TjLink href="/chi-siamo" className="hover:underline text-foreground">
+                  {post.authorName}
+                </TjLink>
+              </span>
+              <time dateTime={post.date}>{formatDate(post.date)}</time>
+              <ShareButtons title={post.title} url={shareUrl} variant="light" />
+            </div>
+
+            {post.imageUrl && (
+              <div className="mt-6 relative w-full max-w-3xl aspect-video rounded-lg overflow-hidden bg-content-bg">
+                <Image
+                  src={post.imageUrl}
+                  alt={post.imageAlt || post.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 800px"
+                  priority
+                  placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
+                />
+              </div>
+            )}
+          </header>
 
           <div className="px-3 py-6 md:p-8">
             <ArticleBody html={post.content} viewCount={post.viewCount} postId={post.id} />
@@ -254,55 +196,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP}
             />
           </div>
-          <footer className="mt-8 pt-6 pb-6 border-t border-border px-3 md:px-8">
-            {author ? (
-              <div className="p-4 rounded-lg bg-sidebar-bg/50">
-                <AuthorCard author={author} />
-              </div>
-            ) : (
-              <div className="flex items-start gap-4 p-4 rounded-lg bg-sidebar-bg/50">
-                {post.authorAvatarUrl ? (
-                  <Image
-                    src={post.authorAvatarUrl}
-                    alt={post.authorName}
-                    width={96}
-                    height={96}
-                    className="rounded-full object-cover shrink-0 w-12 h-12 md:w-[96px] md:h-[96px]"
-                  />
-                ) : (
-                  <div className="w-12 h-12 md:w-[96px] md:h-[96px] rounded-full bg-content-bg flex items-center justify-center text-muted text-sm font-medium shrink-0">
-                    {authorInitials(post.authorName)}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="text-muted text-sm font-semibold uppercase tracking-wide mb-1">
-                    Scritto da
-                  </p>
-                  <p className="text-foreground font-medium">{post.authorName}</p>
-                  <p className="text-muted text-sm mt-2 leading-relaxed">
-                    Andrea è uno sviluppatore PHP classe 1990. Appassionato di tecnologia fin da bambino, si evolve nel tempo come programmatore. Amo la tecnologia, è il mio lavoro, il mio pane quotidiano, sono appassionato dei prodotti Apple e di tutto ciò che ruota attorno all&apos;ecosistema.
-                  </p>
-                </div>
-              </div>
-            )}
-            {relatedPosts.length > 0 && (
-              <RelatedArticlesSlider posts={relatedPosts} />
-            )}
-          </footer>
+          <ArticleRelatedPosts articleSlug={articleSlug} categoryId={post.categoryId} />
         </article>
-        <aside className="w-full lg:w-[320px] shrink-0">
-          <InlineBannerPlaceholder
-            width="100%"
-            height={250}
-            className="mb-4 mx-auto block text-center"
-            adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_SIDEBAR}
-          />
-          <TrendingSidebar
-            posts={allPosts}
-            currentSlug={articleSlug}
-            currentPost={{ title: post.title, shareUrl }}
-          />
-        </aside>
+
+        <ArticleSidebar
+          articleSlug={articleSlug}
+          postTitle={post.title}
+          shareUrl={shareUrl}
+          sidebarAdSlot={sidebarAdSlot}
+        />
       </div>
     </div>
   );

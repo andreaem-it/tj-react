@@ -6,5 +6,11 @@
       "NEXT_PUBLIC_SITE_URL": "https://www.techjournal.it",
       "NEXT_PUBLIC_WP_BASE": "https://api.techjournal.it/wp-json/tj/v1"
     }
+  },
+  "functions": {
+    "app/**": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
   }
 }
