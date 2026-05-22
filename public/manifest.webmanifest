@@ -1,0 +1,19 @@
+{
+  "name": "TechJournal — Notizie Apple, Tech e Gadget",
+  "short_name": "TechJournal",
+  "description": "Ultime notizie su Apple, iPhone, Mac, app e tecnologia. Recensioni, guide e offerte.",
+  "start_url": "https://www.techjournal.it/",
+  "scope": "https://www.techjournal.it/",
+  "display": "browser",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "/techjournal-ico.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}

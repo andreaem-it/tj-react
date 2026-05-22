@@ -21,6 +21,16 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/manifest.webmanifest",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, immutable",
+          },
+          { key: "Content-Type", value: "application/manifest+json; charset=utf-8" },
+        ],
+      },
+      {
         source: "/:path*\\.(svg|png|jpg|jpeg|webp|avif|ico|woff2)",
         headers: [
           {
