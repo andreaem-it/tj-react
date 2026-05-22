@@ -10,7 +10,11 @@ import { postModifiedIso } from "@/lib/postDates";
 import { SITE_URL } from "@/lib/constants";
 import { fetchSitemapJson } from "@/lib/sitemapFetch";
 
-/** Sitemap rigenerata al massimo ogni ora; evita force-dynamic e no-store su ogni crawl. */
+/**
+ * On-demand (non al build): con migliaia di post la generazione supera il timeout Vercel (60s).
+ * `revalidate` mette in ISR la risposta runtime; le fetch WP usano Data Cache (300s), non no-store.
+ */
+export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 const POSTS_PER_SITEMAP_PAGE = 100;
