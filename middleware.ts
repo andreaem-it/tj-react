@@ -1,8 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const DEPLOY_LAST_MODIFIED = new Date().toUTCString();
-
 const VALID_SITEMAP_PATHS = new Set(["/sitemap.xml"]);
 const VALID_WELL_KNOWN_PATHS = new Set([
   "/.well-known/api-catalog",
@@ -57,123 +55,63 @@ function looksLikeArticlePath(pathname: string): { category: string; articleSlug
   return { category, articleSlug };
 }
 
-function appendAgentLinkHeaders(response: NextResponse): void {
-  response.headers.append("Link", '</api>; rel="service-desc"');
-  response.headers.append("Link", '</docs>; rel="service-doc"');
-  response.headers.append("Link", '</.well-known/api-catalog>; rel="api-catalog"');
-  response.headers.append(
-    "Link",
-    '</.well-known/oauth-authorization-server>; rel="oauth2-metadata"'
-  );
-  response.headers.append(
-    "Link",
-    '</.well-known/openid-configuration>; rel="openid-configuration"'
-  );
-  response.headers.append(
-    "Link",
-    '</.well-known/oauth-protected-resource>; rel="oauth-protected-resource"'
-  );
-  response.headers.append(
-    "Link",
-    '</.well-known/mcp/server-card.json>; rel="mcp-server-card"'
-  );
-}
-
-function appendFreshnessHeaders(response: NextResponse): void {
-  if (!response.headers.has("Last-Modified")) {
-    response.headers.set("Last-Modified", DEPLOY_LAST_MODIFIED);
-  }
-}
-
-function appendSecurityHeaders(response: NextResponse): void {
-  response.headers.set("Content-Security-Policy", "frame-ancestors 'none'");
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-}
-
-function isNextDataRequest(request: NextRequest): boolean {
-  return (
-    request.headers.get("rsc") === "1" ||
-    request.headers.get("next-router-prefetch") === "1" ||
-    request.headers.get("next-router-state-tree") != null
-  );
-}
-
+/**
+ * Rewrite markdown solo per agenti (header esplicito).
+ * Gli header di sicurezza/agent sono in next.config.ts — non in middleware.
+ */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  /** Prefetch/RSC: niente rewrite markdown né header Link extra (meno edge + meno invocazioni). */
-  if (isNextDataRequest(request)) {
-    const response = NextResponse.next();
-    appendSecurityHeaders(response);
-    return response;
-  }
-
   if (isInvalidSitemapPath(pathname)) {
-    const response = new NextResponse("Not Found", {
+    return new NextResponse("Not Found", {
       status: 404,
       headers: { "content-type": "text/plain; charset=utf-8" },
     });
-    appendSecurityHeaders(response);
-    return response;
   }
 
   if (isInvalidWellKnownPath(pathname)) {
-    const response = new NextResponse("Not Found", {
+    return new NextResponse("Not Found", {
       status: 404,
       headers: { "content-type": "text/plain; charset=utf-8" },
     });
-    appendSecurityHeaders(response);
-    return response;
   }
 
-  if (wantsMarkdown(request)) {
-    const article = looksLikeArticlePath(pathname);
-    if (article) {
-      const markdownUrl = request.nextUrl.clone();
-      markdownUrl.pathname = "/api/markdown-article";
-      markdownUrl.searchParams.set("category", article.category);
-      markdownUrl.searchParams.set("slug", article.articleSlug);
-      const response = NextResponse.rewrite(markdownUrl);
-      appendSecurityHeaders(response);
-      appendAgentLinkHeaders(response);
-      appendFreshnessHeaders(response);
-      return response;
-    }
-
-    const isPageLikePath =
-      pathname !== "/favicon.ico" &&
-      !pathname.startsWith("/_next/") &&
-      !pathname.startsWith("/api/") &&
-      !/\.[a-z0-9]+$/i.test(pathname);
-
-    if (isPageLikePath) {
-      const markdownUrl = request.nextUrl.clone();
-      markdownUrl.pathname = "/api/markdown-page";
-      markdownUrl.searchParams.set("path", pathname);
-      const response = NextResponse.rewrite(markdownUrl);
-      appendSecurityHeaders(response);
-      appendAgentLinkHeaders(response);
-      appendFreshnessHeaders(response);
-      return response;
-    }
+  if (!wantsMarkdown(request)) {
+    return NextResponse.next();
   }
 
-  const response = NextResponse.next();
-  appendSecurityHeaders(response);
-  appendAgentLinkHeaders(response);
-  appendFreshnessHeaders(response);
+  const article = looksLikeArticlePath(pathname);
+  if (article) {
+    const markdownUrl = request.nextUrl.clone();
+    markdownUrl.pathname = "/api/markdown-article";
+    markdownUrl.searchParams.set("category", article.category);
+    markdownUrl.searchParams.set("slug", article.articleSlug);
+    return NextResponse.rewrite(markdownUrl);
+  }
 
-  return response;
+  const isPageLikePath =
+    pathname !== "/favicon.ico" &&
+    !pathname.startsWith("/_next/") &&
+    !pathname.startsWith("/api/") &&
+    !/\.[a-z0-9]+$/i.test(pathname);
+
+  if (isPageLikePath) {
+    const markdownUrl = request.nextUrl.clone();
+    markdownUrl.pathname = "/api/markdown-page";
+    markdownUrl.searchParams.set("path", pathname);
+    return NextResponse.rewrite(markdownUrl);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
     /*
-     * Escludi asset statici e risposte “solo testo/XML” frequenti per bot e Search Console.
-     * La middleware non deve intercettare sitemap/robots/feed per ridurre edge cases con WAF/challenge.
+     * NON eseguire middleware su /categoria/articolo (due segmenti).
+     * In produzione (Vercel + Cloudflare) la combo middleware + ISR articoli
+     * causava 500 su tutte le pagine articolo.
      */
-    "/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|ads\\.txt|feed\\.xml|llms\\.txt|manifest\\.webmanifest|.*\\.webmanifest|.*\\.(?:svg|png|jpe?g|gif|webp|ico|woff2?)).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|ads\\.txt|feed\\.xml|llms\\.txt|manifest\\.webmanifest|.*\\.webmanifest|.*\\.(?:svg|png|jpe?g|gif|webp|ico|woff2?)|[^/]+/[^/]+(?:/reader)?).*)",
   ],
 };

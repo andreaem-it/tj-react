@@ -1,4 +1,4 @@
-import { notFound, redirect, unstable_rethrow } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import ArticleBody from "@/components/ArticleBody";
@@ -22,16 +22,6 @@ export async function generateMetadata({ params }: ReaderPageProps) {
 }
 
 export default async function ReaderPage({ params }: ReaderPageProps) {
-  try {
-    return await ReaderPageContent(params);
-  } catch (err) {
-    unstable_rethrow(err);
-    console.error("[article-reader]", err);
-    notFound();
-  }
-}
-
-async function ReaderPageContent(params: Promise<{ slug: string; articleSlug: string }>) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
   const post = await fetchPostBySlug(articleSlug);
   if (!post) notFound();

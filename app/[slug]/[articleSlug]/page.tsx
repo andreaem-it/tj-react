@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { notFound, redirect, unstable_rethrow } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import {
   fetchPostBySlug,
@@ -103,17 +103,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   }
 }
 
-export default async function ArticlePage(props: ArticlePageProps) {
-  try {
-    return await ArticlePageContent(props);
-  } catch (err) {
-    unstable_rethrow(err);
-    console.error("[article-page]", err);
-    notFound();
-  }
-}
-
-async function ArticlePageContent({ params }: ArticlePageProps) {
+export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
   const post = await fetchPostBySlug(articleSlug);
   if (!post) notFound();

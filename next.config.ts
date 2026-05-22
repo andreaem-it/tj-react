@@ -19,7 +19,30 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    const securityHeaders = [
+      { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    ];
+    const agentLinkHeader = {
+      key: "Link",
+      value: [
+        '</api>; rel="service-desc"',
+        '</docs>; rel="service-doc"',
+        '</.well-known/api-catalog>; rel="api-catalog"',
+        '</.well-known/oauth-authorization-server>; rel="oauth2-metadata"',
+        '</.well-known/openid-configuration>; rel="openid-configuration"',
+        '</.well-known/oauth-protected-resource>; rel="oauth-protected-resource"',
+        '</.well-known/mcp/server-card.json>; rel="mcp-server-card"',
+      ].join(", "),
+    };
+
     return [
+      {
+        source: "/:path*",
+        headers: [...securityHeaders, agentLinkHeader],
+      },
       {
         source: "/manifest.webmanifest",
         headers: [
