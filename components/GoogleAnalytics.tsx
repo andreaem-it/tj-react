@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Script from "next/script";
+import { gtagJsUrl } from "@/lib/thirdPartyScriptUrls";
 
 const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
 const GA_NEED_EVENT = "techjournal:ga-needed";
@@ -83,7 +84,7 @@ export default function GoogleAnalytics() {
   return (
     <>
       <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
+        src={gtagJsUrl(measurementId)}
         strategy="lazyOnload"
       />
       <Script id="ga-consent-config" strategy="lazyOnload">

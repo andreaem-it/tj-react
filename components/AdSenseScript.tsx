@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useState } from "react";
 import Script from "next/script";
+import { adsenseJsUrl } from "@/lib/thirdPartyScriptUrls";
 
 const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
 const ADSENSE_NEED_EVENT = "techjournal:adsense-needed";
@@ -76,11 +77,13 @@ export default function AdSenseScript() {
   }, []);
 
   if (!clientId || !loadScript) return null;
+  const src = adsenseJsUrl(clientId);
+  const proxied = src.startsWith("/");
   return (
     <Script
-      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${clientId}`}
+      src={src}
       strategy="afterInteractive"
-      crossOrigin="anonymous"
+      {...(proxied ? {} : { crossOrigin: "anonymous" as const })}
     />
   );
 }

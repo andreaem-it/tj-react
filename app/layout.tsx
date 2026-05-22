@@ -8,6 +8,7 @@ import AppShell from "@/components/AppShell";
 import SiteStructuredData from "@/components/SiteStructuredData";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import DeferredTelemetry from "@/components/DeferredTelemetry";
+import { useThirdPartyScriptProxy } from "@/lib/thirdPartyScriptUrls";
 import { SITE_THEME_BOOTSTRAP_SCRIPT } from "@/lib/siteTheme";
 
 const inter = Inter({
@@ -73,14 +74,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const proxyThirdPartyScripts = useThirdPartyScriptProxy();
+
   return (
     <html lang="it" className={inter.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SITE_THEME_BOOTSTRAP_SCRIPT }} />
-        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="" />
-        <link rel="dns-prefetch" href="//pagead2.googlesyndication.com" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
-        <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+        {!proxyThirdPartyScripts && (
+          <>
+            <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="" />
+            <link rel="dns-prefetch" href="//pagead2.googlesyndication.com" />
+            <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
+            <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+          </>
+        )}
         <link rel="preconnect" href="https://region1.google-analytics.com" crossOrigin="" />
         <link rel="dns-prefetch" href="//region1.google-analytics.com" />
         <link rel="preconnect" href="https://cs.iubenda.com" crossOrigin="" />

@@ -16,6 +16,16 @@ const nextConfig: NextConfig = {
         source: "/embed.json",
         destination: "/api/iubenda-embed",
       },
+      /** GA gtag.js via first-party (TLS solo verso www.techjournal.it). */
+      {
+        source: "/3p/gtag/js",
+        destination: "https://www.googletagmanager.com/gtag/js",
+      },
+      /** AdSense loader via first-party. */
+      {
+        source: "/3p/ads/pagead/js/adsbygoogle.js",
+        destination: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js",
+      },
     ];
   },
   async headers() {
@@ -48,8 +58,13 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/api/:path*",
-        headers: securityHeaders,
+        source: "/3p/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600, stale-while-revalidate=86400",
+          },
+        ],
       },
       {
         source: "/docs",
