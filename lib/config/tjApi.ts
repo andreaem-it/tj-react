@@ -5,7 +5,20 @@
  */
 export const TJ_API_BASE_URL = (process.env.TJ_API_BASE_URL ?? "").trim();
 
+/** Aggiunge https:// se manca lo schema (es. env `backend.example.com`). */
+export function normalizeTjApiBaseUrl(raw: string): string | null {
+  const trimmed = raw.trim().replace(/\/$/, "");
+  if (!trimmed) return null;
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(withScheme);
+    if (!url.hostname) return null;
+    return `${url.origin}${url.pathname}`.replace(/\/$/, "") || url.origin;
+  } catch {
+    return null;
+  }
+}
+
 export function getTjApiBaseUrl(): string | null {
-  if (!TJ_API_BASE_URL) return null;
-  return TJ_API_BASE_URL.replace(/\/$/, "");
+  return normalizeTjApiBaseUrl(TJ_API_BASE_URL);
 }

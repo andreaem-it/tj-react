@@ -29,6 +29,15 @@ In alternativa: **Speed** → verifica che non ci siano integrazioni che inietta
 
 Finché resta attivo, puoi vedere `ERR_CERT_AUTHORITY_INVALID` su `cloudflareinsights.com` su reti con antivirus/proxy.
 
+**Disattivazione obbligatoria** se usi GA: il beacon non passa dal proxy `/3p/*`.
+
+## Proxy GA/AdSense non attivo nel browser
+
+Se in DevTools vedi ancora `googletagmanager.com` o `pagead2.googlesyndication.com` (non `/3p/...`):
+
+- Hard refresh (Cmd+Shift+R) dopo un nuovo deploy
+- Il bundle deve contenere la stringa `/3p/gtag` (fix runtime hostname, commit dopo `7b4adea`)
+
 ## Se persiste su Google (dopo il proxy)
 
 Dopo il deploy, se in console vedi ancora certificati invalidi su:
@@ -47,7 +56,21 @@ sono le **richieste di tracking/annunci** (non il file `.js` iniziale). Cause ti
 ## Verifica post-deploy
 
 ```bash
-curl -sI "https://www.techjournal.it/3p/gtag/js?id=G-BXNMEG88Y4" | head -5
+curl -sI "https://www.techjournal.it/3p/gtag/js?id=G-BXNMEG88Y4" | head -8
 ```
 
-Atteso: `HTTP/2 200` e `content-type` JavaScript (non HTML challenge).
+**Atteso (OK):** `HTTP/2 200` e `content-type: application/javascript` (o simile).
+
+**Se vedi `HTTP/2 429`** con `x-vercel-mitigated: challenge`:
+
+- **Non** è un bug del proxy `/3p/*`
+- È lo **stesso blocco** che colpisce `/_next/static/*.js` (ChunkLoadError)
+- Vercel **Bot Protection** è in modalità **Challenge** → va messa su **Log** e **Publish**
+
+Vedi `docs/PRODUZIONE-ARTICOLI-500.md` (sezione 429).
+
+Da terminale (solo tu, interattivo):
+
+```bash
+vercel firewall attack-mode disable
+```

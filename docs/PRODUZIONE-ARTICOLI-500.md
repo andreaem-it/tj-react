@@ -74,5 +74,6 @@ Impostare almeno:
 - `NEXT_PUBLIC_API_BASE` = `https://api.techjournal.it`
 - `NEXT_PUBLIC_SITE_URL` = `https://www.techjournal.it`
 - `NEXT_PUBLIC_WP_BASE` = `https://api.techjournal.it/wp-json/tj/v1`
+- `TJ_API_BASE_URL` = `https://backend.techjournal.it` (con **`https://`**, altrimenti `/api/posts/*` risponde 500)
 
 Poi **Redeploy** (non solo cache).
