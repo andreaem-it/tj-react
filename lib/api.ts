@@ -451,15 +451,10 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostWithMeta | null
   }
 }
 
-const fetchPostBySlugCached = (slug: string) =>
-  unstable_cache(() => fetchPostBySlugFromApi(slug), ["tj-post-by-slug", slug], {
-    revalidate: TJ_FETCH_REVALIDATE,
-  })();
-
-/** Dedup per request + Data Cache tra richieste ISR/RSC. */
+/** Dedup per request; fetch con `next.revalidate` per ISR. */
 export const fetchPostBySlug = cache(async (slug: string): Promise<PostWithMeta | null> => {
   try {
-    return await fetchPostBySlugCached(slug);
+    return await fetchPostBySlugFromApi(slug);
   } catch {
     return null;
   }

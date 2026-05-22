@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, unstable_rethrow } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import ArticleBody from "@/components/ArticleBody";
@@ -25,6 +25,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
   try {
     return await ReaderPageContent(params);
   } catch (err) {
+    unstable_rethrow(err);
     console.error("[article-reader]", err);
     notFound();
   }

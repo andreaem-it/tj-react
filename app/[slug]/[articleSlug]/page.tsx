@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, unstable_rethrow } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import {
   fetchPostBySlug,
@@ -25,7 +25,7 @@ export const dynamicParams = true;
 
 export async function generateStaticParams() {
   try {
-    const { posts } = await fetchPosts({ perPage: 100, page: 1 });
+    const { posts } = await fetchPosts({ perPage: 150, page: 1 });
     return posts.map((post) => ({
       slug: getCategoryUrlSlugFromWpSlug(post.categorySlug),
       articleSlug: post.slug,
@@ -107,6 +107,7 @@ export default async function ArticlePage(props: ArticlePageProps) {
   try {
     return await ArticlePageContent(props);
   } catch (err) {
+    unstable_rethrow(err);
     console.error("[article-page]", err);
     notFound();
   }
