@@ -43,7 +43,7 @@ async function fetchLiveOffers(): Promise<TechRadarOffer[]> {
   if (!res.ok) throw new Error("Errore nel caricamento delle offerte live");
   const data = await res.json();
   const offers = Array.isArray(data) ? data : [];
-  memoryCache = { offers, fetchedAt: Date.now() };
+  memoryCache = { offers, fetchedAt: Date.now(), cacheKey: "legacy-live" };
   return offers;
 }
 
@@ -53,7 +53,7 @@ async function fetchBetaOffers(): Promise<TechRadarOffer[]> {
     return memoryCache.offers;
   }
   const offers = getBetaOffers();
-  memoryCache = { offers, fetchedAt: Date.now() };
+  memoryCache = { offers, fetchedAt: Date.now(), cacheKey: "beta" };
   return offers;
 }
 
