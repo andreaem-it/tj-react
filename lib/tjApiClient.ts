@@ -224,6 +224,8 @@ export interface PriceRadarProductsQuery {
   brand?: string;
   category?: string;
   status?: "active" | "paused" | "all";
+  /** Opt-in: solo prodotti con sconto vs picco 30g. */
+  discountOnly?: boolean;
 }
 
 export interface SocialStatsJson {
@@ -236,7 +238,7 @@ const jsonHeaders: HeadersInit = { Accept: "application/json" };
 function buildPriceRadarProductsQuery(params: PriceRadarProductsQuery = {}): string {
   const sp = new URLSearchParams();
   sp.set("status", params.status ?? "active");
-  sp.set("discountOnly", "1");
+  if (params.discountOnly) sp.set("discountOnly", "1");
   if (params.search?.trim()) sp.set("search", params.search.trim());
   if (params.sort) sp.set("sort", params.sort);
   if (params.brand?.trim()) sp.set("brand", params.brand.trim());

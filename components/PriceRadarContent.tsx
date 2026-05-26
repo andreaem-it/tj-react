@@ -205,7 +205,7 @@ export default function PriceRadarContent() {
     if (PRICE_RADAR_SQLITE_ENABLED) {
       return offers;
     }
-    let result = offers.filter((o) => o.discount_percent > 0);
+    let result = offers;
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(
