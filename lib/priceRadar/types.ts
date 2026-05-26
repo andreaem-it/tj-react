@@ -48,6 +48,8 @@ export interface PriceRadarProductListItem {
   id: number;
   asin: string;
   title: string | null;
+  brand?: string | null;
+  category?: string | null;
   image_url: string | null;
   url: string;
   current_price: number | null;

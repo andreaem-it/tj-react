@@ -10,7 +10,7 @@ import {
 } from "@/lib/techradar";
 import type { PriceRadarProductListItem } from "@/lib/priceRadar/types";
 import { API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
-import { fetchPriceRadarProducts } from "@/lib/tjApiClient";
+import { fetchPriceRadarFilters, fetchPriceRadarProducts } from "@/lib/tjApiClient";
 import PriceRadarCard from "./PriceRadarCard";
 import { getBetaOffers } from "@/lib/priceRadarBetaData";
 
@@ -20,9 +20,19 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minuti
 interface CachedData {
   offers: TechRadarOffer[];
   fetchedAt: number;
+  cacheKey: string;
 }
 
 let memoryCache: CachedData | null = null;
+
+function offersCacheKey(params: {
+  search: string;
+  sort: SortOption;
+  brand: string;
+  category: string;
+}): string {
+  return [params.search, params.sort, params.brand, params.category].join("|");
+}
 
 async function fetchLiveOffers(): Promise<TechRadarOffer[]> {
   if (memoryCache && Date.now() - memoryCache.fetchedAt < CACHE_TTL_MS) {
@@ -61,14 +71,30 @@ function mapSqliteProductsToOffers(products: PriceRadarProductListItem[]): TechR
   }));
 }
 
-async function fetchSqliteOffers(): Promise<TechRadarOffer[]> {
-  if (memoryCache && Date.now() - memoryCache.fetchedAt < CACHE_TTL_MS) {
+async function fetchSqliteOffers(params: {
+  search: string;
+  sort: SortOption;
+  brand: string;
+  category: string;
+}): Promise<TechRadarOffer[]> {
+  const cacheKey = offersCacheKey(params);
+  if (
+    memoryCache &&
+    memoryCache.cacheKey === cacheKey &&
+    Date.now() - memoryCache.fetchedAt < CACHE_TTL_MS
+  ) {
     return memoryCache.offers;
   }
-  const data = await fetchPriceRadarProducts();
+  const data = await fetchPriceRadarProducts({
+    search: params.search || undefined,
+    sort: params.sort,
+    brand: params.brand || undefined,
+    category: params.category || undefined,
+    status: "active",
+  });
   const products = Array.isArray(data.products) ? data.products : [];
   const offers = mapSqliteProductsToOffers(products);
-  memoryCache = { offers, fetchedAt: Date.now() };
+  memoryCache = { offers, fetchedAt: Date.now(), cacheKey };
   return offers;
 }
 
@@ -122,17 +148,19 @@ export default function PriceRadarContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [sort, setSort] = useState<SortOption>("discount");
+  const [brand, setBrand] = useState("");
+  const [category, setCategory] = useState("");
+  const [brands, setBrands] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
 
   const loadOffers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // Fonte unica preferita: endpoint Price Radar su tj-api.
-      // Se entrambe le feature sono abilitate, usiamo comunque /api/price-radar/*
-      // per evitare disallineamenti tra feed legacy e dati aggiornati via POST.
       const data = PRICE_RADAR_SQLITE_ENABLED
-        ? await fetchSqliteOffers()
+        ? await fetchSqliteOffers({ search, sort, brand, category })
         : PRICE_RADAR_ENABLED
           ? await fetchLiveOffers()
           : await fetchBetaOffers();
@@ -143,18 +171,41 @@ export default function PriceRadarContent() {
     } finally {
       setLoading(false);
     }
+  }, [search, sort, brand, category]);
+
+  useEffect(() => {
+    if (!PRICE_RADAR_SQLITE_ENABLED) return;
+    let cancelled = false;
+    void fetchPriceRadarFilters()
+      .then((data) => {
+        if (cancelled) return;
+        setBrands(Array.isArray(data.brands) ? data.brands : []);
+        setCategories(Array.isArray(data.categories) ? data.categories : []);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBrands([]);
+          setCategories([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (PRICE_RADAR_ENABLED || PRICE_RADAR_BETA_ENABLED || PRICE_RADAR_SQLITE_ENABLED) {
-      loadOffers();
+      void loadOffers();
     } else {
       setLoading(false);
     }
   }, [loadOffers]);
 
   const filteredAndSorted = useMemo(() => {
-    let result = offers;
+    if (PRICE_RADAR_SQLITE_ENABLED) {
+      return offers;
+    }
+    let result = offers.filter((o) => o.discount_percent > 0);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(
@@ -237,49 +288,97 @@ export default function PriceRadarContent() {
       </header>
 
       {/* Barra filtri */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="flex-1 relative">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden
+      <div className="flex flex-col gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="search"
+              placeholder="Cerca prodotti..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") setSearch(searchInput);
+              }}
+              className="w-full pl-10 pr-4 py-3 bg-content-bg border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+              aria-label="Cerca prodotti"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setSearch(searchInput)}
+            className="px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground hover:bg-sidebar-bg transition-colors sm:self-stretch"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="search"
-            placeholder="Cerca prodotti..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-content-bg border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-            aria-label="Cerca prodotti"
-          />
+            Cerca
+          </button>
         </div>
-        <div className="flex items-center gap-2">
-          <label htmlFor="sort-select" className="text-muted text-sm whitespace-nowrap">
-            Ordina:
+        <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
+          {PRICE_RADAR_SQLITE_ENABLED && brands.length > 0 && (
+            <label className="flex flex-col gap-1 text-sm min-w-[160px]">
+              <span className="text-muted">Marchio</span>
+              <select
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                className="px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+              >
+                <option value="">Tutti i marchi</option>
+                {brands.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {PRICE_RADAR_SQLITE_ENABLED && categories.length > 0 && (
+            <label className="flex flex-col gap-1 text-sm min-w-[160px]">
+              <span className="text-muted">Categoria</span>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+              >
+                <option value="">Tutte le categorie</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <label className="flex flex-col gap-1 text-sm min-w-[160px]">
+            <span className="text-muted">Ordina</span>
+            <select
+              id="sort-select"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortOption)}
+              className="px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </label>
-          <select
-            id="sort-select"
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
-            className="px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 
       {/* Griglia prodotti */}
       {filteredAndSorted.length === 0 ? (
         <p className="text-muted text-center py-16">
-          {search.trim() ? "Nessun prodotto trovato per la ricerca." : "Nessuna offerta al momento."}
+          {search.trim() || brand || category
+            ? "Nessun prodotto in sconto trovato con i filtri selezionati."
+            : "Nessuna offerta in sconto al momento."}
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

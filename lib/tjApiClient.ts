@@ -213,6 +213,19 @@ export interface PriceRadarProductsJson {
   products?: PriceRadarProductListItem[];
 }
 
+export interface PriceRadarFiltersJson {
+  brands?: string[];
+  categories?: string[];
+}
+
+export interface PriceRadarProductsQuery {
+  search?: string;
+  sort?: "discount" | "newest" | "price";
+  brand?: string;
+  category?: string;
+  status?: "active" | "paused" | "all";
+}
+
 export interface SocialStatsJson {
   facebook?: { followers: number } | null;
   instagram?: { followers: number } | null;
@@ -220,10 +233,24 @@ export interface SocialStatsJson {
 
 const jsonHeaders: HeadersInit = { Accept: "application/json" };
 
+function buildPriceRadarProductsQuery(params: PriceRadarProductsQuery = {}): string {
+  const sp = new URLSearchParams();
+  sp.set("status", params.status ?? "active");
+  sp.set("discountOnly", "1");
+  if (params.search?.trim()) sp.set("search", params.search.trim());
+  if (params.sort) sp.set("sort", params.sort);
+  if (params.brand?.trim()) sp.set("brand", params.brand.trim());
+  if (params.category?.trim()) sp.set("category", params.category.trim());
+  return sp.toString();
+}
+
 /** Lista prodotti Price Radar (GET). */
-export async function fetchPriceRadarProducts(): Promise<PriceRadarProductsJson> {
+export async function fetchPriceRadarProducts(
+  params: PriceRadarProductsQuery = {},
+): Promise<PriceRadarProductsJson> {
+  const qs = buildPriceRadarProductsQuery(params);
   const res = await fetchWithFallback(
-    "/api/price-radar/products?status=active",
+    `/api/price-radar/products?${qs}`,
     { headers: jsonHeaders },
     "price-radar products",
     TIMEOUT_PRICE_RADAR_MS,
@@ -240,6 +267,28 @@ export async function fetchPriceRadarProducts(): Promise<PriceRadarProductsJson>
     return withInternalError({ products: [] }) as PriceRadarProductsJson;
   }
   return withInternalError({ products: [] }) as PriceRadarProductsJson;
+}
+
+/** Marchi e categorie disponibili (solo prodotti in sconto). */
+export async function fetchPriceRadarFilters(): Promise<PriceRadarFiltersJson> {
+  const res = await fetchWithFallback(
+    "/api/price-radar/filters",
+    { headers: jsonHeaders },
+    "price-radar filters",
+    TIMEOUT_PRICE_RADAR_MS,
+  );
+  const outcome = await parseJsonSafe<PriceRadarFiltersJson>(
+    res,
+    "price-radar filters",
+  );
+  if (outcome.status === "ok") {
+    const d = outcome.data;
+    if (d != null && typeof d === "object") {
+      return d;
+    }
+    return { brands: [], categories: [] };
+  }
+  return { brands: [], categories: [] };
 }
 
 /** Dettaglio prodotto (GET). */
