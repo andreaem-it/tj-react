@@ -17,11 +17,10 @@ const hasIubendaConfig =
  */
 export default function MicrosoftClarity() {
   const [shouldLoad, setShouldLoad] = useState(false);
-
-  if (!projectId) return null;
+  const enabled = Boolean(projectId);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!enabled || typeof window === "undefined") return;
     let cancelled = false;
 
     const enable = () => {
@@ -52,9 +51,9 @@ export default function MicrosoftClarity() {
       }
       window.removeEventListener(GA_NEED_EVENT, onMeasurementAllowed);
     };
-  }, []);
+  }, [enabled]);
 
-  if (!shouldLoad) return null;
+  if (!projectId || !shouldLoad) return null;
 
   const tagUrl = clarityTagUrl(projectId);
   const clarityScript = `
