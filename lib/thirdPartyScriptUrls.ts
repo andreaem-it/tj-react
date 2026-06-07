@@ -29,3 +29,10 @@ export function adsenseJsUrl(clientId: string): string {
   const proxied = `/3p/ads/pagead/js/adsbygoogle.js?client=${client}`;
   return useThirdPartyScriptProxy() ? proxied : direct;
 }
+
+export function clarityTagUrl(projectId: string): string {
+  const id = encodeURIComponent(projectId.trim());
+  const direct = `https://www.clarity.ms/tag/${id}`;
+  const proxied = `/3p/clarity/tag/${id}`;
+  return useThirdPartyScriptProxy() ? proxied : direct;
+}

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import IubendaProviderWrapper from "@/components/IubendaProviderWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import MicrosoftClarity from "@/components/MicrosoftClarity";
 import AdSenseScript from "@/components/AdSenseScript";
 import AppShell from "@/components/AppShell";
 import SiteStructuredData from "@/components/SiteStructuredData";
@@ -86,6 +87,8 @@ export default function RootLayout({
             <link rel="dns-prefetch" href="//pagead2.googlesyndication.com" />
             <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
             <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+            <link rel="preconnect" href="https://www.clarity.ms" crossOrigin="" />
+            <link rel="dns-prefetch" href="//www.clarity.ms" />
           </>
         )}
         <link rel="preconnect" href="https://region1.google-analytics.com" crossOrigin="" />
@@ -101,6 +104,7 @@ export default function RootLayout({
         <IubendaProviderWrapper />
         <SiteStructuredData />
         <GoogleAnalytics />
+        <MicrosoftClarity />
         <GoogleAnalyticsPageView />
         <AdSenseScript />
         <AppShell>{children}</AppShell>
