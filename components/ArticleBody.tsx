@@ -1,20 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { API_BASE, API_REQUEST_HEADERS, WP_BASE, logApiUrl } from "@/lib/constants";
+import { API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
 import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
 
 const STORAGE_KEY = "article-font-size";
 const MIN_LEVEL = 0;
 const MAX_LEVEL = 2;
 
-const API_ORIGIN = (() => {
-  try {
-    return new URL(WP_BASE).origin;
-  } catch {
-    return API_BASE.replace(/\/$/, "");
-  }
-})();
 const VIEW_INCREMENT_STORAGE_PREFIX = "article-view-incremented";
 
 interface ArticleBodyProps {
@@ -57,11 +50,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
       }
     };
     (async () => {
-      const n =
-        (await tryFetch(`/api/views/${postId}`)) ??
-        (await tryFetch(`${WP_BASE}/views/${postId}`)) ??
-        (await tryFetch(`${API_ORIGIN}/wp-json/pvc/v1/posts/${postId}`)) ??
-        (await tryFetch(`${API_ORIGIN}/wp-json/post-views-counter/v1/views/${postId}`));
+      const n = await tryFetch(`/api/views/${postId}`);
       if (n != null) setViewCountFetched(n);
     })();
     return () => ctrl.abort();
