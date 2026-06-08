@@ -60,11 +60,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
           </p>
         </header>
         <div className="article-body-wrapper" data-font-size="1">
-          <ArticleBody
-            html={post.content}
-            viewCount={post.viewCount}
-            postId={post.id}
-          />
+          <ArticleBody html={post.content} postId={post.id} />
         </div>
       </article>
     </div>

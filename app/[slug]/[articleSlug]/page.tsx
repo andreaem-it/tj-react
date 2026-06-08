@@ -188,7 +188,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </header>
 
           <div className="px-3 py-6 md:p-8">
-            <ArticleBody html={post.content} viewCount={post.viewCount} postId={post.id} />
+            <ArticleBody html={post.content} postId={post.id} />
             <InlineBannerPlaceholder
               width="100%"
               height={90}

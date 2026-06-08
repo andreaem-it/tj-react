@@ -19,7 +19,13 @@ interface ArticleBodyProps {
 export default function ArticleBody({ html, viewCount: viewCountProp, postId }: ArticleBodyProps) {
   const [level, setLevel] = useState(1);
   const [viewCountFetched, setViewCountFetched] = useState<number | null>(null);
-  const viewCount = viewCountProp ?? viewCountFetched;
+  // Dopo la migrazione su Postgres, viewCount SSR da WP è spesso 0: preferire il conteggio live da /api/views.
+  const viewCount =
+    viewCountFetched != null
+      ? viewCountFetched
+      : viewCountProp != null && viewCountProp > 0
+        ? viewCountProp
+        : viewCountFetched;
   const safeHtml = useMemo(() => sanitizeRichHtml(html), [html]);
 
   useEffect(() => {
