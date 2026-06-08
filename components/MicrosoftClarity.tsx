@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Script from "next/script";
-import { clarityTagUrl } from "@/lib/thirdPartyScriptUrls";
 
 const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID?.trim();
 const GA_NEED_EVENT = "techjournal:ga-needed";
@@ -11,12 +9,12 @@ const hasIubendaConfig =
   Boolean(process.env.NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID?.trim());
 
 /**
- * Microsoft Clarity (heatmap / session replay).
+ * Microsoft Clarity (heatmap / session replay) via @microsoft/clarity.
  * Imposta NEXT_PUBLIC_CLARITY_PROJECT_ID in .env.local (dashboard Clarity → Settings → Setup).
- * Con Iubenda carica solo dopo consenso "measurement" (stesso evento di GA).
+ * Con Iubenda inizializza solo dopo consenso "measurement" (stesso evento di GA).
  */
 export default function MicrosoftClarity() {
-  const [shouldLoad, setShouldLoad] = useState(false);
+  const [shouldInit, setShouldInit] = useState(false);
   const enabled = Boolean(projectId);
 
   useEffect(() => {
@@ -25,7 +23,7 @@ export default function MicrosoftClarity() {
 
     const enable = () => {
       if (cancelled) return;
-      setShouldLoad(true);
+      setShouldInit(true);
       window.removeEventListener("pointerdown", onFirstInteraction);
       window.removeEventListener("keydown", onFirstInteraction);
       window.removeEventListener("scroll", onFirstInteraction);
@@ -53,20 +51,47 @@ export default function MicrosoftClarity() {
     };
   }, [enabled]);
 
-  if (!projectId || !shouldLoad) return null;
+  useEffect(() => {
+    if (!shouldInit || !projectId || typeof window === "undefined") return;
 
-  const tagUrl = clarityTagUrl(projectId);
-  const clarityScript = `
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src=${JSON.stringify(tagUrl)};
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", ${JSON.stringify(projectId)});
-  `;
+    let cancelled = false;
 
-  return (
-    <Script id="microsoft-clarity" strategy="lazyOnload">
-      {clarityScript}
-    </Script>
-  );
+    const initClarity = async () => {
+      if (cancelled) return;
+      const { default: Clarity } = await import("@microsoft/clarity");
+      if (cancelled) return;
+      Clarity.init(projectId);
+      Clarity.consentV2({ ad_Storage: "granted", analytics_Storage: "granted" });
+    };
+
+    const runWhenIdle = () => {
+      if (cancelled) return;
+      if ("requestIdleCallback" in window) {
+        const idleId = window.requestIdleCallback(() => void initClarity(), { timeout: 2000 });
+        return () => window.cancelIdleCallback(idleId);
+      }
+      const timer = setTimeout(() => void initClarity(), 1);
+      return () => clearTimeout(timer);
+    };
+
+    let cancelIdle: (() => void) | undefined;
+
+    const onLoad = () => {
+      cancelIdle = runWhenIdle();
+    };
+
+    if (document.readyState === "complete") {
+      cancelIdle = runWhenIdle();
+    } else {
+      window.addEventListener("load", onLoad, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", onLoad);
+      cancelIdle?.();
+    };
+  }, [shouldInit, projectId]);
+
+  return null;
 }

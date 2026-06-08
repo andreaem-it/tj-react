@@ -26,11 +26,6 @@ const nextConfig: NextConfig = {
         source: "/3p/ads/pagead/js/adsbygoogle.js",
         destination: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js",
       },
-      /** Microsoft Clarity tag via first-party. */
-      {
-        source: "/3p/clarity/tag/:id",
-        destination: "https://www.clarity.ms/tag/:id",
-      },
     ];
   },
   async headers() {
