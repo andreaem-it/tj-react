@@ -3,6 +3,7 @@
 import Image from "next/image";
 import TjLink from "@/components/TjLink";
 import { useState, useRef, useCallback, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { fetchMegamenu as fetchMegamenuFromApi, type MegamenuPost } from "@/lib/tjApiClient";
 
@@ -109,6 +110,7 @@ function MegamenuPanel({
 }
 
 export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMenuOpen: controlledOpen, setMobileMenuOpen: setControlledOpen }: NavBarProps) {
+  const pathname = usePathname();
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [internalOpen, setInternalOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -167,6 +169,15 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
     scheduleClose();
   }, [scheduleClose]);
 
+  const handleHomeLinkClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (pathname !== "/") return;
+      event.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [pathname],
+  );
+
   return (
     <>
       <div
@@ -176,8 +187,6 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
         {/* Nav desktop: nascosto su mobile */}
         <nav className="hidden md:flex items-center gap-6 py-3 border-t border-border flex-wrap">
           {NAV_ITEMS.map((item) => {
-            const href =
-              "href" in item ? item.href : `/${item.slug}`;
             const isDropdown = "slug" in item;
 
             if (isDropdown) {
@@ -204,6 +213,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                 key={item.href}
                 href={item.href}
                 className="text-foreground hover:text-accent transition-colors text-base font-medium py-1"
+                onClick={item.href === "/" ? handleHomeLinkClick : undefined}
               >
                 {item.label}
               </TjLink>
@@ -268,7 +278,10 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                     <TjLink
                       href={href}
                       className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
-                      onClick={() => setMobileMenuOpen(false)}
+                      onClick={(event) => {
+                        if (href === "/") handleHomeLinkClick(event);
+                        setMobileMenuOpen(false);
+                      }}
                     >
                       {item.label}
                     </TjLink>
