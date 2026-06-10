@@ -1,5 +1,4 @@
 import https from "node:https";
-import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { API_BASE, API_REQUEST_HEADERS, WP_BASE, logApiUrl } from "@/lib/constants";
 
@@ -451,14 +450,20 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostWithMeta | null
   }
 }
 
-/** Dedup per request; fetch con `next.revalidate` per ISR. */
-export const fetchPostBySlug = cache(async (slug: string): Promise<PostWithMeta | null> => {
+/**
+ * Recupera un post per slug senza cache in-process persistente:
+ * evita "cache negativa" (null) dopo errori transitori upstream.
+ */
+export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null> {
   try {
+    const firstAttempt = await fetchPostBySlugFromApi(slug);
+    if (firstAttempt) return firstAttempt;
+    // Retry singolo difensivo contro timeout/network transitori.
     return await fetchPostBySlugFromApi(slug);
   } catch {
     return null;
   }
-});
+}
 
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {
   const url = `${WP_BASE}/categories`;
