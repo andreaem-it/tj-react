@@ -6,6 +6,7 @@ import {
   type IubendaCookieSolutionBannerConfigInterface,
 } from "@mep-agency/next-iubenda";
 import TrackingConsentGate from "@/components/TrackingConsentGate";
+import ClarityConsentGate from "@/components/ClarityConsentGate";
 import {
   getSiteThemeFromDom,
   subscribeSiteThemeClass,
@@ -133,6 +134,7 @@ export default function IubendaProviderWrapper({}: Record<string, never>) {
   return (
     <IubendaProvider bannerConfig={bannerConfig} lang={lang}>
       <TrackingConsentGate />
+      <ClarityConsentGate />
     </IubendaProvider>
   );
 }

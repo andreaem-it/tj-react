@@ -7,7 +7,8 @@ const GA_NEED_EVENT = "techjournal:ga-needed";
 
 /**
  * Integrazione next-iubenda con tracciamento:
- * - GA / Clarity: evento techjournal:ga-needed + __iubendaGaConsentUpdate al consenso "measurement".
+ * - GA: evento techjournal:ga-needed + __iubendaGaConsentUpdate al consenso "measurement".
+ * - Clarity: ClarityConsentGate (stesso consenso, init diretto via useIubenda).
  * - AdSense: aggiorna requestNonPersonalizedAds quando cambia il consenso marketing
  *   (lo script è caricato da AdSenseScript in layout).
  */
