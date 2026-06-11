@@ -89,6 +89,8 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
         height={90}
         className="mb-6"
         adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME_TOP}
+        adFormat="horizontal"
+        fullWidthResponsive={false}
       />
       <PostsGrid
         posts={gridPosts}

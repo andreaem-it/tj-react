@@ -10,6 +10,10 @@ interface InlineBannerPlaceholderProps {
   className?: string;
   /** Slot ID AdSense (es. da NEXT_PUBLIC_ADSENSE_SLOT_*). Se non impostato, mostra placeholder. */
   adSlot?: string;
+  /** Override opzionale formato AdSense. */
+  adFormat?: "auto" | "rectangle" | "horizontal" | "vertical";
+  /** Override opzionale responsive full-width. */
+  fullWidthResponsive?: boolean;
 }
 
 export default function InlineBannerPlaceholder({
@@ -17,16 +21,20 @@ export default function InlineBannerPlaceholder({
   height = 90,
   className = "",
   adSlot,
+  adFormat,
+  fullWidthResponsive,
 }: InlineBannerPlaceholderProps) {
   const widthStyle = width === "100%" ? "100%" : `${width}px`;
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
+  const resolvedAdFormat = adFormat ?? (height <= 120 ? "horizontal" : "auto");
+  const resolvedFullWidthResponsive = fullWidthResponsive ?? (resolvedAdFormat === "auto");
 
   if (clientId?.trim() && adSlot?.trim()) {
     return (
       <AdSenseUnit
         adSlot={adSlot}
-        adFormat="auto"
-        fullWidthResponsive
+        adFormat={resolvedAdFormat}
+        fullWidthResponsive={resolvedFullWidthResponsive}
         deferUntilVisible
         rootMargin="250px"
         className={`shrink-0 ${className}`}

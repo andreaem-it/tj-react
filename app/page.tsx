@@ -1,4 +1,11 @@
-import { fetchHome, fetchPosts, type PostWithMeta } from "@/lib/api";
+import {
+  fetchHome,
+  fetchMostReadPosts,
+  fetchPosts,
+  fetchPostsByCategorySlug,
+  fetchTrendingWeekAndMonth,
+  type PostWithMeta,
+} from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
@@ -29,6 +36,12 @@ export const metadata: Metadata = {
 
 const emptyPosts: PostWithMeta[] = [];
 const INITIAL_POSTS_TARGET = 12;
+const RETRY_DELAYS_MS = [0, 250, 700] as const;
+
+async function waitMs(ms: number): Promise<void> {
+  if (ms <= 0) return;
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export default async function HomePage() {
   let initialPosts = emptyPosts;
@@ -41,26 +54,48 @@ export default async function HomePage() {
   let monthTrendingPosts = emptyPosts;
 
   const loadFromPostsFallback = async () => {
-    const { posts, totalPages: tp } = await fetchPosts({
-      perPage: INITIAL_POSTS_TARGET,
-      page: 1,
-    });
-    initialPosts = posts;
-    totalPages = tp;
-    pagesConsumed = posts.length > 0 ? 1 : 0;
+    for (const delay of RETRY_DELAYS_MS) {
+      await waitMs(delay);
+      const { posts, totalPages: tp } = await fetchPosts({
+        perPage: INITIAL_POSTS_TARGET,
+        page: 1,
+      });
+      if (!posts?.length) continue;
+      initialPosts = posts;
+      totalPages = tp;
+      pagesConsumed = 1;
+      break;
+    }
+    if (!initialPosts.length) return;
+    const [offerte, trendingResp, mostRead, trendingByPeriod] = await Promise.all([
+      fetchPostsByCategorySlug("offerte", 5).catch(() => emptyPosts),
+      fetchPosts({ perPage: 20, page: 1 }).catch(() => ({ posts: emptyPosts })),
+      fetchMostReadPosts({ limit: 5 }).catch(() => emptyPosts),
+      fetchTrendingWeekAndMonth({ limit: 5 }).catch(() => ({ week: emptyPosts, month: emptyPosts })),
+    ]);
+    offertePosts = offerte;
+    trendingPosts = trendingResp.posts ?? emptyPosts;
+    mostReadPosts = mostRead;
+    weekTrendingPosts = trendingByPeriod.week ?? emptyPosts;
+    monthTrendingPosts = trendingByPeriod.month ?? emptyPosts;
   };
 
   try {
-    const home = await fetchHome();
-    if (home?.initial?.posts?.length) {
-      initialPosts = home.initial.posts;
-      totalPages = home.initial.totalPages ?? 1;
-      pagesConsumed = home.initial.pagesConsumed ?? 1;
-      offertePosts = home.offerte ?? emptyPosts;
-      trendingPosts = home.trending ?? emptyPosts;
-      mostReadPosts = home.mostRead ?? emptyPosts;
-      weekTrendingPosts = home.weekTrending ?? emptyPosts;
-      monthTrendingPosts = home.monthTrending ?? emptyPosts;
+    let homeData = null as Awaited<ReturnType<typeof fetchHome>>;
+    for (const delay of RETRY_DELAYS_MS) {
+      await waitMs(delay);
+      homeData = await fetchHome();
+      if (homeData?.initial?.posts?.length) break;
+    }
+    if (homeData?.initial?.posts?.length) {
+      initialPosts = homeData.initial.posts;
+      totalPages = homeData.initial.totalPages ?? 1;
+      pagesConsumed = homeData.initial.pagesConsumed ?? 1;
+      offertePosts = homeData.offerte ?? emptyPosts;
+      trendingPosts = homeData.trending ?? emptyPosts;
+      mostReadPosts = homeData.mostRead ?? emptyPosts;
+      weekTrendingPosts = homeData.weekTrending ?? emptyPosts;
+      monthTrendingPosts = homeData.monthTrending ?? emptyPosts;
     } else {
       await loadFromPostsFallback();
     }

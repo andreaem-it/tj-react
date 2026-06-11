@@ -194,6 +194,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               height={90}
               className="mb-0"
               adSlot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_TOP}
+              adFormat="horizontal"
+              fullWidthResponsive={false}
             />
           </div>
           <ArticleRelatedPosts articleSlug={articleSlug} categoryId={post.categoryId} />
