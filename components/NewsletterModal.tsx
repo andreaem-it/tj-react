@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "newsletter-dismissed-v1";
+const SUCCESS_AUTO_CLOSE_MS = 2500;
 
 export default function NewsletterModal() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,10 +34,19 @@ export default function NewsletterModal() {
     }
   };
 
+  // Dopo l'iscrizione riuscita il messaggio resta visibile, poi il box si
+  // chiude da solo (chiusura manuale sempre possibile con il pulsante X).
+  useEffect(() => {
+    if (status !== "success") return;
+    const t = setTimeout(close, SUCCESS_AUTO_CLOSE_MS);
+    return () => clearTimeout(t);
+  }, [status]);
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || submitting) return;
+    if (!email.trim() || submitting || status === "success") return;
     setSubmitting(true);
+    setStatus("idle");
     setMessage(null);
     try {
       const res = await fetch("/api/newsletter", {
@@ -45,9 +56,10 @@ export default function NewsletterModal() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
+        setStatus("success");
         setMessage("Iscrizione completata! Controlla la tua casella email.");
-        close();
       } else {
+        setStatus("error");
         setMessage(
           typeof data?.error === "string"
             ? data.error
@@ -55,6 +67,7 @@ export default function NewsletterModal() {
         );
       }
     } catch {
+      setStatus("error");
       setMessage("Errore di rete, riprova.");
     } finally {
       setSubmitting(false);
@@ -107,14 +120,23 @@ export default function NewsletterModal() {
             />
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || status === "success"}
               className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-accent text-gray-900 text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity whitespace-nowrap min-h-11"
             >
-              {submitting ? "Invio..." : "Iscriviti"}
+              {submitting ? "Invio..." : status === "success" ? "Iscritto!" : "Iscriviti"}
             </button>
           </form>
           {message && (
-            <p className="text-muted text-xs mt-2">
+            <p
+              role="status"
+              className={`text-xs mt-2 ${
+                status === "success"
+                  ? "text-green-500 font-medium"
+                  : status === "error"
+                    ? "text-red-500"
+                    : "text-muted"
+              }`}
+            >
               {message}
             </p>
           )}

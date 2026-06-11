@@ -64,9 +64,20 @@ export async function GET(
   }
 
   if (cached) {
+    // Upstream in errore ma cache (anche scaduta) disponibile: stale-if-error.
     console.log("[WP Proxy]", "GET", pathname, 200);
     return NextResponse.json(cached.data, { status: 200 });
   }
 
-  return NextResponse.json([], { status: 200 });
+  // Errore upstream senza cache: non mascherare come 200 + [] (outage invisibile).
+  // Il consumer (lib/tjApiClient.ts fetchMegamenu) gestisce la risposta non-ok
+  // restituendo lista vuota senza crash.
+  console.log("[WP Proxy]", "GET", pathname, 503);
+  return NextResponse.json(
+    { error: "Megamenu non disponibile" },
+    {
+      status: 503,
+      headers: { "Cache-Control": "no-store" },
+    },
+  );
 }

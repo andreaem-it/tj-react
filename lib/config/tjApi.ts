@@ -1,3 +1,5 @@
+import { checkTjApiBaseUrl } from "@/lib/config/env";
+
 /**
  * URL base del backend tj-api (senza slash finale).
  * Esempio: http://localhost:3003 oppure https://api.example.com
@@ -22,3 +24,7 @@ export function normalizeTjApiBaseUrl(raw: string): string | null {
 export function getTjApiBaseUrl(): string | null {
   return normalizeTjApiBaseUrl(TJ_API_BASE_URL);
 }
+
+// Fail-fast a module-load: in produzione (build/runtime) una TJ_API_BASE_URL
+// mancante o malformata lancia subito un errore esplicito; in dev solo warning.
+checkTjApiBaseUrl(TJ_API_BASE_URL, getTjApiBaseUrl());

@@ -6,7 +6,7 @@
  * La scelta proxy usa `window.location` a runtime: non basarsi solo su process.env
  * (Next/Turbopack può eliminare il ramo /3p/* a build time).
  */
-export function useThirdPartyScriptProxy(): boolean {
+export function shouldProxyThirdPartyScripts(): boolean {
   if (process.env.NEXT_PUBLIC_THIRD_PARTY_SCRIPT_PROXY === "0") return false;
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
@@ -20,12 +20,12 @@ export function gtagJsUrl(measurementId: string): string {
   const id = encodeURIComponent(measurementId.trim());
   const direct = `https://www.googletagmanager.com/gtag/js?id=${id}`;
   const proxied = `/3p/gtag/js?id=${id}`;
-  return useThirdPartyScriptProxy() ? proxied : direct;
+  return shouldProxyThirdPartyScripts() ? proxied : direct;
 }
 
 export function adsenseJsUrl(clientId: string): string {
   const client = encodeURIComponent(clientId.trim());
   const direct = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${client}`;
   const proxied = `/3p/ads/pagead/js/adsbygoogle.js?client=${client}`;
-  return useThirdPartyScriptProxy() ? proxied : direct;
+  return shouldProxyThirdPartyScripts() ? proxied : direct;
 }

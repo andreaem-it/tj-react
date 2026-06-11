@@ -54,19 +54,35 @@ export default async function HomePage() {
   let monthTrendingPosts = emptyPosts;
 
   const loadFromPostsFallback = async () => {
+    let sawUpstreamError = false;
     for (const delay of RETRY_DELAYS_MS) {
       await waitMs(delay);
-      const { posts, totalPages: tp } = await fetchPosts({
+      const { posts, totalPages: tp, error } = await fetchPosts({
         perPage: INITIAL_POSTS_TARGET,
         page: 1,
       });
+      if (error) {
+        sawUpstreamError = true;
+        console.error("[Home] fetchPosts fallback in errore upstream, retry...");
+      }
       if (!posts?.length) continue;
       initialPosts = posts;
       totalPages = tp;
       pagesConsumed = 1;
       break;
     }
-    if (!initialPosts.length) return;
+    if (!initialPosts.length) {
+      // Distinzione esplicita per il monitoring: home vuota per errore API
+      // (anomalia) vs catalogo realmente senza post (stato legittimo).
+      if (sawUpstreamError) {
+        console.error(
+          "[Home] render senza articoli: errore upstream persistente dopo i retry (NON è un catalogo vuoto)"
+        );
+      } else {
+        console.error("[Home] render senza articoli: la API ha risposto con lista vuota");
+      }
+      return;
+    }
     const [offerte, trendingResp, mostRead, trendingByPeriod] = await Promise.all([
       fetchPostsByCategorySlug("offerte", 5).catch(() => emptyPosts),
       fetchPosts({ perPage: 20, page: 1 }).catch(() => ({ posts: emptyPosts })),
@@ -97,13 +113,16 @@ export default async function HomePage() {
       weekTrendingPosts = homeData.weekTrending ?? emptyPosts;
       monthTrendingPosts = homeData.monthTrending ?? emptyPosts;
     } else {
+      console.error("[Home] tj/v1/home non disponibile dopo i retry: fallback su /posts");
       await loadFromPostsFallback();
     }
-  } catch {
+  } catch (e) {
+    console.error("[Home] errore caricamento home, fallback su /posts:", e);
     try {
       await loadFromPostsFallback();
-    } catch {
+    } catch (fallbackError) {
       // API irraggiungibile: layout con dati vuoti
+      console.error("[Home] anche il fallback /posts è fallito:", fallbackError);
     }
   }
 

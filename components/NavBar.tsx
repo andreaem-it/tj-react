@@ -150,8 +150,13 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
     loadingSlugsRef.current.add(slug);
     setLoadingSlug(slug);
     try {
+      // fetchMegamenuFromApi non lancia su HTTP non-ok (es. 503): ritorna [].
       const posts = await fetchMegamenuFromApi(slug);
-      loadedSlugsRef.current.add(slug);
+      // Lista vuota = possibile errore upstream: non marcare come caricato,
+      // così il prossimo hover ritenta invece di restare vuoto per sempre.
+      if (posts.length > 0) {
+        loadedSlugsRef.current.add(slug);
+      }
       setMegamenuBySlug((prev) => ({ ...prev, [slug]: posts }));
     } finally {
       loadingSlugsRef.current.delete(slug);

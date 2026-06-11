@@ -1,10 +1,14 @@
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import {
-  fetchPostBySlug,
+  fetchMostReadPosts,
+  fetchPostBySlugDetailed,
   fetchPosts,
+  fetchRelatedPosts,
+  fetchTrendingWeekAndMonth,
   getCategoryUrlSlugFromWpSlug,
+  type PostWithMeta,
 } from "@/lib/api";
 import ShareButtons from "@/components/ShareButtons";
 import ArticleBody from "@/components/ArticleBody";
@@ -47,15 +51,25 @@ function authorInitials(name: string): string {
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
   const now = new Date();
-  const diffHours = Math.floor((now.getTime() - d.getTime()) / 3600000);
+  // Clamp a 0: con clock skew (data futura) evita "Pubblicato -3 ore fa".
+  const diffMs = Math.max(0, now.getTime() - d.getTime());
+  const diffHours = Math.floor(diffMs / 3600000);
   if (diffHours < 24) return `Pubblicato ${diffHours} ore fa`;
   return `Pubblicato il ${d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}`;
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { articleSlug } = await params;
-  const post = await fetchPostBySlug(articleSlug);
-  if (!post) return { title: "Pagina non trovata" };
+  const result = await fetchPostBySlugDetailed(articleSlug);
+  if (result.status !== "found") {
+    // Post inesistente o errore upstream: in entrambi i casi la pagina non va
+    // indicizzata (il render restituisce notFound() o ArticleUnavailable).
+    return {
+      title: result.status === "not_found" ? "Pagina non trovata" : "Articolo non disponibile",
+      robots: { index: false, follow: false },
+    };
+  }
+  const post = result.post;
 
   const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
   const canonical = `${SITE_URL.replace(/\/$/, "")}${path}`;
@@ -86,6 +100,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   };
 }
 
+/** Fallback per errori transitori dell'API (post fetch fallito ≠ post inesistente). */
 function ArticleUnavailable() {
   return (
     <div className="max-w-3xl mx-auto py-16 px-4 text-center">
@@ -102,8 +117,12 @@ function ArticleUnavailable() {
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
-  const post = await fetchPostBySlug(articleSlug);
-  if (!post) return <ArticleUnavailable />;
+  const result = await fetchPostBySlugDetailed(articleSlug);
+  // Post inesistente: 404 vero (evita soft-404 indicizzati).
+  if (result.status === "not_found") notFound();
+  // Errore transitorio upstream: pagina di cortesia, no-index via generateMetadata.
+  if (result.status === "error") return <ArticleUnavailable />;
+  const post = result.post;
 
   const postCategoryUrlSlug = getCategoryUrlSlugFromWpSlug(post.categorySlug);
   if (categoryUrlSlug !== postCategoryUrlSlug) {
@@ -111,9 +130,28 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const articleHref = `/${postCategoryUrlSlug}/${post.slug}`;
-  const shareUrl = `${SITE_URL.replace(/\/$/, "")}${articleHref}/`;
+  // Stesso formato del canonical (senza trailing slash): evita URL duplicati in condivisione.
+  const shareUrl = `${SITE_URL.replace(/\/$/, "")}${articleHref}`;
   const modifiedIso = postModifiedIso(post);
   const sidebarAdSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_SIDEBAR;
+
+  // Correlati e trending caricati lato server (RSC): dati corretti per categoria
+  // e per visualizzazioni, niente fetch client di /api/posts/1.
+  const [relatedPosts, mostReadPosts] = await Promise.all([
+    fetchRelatedPosts({ baseSlug: post.slug, categoryId: post.categoryId }).catch(
+      () => [] as PostWithMeta[]
+    ),
+    fetchMostReadPosts({ limit: 9 }).catch(() => [] as PostWithMeta[]),
+  ]);
+  let trendingPosts = mostReadPosts;
+  if (trendingPosts.length === 0) {
+    // Nessun post con visualizzazioni: fallback al trending mensile (per data/viste).
+    const { month } = await fetchTrendingWeekAndMonth({ limit: 9 }).catch(() => ({
+      week: [] as PostWithMeta[],
+      month: [] as PostWithMeta[],
+    }));
+    trendingPosts = month;
+  }
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
@@ -198,11 +236,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               fullWidthResponsive={false}
             />
           </div>
-          <ArticleRelatedPosts articleSlug={articleSlug} categoryId={post.categoryId} />
+          <ArticleRelatedPosts posts={relatedPosts} />
         </article>
 
         <ArticleSidebar
           articleSlug={articleSlug}
+          trendingPosts={trendingPosts}
           postTitle={post.title}
           shareUrl={shareUrl}
           sidebarAdSlot={sidebarAdSlot}

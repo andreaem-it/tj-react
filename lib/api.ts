@@ -1,6 +1,6 @@
 import https from "node:https";
 import { unstable_cache } from "next/cache";
-import { API_BASE, API_REQUEST_HEADERS, WP_BASE, logApiUrl } from "@/lib/constants";
+import { API_REQUEST_HEADERS, WP_BASE, logApiUrl } from "@/lib/constants";
 
 /** TTL Data Cache / ISR allineato al plugin WP (`CACHE_TTL = 300`). */
 export const TJ_FETCH_REVALIDATE = 300;
@@ -38,6 +38,14 @@ export interface PostWithMeta {
 interface TjPostsResponse {
   posts: PostWithMeta[];
   totalPages: number;
+}
+
+/**
+ * Esito di un fetch lista post: `error: true` distingue un errore upstream
+ * (timeout, HTTP ≥ 400) da una lista realmente vuota.
+ */
+export interface TjPostsResult extends TjPostsResponse {
+  error?: true;
 }
 
 /** Risposta tj/v1/home */
@@ -162,7 +170,7 @@ async function fetchTjPosts(params: {
   after?: string;
   search?: string;
   requestCache?: RequestCache;
-}): Promise<TjPostsResponse> {
+}): Promise<TjPostsResult> {
   const {
     perPage = 10,
     page = 1,
@@ -193,10 +201,14 @@ async function fetchTjPosts(params: {
       ...(requestCache !== undefined && { cache: requestCache }),
       ...(requestCache === undefined && { next: { revalidate: TJ_FETCH_REVALIDATE } }),
     });
-  } catch {
-    return { posts: [], totalPages: 1 };
+  } catch (e) {
+    console.error(`[TJ API] fetchTjPosts errore di rete/timeout (${url}):`, e);
+    return { posts: [], totalPages: 1, error: true };
   }
-  if (!res.ok) return { posts: [], totalPages: 1 };
+  if (!res.ok) {
+    console.error(`[TJ API] fetchTjPosts HTTP ${res.status} (${url})`);
+    return { posts: [], totalPages: 1, error: true };
+  }
   const data = (await res.json()) as TjPostsResponse;
   const headerStr = res.headers.get("X-TJ-Total-Pages");
   const fromHeader =
@@ -217,7 +229,7 @@ export async function fetchPosts(params: {
   categoryId?: number;
   categoryIds?: number[];
   requestCache?: RequestCache;
-}): Promise<{ posts: PostWithMeta[]; totalPages: number }> {
+}): Promise<TjPostsResult> {
   const { perPage = 10, page = 1, categoryId, categoryIds, requestCache } = params;
   const ids = categoryIds ?? (categoryId != null && categoryId > 0 ? [categoryId] : []);
 
@@ -321,23 +333,60 @@ export async function fetchMegamenuFromTj(slug: string): Promise<
   return Array.isArray(data) ? data : [];
 }
 
+/**
+ * Campione per la classifica "più letti": tj-api non espone un endpoint
+ * top-by-views (verificato: wordpress-content ha solo GET/POST /views/:postId),
+ * quindi l'ordinamento per visualizzazioni avviene qui su un campione delle
+ * pagine più recenti.
+ *
+ * Limite noto: solo gli ultimi MOST_READ_SAMPLE_PAGES × MOST_READ_SAMPLE_PER_PAGE
+ * post possono entrare in classifica; articoli più vecchi ma molto letti
+ * restano esclusi finché il backend non espone un ranking server-side.
+ */
+const MOST_READ_SAMPLE_PAGES = 3;
+const MOST_READ_SAMPLE_PER_PAGE = 40;
+
 export async function fetchMostReadPosts(params: {
   categoryId?: number;
   limit?: number;
 }): Promise<PostWithMeta[]> {
   const { categoryId, limit = 5 } = params;
-  const { posts } = await fetchTjPosts({
-    perPage: 25,
+  const first = await fetchTjPosts({
+    perPage: MOST_READ_SAMPLE_PER_PAGE,
     page: 1,
     category: categoryId ?? undefined,
   });
-  const list = [...posts].sort((a, b) => {
+  const pagesToFetch = Math.min(MOST_READ_SAMPLE_PAGES, Math.max(1, first.totalPages));
+  const rest =
+    pagesToFetch > 1
+      ? await Promise.all(
+          Array.from({ length: pagesToFetch - 1 }, (_, i) =>
+            fetchTjPosts({
+              perPage: MOST_READ_SAMPLE_PER_PAGE,
+              page: i + 2,
+              category: categoryId ?? undefined,
+            }).catch(() => ({ posts: [] as PostWithMeta[], totalPages: 1 }))
+          )
+        )
+      : [];
+
+  const seen = new Set<number>();
+  const sample: PostWithMeta[] = [];
+  for (const { posts } of [first, ...rest]) {
+    for (const p of posts) {
+      if (seen.has(p.id)) continue;
+      seen.add(p.id);
+      sample.push(p);
+    }
+  }
+
+  sample.sort((a, b) => {
     const va = a.viewCount ?? 0;
     const vb = b.viewCount ?? 0;
     if (vb !== va) return vb - va;
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
-  return list.filter((p) => (p.viewCount ?? 0) > 0).slice(0, limit);
+  return sample.filter((p) => (p.viewCount ?? 0) > 0).slice(0, limit);
 }
 
 export async function fetchSearchPosts(params: {
@@ -403,26 +452,33 @@ function normalizePostAuthor(post: PostWithMeta): PostWithMeta {
   return name === post.authorName ? post : { ...post, authorName: name };
 }
 
-async function fetchPostBySlugFromApi(slug: string): Promise<PostWithMeta | null> {
-  const raw = typeof slug === "string" ? slug.trim() : "";
-  if (!raw) return null;
+/**
+ * Esito del lookup post per slug:
+ * - `found`: post esistente;
+ * - `not_found`: risposta definitiva dell'upstream (il post non esiste) → 404;
+ * - `error`: errore transitorio (timeout, HTTP ≥ 500, JSON non valido) →
+ *   il chiamante NON deve trattarlo come 404.
+ */
+export type PostBySlugResult =
+  | { status: "found"; post: PostWithMeta }
+  | { status: "not_found" }
+  | { status: "error" };
 
-  const tryParsePost = async (res: Response): Promise<PostWithMeta | null> => {
-    if (!res.ok) return null;
-    try {
-      const data = (await res.json()) as PostWithMeta | TjPostsResponse | null;
-      if (!data || typeof data !== "object") return null;
-      if ("posts" in data && Array.isArray(data.posts)) {
-        const first = data.posts[0];
-        return first ? normalizePostAuthor(first) : null;
-      }
-      if ("slug" in data && typeof (data as PostWithMeta).slug === "string") {
-        return normalizePostAuthor(data as PostWithMeta);
-      }
-      return null;
-    } catch {
-      return null;
+async function fetchPostBySlugFromApi(slug: string): Promise<PostBySlugResult> {
+  const raw = typeof slug === "string" ? slug.trim() : "";
+  if (!raw) return { status: "not_found" };
+
+  const parsePost = async (res: Response): Promise<PostWithMeta | null> => {
+    const data = (await res.json()) as PostWithMeta | TjPostsResponse | null;
+    if (!data || typeof data !== "object") return null;
+    if ("posts" in data && Array.isArray(data.posts)) {
+      const first = data.posts[0];
+      return first ? normalizePostAuthor(first) : null;
     }
+    if ("slug" in data && typeof (data as PostWithMeta).slug === "string") {
+      return normalizePostAuthor(data as PostWithMeta);
+    }
+    return null;
   };
 
   const fetchOpts = {
@@ -434,9 +490,17 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostWithMeta | null
     const urlSingle = `${WP_BASE}/post/${encodeURIComponent(raw)}`;
     logApiUrl(urlSingle);
     const resSingle = await fetchWithTimeout(urlSingle, fetchOpts);
-    const fromSingle = await tryParsePost(resSingle);
-    if (fromSingle) return fromSingle;
+    if (resSingle.ok) {
+      try {
+        const fromSingle = await parsePost(resSingle);
+        if (fromSingle) return { status: "found", post: fromSingle };
+      } catch {
+        // JSON non valido: tentiamo comunque l'endpoint lista.
+      }
+    }
 
+    // Fallback endpoint lista: una risposta 200 con lista vuota è la conferma
+    // definitiva che il post non esiste (≠ errore upstream).
     const urlList = `${WP_BASE}/posts?${new URLSearchParams({
       slug: raw,
       per_page: "1",
@@ -444,25 +508,34 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostWithMeta | null
     }).toString()}`;
     logApiUrl(urlList);
     const resList = await fetchWithTimeout(urlList, fetchOpts);
-    return tryParsePost(resList);
+    if (!resList.ok) return { status: "error" };
+    try {
+      const fromList = await parsePost(resList);
+      return fromList ? { status: "found", post: fromList } : { status: "not_found" };
+    } catch {
+      return { status: "error" };
+    }
   } catch {
-    return null;
+    return { status: "error" };
   }
 }
 
 /**
- * Recupera un post per slug senza cache in-process persistente:
- * evita "cache negativa" (null) dopo errori transitori upstream.
+ * Lookup post per slug con esito tripartito (found / not_found / error),
+ * senza cache in-process persistente: evita "cache negativa" dopo errori
+ * transitori upstream. Retry singolo solo sugli errori transitori.
  */
+export async function fetchPostBySlugDetailed(slug: string): Promise<PostBySlugResult> {
+  const firstAttempt = await fetchPostBySlugFromApi(slug);
+  if (firstAttempt.status !== "error") return firstAttempt;
+  // Retry singolo difensivo contro timeout/network transitori.
+  return fetchPostBySlugFromApi(slug);
+}
+
+/** Variante compatibile per i call site che non distinguono 404 da errore. */
 export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null> {
-  try {
-    const firstAttempt = await fetchPostBySlugFromApi(slug);
-    if (firstAttempt) return firstAttempt;
-    // Retry singolo difensivo contro timeout/network transitori.
-    return await fetchPostBySlugFromApi(slug);
-  } catch {
-    return null;
-  }
+  const result = await fetchPostBySlugDetailed(slug);
+  return result.status === "found" ? result.post : null;
 }
 
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {
@@ -472,7 +545,12 @@ async function fetchCategoriesRaw(): Promise<WPCategory[]> {
     headers: API_REQUEST_HEADERS,
     next: { revalidate: 300 },
   });
-  if (!res.ok) return [];
+  // Throw su errore upstream: unstable_cache non memorizza i risultati quando
+  // la funzione lancia, quindi un errore transitorio non svuota le categorie
+  // (e tutte le pagine categoria) per i 600s di TTL.
+  if (!res.ok) {
+    throw new Error(`TJ API categories HTTP ${res.status}`);
+  }
   const data = (await res.json()) as WPCategory[];
   return Array.isArray(data)
     ? data.filter((c) => c.id !== 1).map((c) => ({
@@ -483,9 +561,22 @@ async function fetchCategoriesRaw(): Promise<WPCategory[]> {
     : [];
 }
 
-export const fetchCategories = unstable_cache(fetchCategoriesRaw, ["tj-categories"], {
+const fetchCategoriesCached = unstable_cache(fetchCategoriesRaw, ["tj-categories"], {
   revalidate: 600,
 });
+
+/**
+ * Categorie con cache 600s. In caso di errore upstream il fallback `[]` NON
+ * viene cacheato: solo la richiesta corrente vede la lista vuota.
+ */
+export async function fetchCategories(): Promise<WPCategory[]> {
+  try {
+    return await fetchCategoriesCached();
+  } catch (e) {
+    console.error("[TJ API] fetchCategories fallita (fallback [] non cacheato):", e);
+    return [];
+  }
+}
 
 /** Mapping slug URL → slug WordPress. */
 const URL_SLUG_TO_WP_SLUG: Record<string, string> = {
