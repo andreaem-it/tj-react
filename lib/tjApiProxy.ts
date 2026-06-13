@@ -165,6 +165,38 @@ export async function proxyToTjApi(
     }
     const upstreamCt = res.headers.get("content-type");
 
+    if (pathname.startsWith("/api/")) {
+      const trimmed = text.trimStart();
+      const looksJson =
+        (upstreamCt ?? "").toLowerCase().includes("application/json") ||
+        trimmed.startsWith("{") ||
+        trimmed.startsWith("[");
+      if (!res.ok || !looksJson) {
+        let message = "Servizio backend non disponibile";
+        if (looksJson) {
+          try {
+            const parsed = JSON.parse(text) as { error?: unknown };
+            if (typeof parsed.error === "string" && parsed.error.trim()) {
+              message = parsed.error;
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+        const status = res.status >= 500 ? 502 : res.status || 502;
+        const out = NextResponse.json(
+          {
+            error: message,
+            ...(IS_DEV ? { upstreamStatus: res.status, upstreamUrl: url } : {}),
+          },
+          { status },
+        );
+        const ra = res.headers.get("retry-after");
+        if (ra) out.headers.set("Retry-After", ra);
+        return out;
+      }
+    }
+
     if (isLikelyHtmlBody(text, upstreamCt)) {
       const status = res.status >= 400 ? res.status : 502;
       const out = NextResponse.json(
