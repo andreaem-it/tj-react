@@ -1,21 +1,40 @@
 # Autopost Facebook / Instagram da WordPress
 
-Quando un articolo viene **pubblicato** su WordPress, un webhook chiama la route Next.js che:
+Quando un articolo viene **pubblicato** su WordPress, un webhook chiama tj-api che:
 
-1. Verifica il segreto condiviso.
+1. Verifica il segreto condiviso (`WP_WEBHOOK_SECRET`).
 2. Scrive su **Turso** (SQLite) per **non duplicare** post se WordPress rinvia la richiesta.
 3. Pubblica su **Facebook Page** (link + messaggio) e su **Instagram** (foto da URL + caption), se configurato.
 
-## Variabili Vercel (o `.env.local`)
+**Endpoint:** `POST https://www.techjournal.it/api/webhooks/wp-post-published` → proxy Next → `backend.techjournal.it` (tj-api).
 
-| Variabile | Descrizione |
-|-----------|-------------|
-| `WP_WEBHOOK_SECRET` | Stringa lunga casuale; deve coincidere con l’header `X-TJ-Webhook-Secret` inviato da WordPress. |
-| `TURSO_DATABASE_URL` | URL tipo `libsql://....turso.io` dalla dashboard Turso. |
-| `TURSO_AUTH_TOKEN` | Token JWT Turso (se esposto pubblicamente, **rigeneralo** subito in dashboard). |
-| `FACEBOOK_ACCESS_TOKEN` | Token utente che può elencare pagine; la route usa il **Page Access Token** da `me/accounts`. |
-| `FACEBOOK_PAGE_ID` o `FACEBOOK_PAGE_NAME` | Opzionale, per scegliere la pagina se ce ne sono più di una. |
-| `FACEBOOK_BUSINESS_ID` | Se la pagina è solo nel portfolio business. |
+## Plugin WordPress (consigliato)
+
+Il plugin `scripts/wp-plugin/techjournal-api/` include già il listener su `transition_post_status`:
+
+1. Carica la cartella su WordPress e attiva **TechJournal API**
+2. **Impostazioni → TechJournal Social** (oppure in `wp-config.php`):
+   - **Webhook URL:** `https://www.techjournal.it/api/webhooks/wp-post-published`
+   - **Webhook secret:** stesso valore di `WP_WEBHOOK_SECRET` su Vercel (tj-api)
+
+Oppure in `wp-config.php`:
+
+```php
+define('TJ_WEBHOOK_URL', 'https://www.techjournal.it/api/webhooks/wp-post-published');
+define('TJ_WEBHOOK_SECRET', '...'); // = WP_WEBHOOK_SECRET su tj-api
+```
+
+## Variabili Vercel — progetto **tj-api** (obbligatorie per l'autopost)
+
+| Variabile | Progetto | Descrizione |
+|-----------|----------|-------------|
+| `WP_WEBHOOK_SECRET` | **tj-api** | Stringa lunga casuale; deve coincidere con l'header `X-TJ-Webhook-Secret` inviato da WordPress. |
+| `TURSO_DATABASE_URL` | **tj-api** | URL tipo `libsql://....turso.io` dalla dashboard Turso. |
+| `TURSO_AUTH_TOKEN` | **tj-api** | Token JWT Turso. |
+| `FACEBOOK_ACCESS_TOKEN` | **tj-api** | Token utente con permessi pagina; la route usa il **Page Access Token** da `me/accounts`. |
+| `FACEBOOK_PAGE_ID` o `FACEBOOK_PAGE_NAME` | **tj-api** | Opzionale, per scegliere la pagina se ce ne sono più di una. |
+| `FACEBOOK_BUSINESS_ID` | **tj-api** | Se la pagina è solo nel portfolio business. |
+| `TJ_API_BASE_URL` | **frontend** | URL backend (es. `https://backend.techjournal.it`) per il proxy `/api/webhooks/*`. |
 
 **Permessi Meta** (oltre a quelli delle statistiche): tipicamente `pages_manage_posts` e, per Instagram, `instagram_content_publish`. L’account IG deve essere **Business/Creator** collegato alla pagina Facebook.
 
