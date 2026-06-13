@@ -24,11 +24,26 @@ export const WP_BASE = publicEnvUrl(
   `${API_BASE}/wp-json/tj/v1`
 );
 
-/** Header per le chiamate a api.techjournal.it (evita blocchi da backend/firewall su Vercel). */
-export const API_REQUEST_HEADERS: Record<string, string> = {
-  "User-Agent": "TechJournal-Frontend/1.0 (+https://www.techjournal.it)",
-  Accept: "application/json",
-};
+/**
+ * Header per le chiamate server-side a `api.techjournal.it/wp-json/tj/v1/*`.
+ * Referer + User-Agent riducono i falsi positivi Cloudflare; opzionale
+ * `WP_TJ_BYPASS_TOKEN` → header `X-TJ-WP-Token` (regola WAF Skip su Cloudflare).
+ */
+export function buildWpTjRequestHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    "User-Agent": "TechJournal-Frontend/1.0 (+https://www.techjournal.it)",
+    Accept: "application/json",
+    Referer: `${SITE_URL.replace(/\/$/, "")}/`,
+  };
+  const token = process.env.WP_TJ_BYPASS_TOKEN?.trim();
+  if (token) {
+    headers["X-TJ-WP-Token"] = token;
+  }
+  return headers;
+}
+
+/** Alias per compatibilità; preferire `buildWpTjRequestHeaders()` nelle fetch dinamiche. */
+export const API_REQUEST_HEADERS: Record<string, string> = buildWpTjRequestHeaders();
 
 /** Log in console ogni chiamata all’API (utile per verificare che si usi api.techjournal.it). */
 export function logApiUrl(url: string): void {

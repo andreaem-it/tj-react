@@ -1,5 +1,5 @@
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
-import { API_REQUEST_HEADERS, WP_BASE } from "@/lib/constants";
+import { buildWpTjRequestHeaders, WP_BASE } from "@/lib/constants";
 
 const UPSTREAM_TIMEOUT_MS = 8_000;
 
@@ -22,7 +22,7 @@ async function requestViews(
   const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
   const init: RequestInit = {
     method,
-    headers: { ...API_REQUEST_HEADERS },
+    headers: { ...buildWpTjRequestHeaders() },
     cache: "no-store",
     signal: controller.signal,
   };

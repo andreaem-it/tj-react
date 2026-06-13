@@ -1,6 +1,6 @@
 import https from "node:https";
 import { unstable_cache } from "next/cache";
-import { API_REQUEST_HEADERS, WP_BASE, logApiUrl } from "@/lib/constants";
+import { buildWpTjRequestHeaders, WP_BASE, logApiUrl } from "@/lib/constants";
 
 /** TTL Data Cache / ISR allineato al plugin WP (`CACHE_TTL = 300`). */
 export const TJ_FETCH_REVALIDATE = 300;
@@ -72,7 +72,7 @@ function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
       headers: {
         "Cache-Control": "no-cache",
         Pragma: "no-cache",
-        ...API_REQUEST_HEADERS,
+        ...buildWpTjRequestHeaders(),
       },
     };
     const req = https.get(opts, (res) => {
@@ -162,7 +162,7 @@ export function getCategoryIdsIncludingChildren(
   return Array.from(ids);
 }
 
-async function fetchTjPosts(params: {
+async function fetchTjPostsDirect(params: {
   perPage?: number;
   page?: number;
   category?: number;
@@ -197,7 +197,7 @@ async function fetchTjPosts(params: {
   let res: Response;
   try {
     res = await fetchWithTimeout(url, {
-      headers: API_REQUEST_HEADERS,
+      headers: buildWpTjRequestHeaders(),
       ...(requestCache !== undefined && { cache: requestCache }),
       ...(requestCache === undefined && { next: { revalidate: TJ_FETCH_REVALIDATE } }),
     });
@@ -206,7 +206,11 @@ async function fetchTjPosts(params: {
     return { posts: [], totalPages: 1, error: true };
   }
   if (!res.ok) {
-    console.error(`[TJ API] fetchTjPosts HTTP ${res.status} (${url})`);
+    const cfHint =
+      res.status === 403
+        ? " — probabile blocco Cloudflare/WAF su IP datacenter (Vercel); verifica WP_TJ_BYPASS_TOKEN"
+        : "";
+    console.error(`[TJ API] fetchTjPosts HTTP ${res.status}${cfHint} (${url})`);
     return { posts: [], totalPages: 1, error: true };
   }
   const data = (await res.json()) as TjPostsResponse;
@@ -218,6 +222,56 @@ async function fetchTjPosts(params: {
       ? fromHeader
       : Math.max(1, data.totalPages ?? 1);
   return { posts: data.posts ?? [], totalPages };
+}
+
+function fetchTjPostsCacheKey(params: {
+  perPage?: number;
+  page?: number;
+  category?: number;
+  categoryIds?: number[];
+  after?: string;
+  search?: string;
+}): string[] {
+  return [
+    "tj-posts",
+    String(params.perPage ?? 10),
+    String(params.page ?? 1),
+    String(params.category ?? ""),
+    (params.categoryIds ?? []).join(","),
+    params.after ?? "",
+    params.search ?? "",
+  ];
+}
+
+async function fetchTjPosts(params: {
+  perPage?: number;
+  page?: number;
+  category?: number;
+  categoryIds?: number[];
+  after?: string;
+  search?: string;
+  requestCache?: RequestCache;
+}): Promise<TjPostsResult> {
+  const { requestCache, ...cacheParams } = params;
+
+  // Cache esplicita del client (es. no-store su Load more): bypass unstable_cache.
+  if (requestCache !== undefined) {
+    return fetchTjPostsDirect({ ...cacheParams, requestCache });
+  }
+
+  try {
+    return await unstable_cache(
+      async () => {
+        const result = await fetchTjPostsDirect(cacheParams);
+        if (result.error) throw new Error("upstream");
+        return result;
+      },
+      fetchTjPostsCacheKey(cacheParams),
+      { revalidate: TJ_FETCH_REVALIDATE, tags: ["tj-posts"] },
+    )();
+  } catch {
+    return { posts: [], totalPages: 1, error: true };
+  }
 }
 
 /** Numero di post da caricare in iniziale (hero + griglia). */
@@ -320,7 +374,7 @@ export async function fetchMegamenuFromTj(slug: string): Promise<
   const url = `${WP_BASE}/megamenu/${encodeURIComponent(slug)}`;
   logApiUrl(url);
   const res = await fetchWithTimeout(url, {
-    headers: API_REQUEST_HEADERS,
+    headers: buildWpTjRequestHeaders(),
     next: { revalidate: 300 },
   });
   if (!res.ok) return [];
@@ -482,7 +536,7 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostBySlugResult> {
   };
 
   const fetchOpts = {
-    headers: API_REQUEST_HEADERS,
+    headers: buildWpTjRequestHeaders(),
     next: { revalidate: TJ_FETCH_REVALIDATE },
   } as const;
 
@@ -542,7 +596,7 @@ async function fetchCategoriesRaw(): Promise<WPCategory[]> {
   const url = `${WP_BASE}/categories`;
   logApiUrl(url);
   const res = await fetchWithTimeout(url, {
-    headers: API_REQUEST_HEADERS,
+    headers: buildWpTjRequestHeaders(),
     next: { revalidate: 300 },
   });
   // Throw su errore upstream: unstable_cache non memorizza i risultati quando
@@ -622,14 +676,27 @@ export async function fetchPostsByCategorySlug(
 /** Batch home: tutti i dati in una sola chiamata tj/v1/home. */
 export async function fetchHome(): Promise<TjHomeResponse | null> {
   try {
-    const url = `${WP_BASE}/home`;
-    logApiUrl(url);
-    const res = await fetchWithTimeout(url, {
-      headers: API_REQUEST_HEADERS,
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as TjHomeResponse;
+    return await unstable_cache(
+      async () => {
+        const url = `${WP_BASE}/home`;
+        logApiUrl(url);
+        const res = await fetchWithTimeout(url, {
+          headers: buildWpTjRequestHeaders(),
+          next: { revalidate: TJ_FETCH_REVALIDATE },
+        });
+        if (!res.ok) {
+          const cfHint =
+            res.status === 403
+              ? " — probabile blocco Cloudflare/WAF su IP datacenter (Vercel)"
+              : "";
+          console.error(`[TJ API] fetchHome HTTP ${res.status}${cfHint} (${url})`);
+          throw new Error("upstream");
+        }
+        return (await res.json()) as TjHomeResponse;
+      },
+      ["tj-home"],
+      { revalidate: TJ_FETCH_REVALIDATE, tags: ["tj-home"] },
+    )();
   } catch {
     return null;
   }
