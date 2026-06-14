@@ -566,7 +566,10 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostBySlugResult> {
     if (!resList.ok) return { status: "error" };
     try {
       const fromList = await parsePost(resList);
-      return fromList ? { status: "found", post: fromList } : { status: "not_found" };
+      // Verifica difensiva: lo slug tornato dal server deve coincidere con quello
+      // richiesto (il plugin WP potrebbe ignorare il filtro e restituire un post casuale).
+      if (!fromList || fromList.slug !== raw) return { status: "not_found" };
+      return { status: "found", post: fromList };
     } catch {
       return { status: "error" };
     }

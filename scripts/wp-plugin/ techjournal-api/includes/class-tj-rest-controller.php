@@ -142,6 +142,10 @@ class TJ_REST_Controller extends WP_REST_Controller {
                 'type' => 'string',
                 'sanitize_callback' => 'sanitize_text_field',
             ],
+            'slug' => [
+                'type' => 'string',
+                'sanitize_callback' => 'sanitize_title',
+            ],
         ];
     }
 
@@ -198,6 +202,7 @@ class TJ_REST_Controller extends WP_REST_Controller {
         $category_ids = $request->get_param('category_ids');
         $after = $request->get_param('after');
         $search = $request->get_param('search');
+        $slug = $request->get_param('slug');
 
         $args = [
             'post_type' => 'post',
@@ -262,6 +267,10 @@ class TJ_REST_Controller extends WP_REST_Controller {
 
         if ($search !== null && $search !== '') {
             $args['s'] = $search;
+        }
+
+        if ($slug !== null && $slug !== '') {
+            $args['name'] = $slug;
         }
 
         $query = new WP_Query($args);
