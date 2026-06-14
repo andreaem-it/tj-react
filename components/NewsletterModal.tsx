@@ -36,9 +36,12 @@ export default function NewsletterModal() {
 
   // Dopo l'iscrizione riuscita il messaggio resta visibile, poi il box si
   // chiude da solo (chiusura manuale sempre possibile con il pulsante X).
+  // Il flag localStorage viene scritto subito al successo: se l'utente naviga
+  // via prima dei 2500 ms il cleanup cancella il timer ma il flag è già persistito.
   useEffect(() => {
     if (status !== "success") return;
-    const t = setTimeout(close, SUCCESS_AUTO_CLOSE_MS);
+    try { window.localStorage.setItem(STORAGE_KEY, "1"); } catch { /* ignore */ }
+    const t = setTimeout(() => setOpen(false), SUCCESS_AUTO_CLOSE_MS);
     return () => clearTimeout(t);
   }, [status]);
 

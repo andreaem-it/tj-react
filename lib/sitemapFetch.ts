@@ -1,5 +1,5 @@
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
-import { API_REQUEST_HEADERS, SITE_URL } from "@/lib/constants";
+import { buildWpTjRequestHeaders, SITE_URL } from "@/lib/constants";
 
 /**
  * Fetch JSON per costruire la sitemap: preferisce `TJ_API_BASE_URL`, altrimenti il sito pubblico.
@@ -17,7 +17,7 @@ export async function fetchSitemapJson<T>(path: string): Promise<T | null> {
     tried.add(url);
     try {
       const res = await fetch(url, {
-        headers: API_REQUEST_HEADERS,
+        headers: buildWpTjRequestHeaders(),
         next: { revalidate: 3600 },
       });
       if (!res.ok) continue;

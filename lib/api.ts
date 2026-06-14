@@ -410,6 +410,7 @@ export async function fetchMostReadPosts(params: {
     page: 1,
     category: categoryId ?? undefined,
   });
+  if (first.error) return [];
   const pagesToFetch = Math.min(MOST_READ_SAMPLE_PAGES, Math.max(1, first.totalPages));
   const rest =
     pagesToFetch > 1

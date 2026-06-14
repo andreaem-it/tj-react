@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import TjLink from "@/components/TjLink";
-import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
+import { fetchPostBySlugDetailed, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import ArticleBody from "@/components/ArticleBody";
 
 export const revalidate = 300;
@@ -16,15 +16,19 @@ function formatDate(dateStr: string): string {
 
 export async function generateMetadata({ params }: ReaderPageProps) {
   const { articleSlug } = await params;
-  const post = await fetchPostBySlug(articleSlug);
-  if (post) return { title: `${post.title} | TechJournal` };
+  const result = await fetchPostBySlugDetailed(articleSlug);
+  if (result.status === "found") return { title: `${result.post.title} | TechJournal` };
   return { title: "Pagina non trovata" };
 }
 
 export default async function ReaderPage({ params }: ReaderPageProps) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
-  const post = await fetchPostBySlug(articleSlug);
-  if (!post) notFound();
+  const result = await fetchPostBySlugDetailed(articleSlug);
+  // "error" = errore transitorio: non emettere 404, lascia che Next.js usi la pagina
+  // di errore o ritenti al prossimo revalidate.
+  if (result.status === "not_found") notFound();
+  if (result.status === "error") throw new Error("Upstream error fetching post");
+  const post = result.post;
 
   const postCategoryUrlSlug = getCategoryUrlSlugFromWpSlug(post.categorySlug);
   if (categoryUrlSlug !== postCategoryUrlSlug) {

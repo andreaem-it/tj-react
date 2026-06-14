@@ -137,21 +137,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   // Correlati e trending caricati lato server (RSC): dati corretti per categoria
   // e per visualizzazioni, niente fetch client di /api/posts/1.
-  const [relatedPosts, mostReadPosts] = await Promise.all([
+  const [relatedPosts, mostReadPosts, trendingFallback] = await Promise.all([
     fetchRelatedPosts({ baseSlug: post.slug, categoryId: post.categoryId }).catch(
       () => [] as PostWithMeta[]
     ),
     fetchMostReadPosts({ limit: 9 }).catch(() => [] as PostWithMeta[]),
-  ]);
-  let trendingPosts = mostReadPosts;
-  if (trendingPosts.length === 0) {
-    // Nessun post con visualizzazioni: fallback al trending mensile (per data/viste).
-    const { month } = await fetchTrendingWeekAndMonth({ limit: 9 }).catch(() => ({
+    // Pre-fetch in parallelo: usato solo se mostReadPosts è vuoto (nessun dato di view).
+    fetchTrendingWeekAndMonth({ limit: 9 }).catch(() => ({
       week: [] as PostWithMeta[],
       month: [] as PostWithMeta[],
-    }));
-    trendingPosts = month;
-  }
+    })),
+  ]);
+  const trendingPosts = mostReadPosts.length > 0 ? mostReadPosts : trendingFallback.month;
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },

@@ -10,7 +10,8 @@ import { NextRequest, NextResponse } from "next/server";
  * (NEXT_PUBLIC_IUBENDA_SITE_ID / NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID):
  * evita di usare il proxy come relay verso iubenda per id arbitrari.
  */
-function getAllowedPolicyIds(): Set<string> {
+// Calcolato una sola volta al caricamento del modulo (le env var sono immutabili a runtime).
+const ALLOWED_POLICY_IDS: Set<string> = (() => {
   const fromEnv = (process.env.IUBENDA_POLICY_IDS ?? "")
     .split(",")
     .map((s) => s.trim())
@@ -22,7 +23,7 @@ function getAllowedPolicyIds(): Set<string> {
     process.env.NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID?.trim(),
   ].filter((v): v is string => Boolean(v));
   return new Set(fallback);
-}
+})();
 
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id")?.trim() ?? "";
@@ -32,8 +33,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Missing id" }, { status: 400 });
   }
 
-  const allowedIds = getAllowedPolicyIds();
-  if (!allowedIds.has(id)) {
+  if (ALLOWED_POLICY_IDS.size > 0 && !ALLOWED_POLICY_IDS.has(id)) {
     return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 });
   }
 

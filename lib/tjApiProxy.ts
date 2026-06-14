@@ -183,7 +183,10 @@ export async function proxyToTjApi(
             /* ignore */
           }
         }
-        const status = res.status >= 500 ? 502 : res.status || 502;
+        // Maschera 401/403 upstream: non esporre il modello auth del backend al client.
+        const MASK_AS_502 = new Set([401, 403, 407]);
+        const status =
+          res.status >= 500 || MASK_AS_502.has(res.status) ? 502 : res.status || 502;
         const out = NextResponse.json(
           {
             error: message,
