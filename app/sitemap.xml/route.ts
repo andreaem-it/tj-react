@@ -212,8 +212,10 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       priority: 0.4,
     },
     { url: `${base}/privacy`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${base}/cookie-policy`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${base}/termini`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
+    // /cookie-policy e /termini NON vanno qui: sono redirect puri (verso
+    // /privacy e /chi-siamo). Dichiarare URL che rispondono 3xx spreca crawl
+    // budget ed è la segnalazione "Incorrect pages found in sitemap.xml"
+    // dell'audit Semrush del 2026-07-10.
   );
 
   return dedupeByUrl(entries);

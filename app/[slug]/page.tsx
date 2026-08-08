@@ -18,6 +18,30 @@ import { brandedSeoTitle, seoDescription } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const revalidate = 300;
+/** Slug non prerenderizzati (post legacy, categorie nuove): generati on-demand. */
+export const dynamicParams = true;
+
+/**
+ * Senza `generateStaticParams` una route con segmento dinamico resta
+ * server-rendered a ogni richiesta e `revalidate` non ha alcun effetto
+ * (verificabile in `.next/prerender-manifest.json`). Prerenderizzando le
+ * categorie, le pagine archivio diventano statiche e servibili dalla CDN.
+ *
+ * Qui passano anche gli slug dei post legacy nella forma `/{slug}`, che il
+ * componente redirige verso `/{categoria}/{slug}`: restano gestiti on-demand
+ * grazie a `dynamicParams`.
+ */
+export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
+  try {
+    const categories = await fetchCategories();
+    // Tutte le categorie, `offerte` inclusa: qui si decide come viene resa la
+    // pagina, non se indicizzarla (la sitemap la esclude, ed è una scelta
+    // separata che resta valida).
+    return categories.map((cat) => ({ slug: getCategoryUrlSlug(cat) }));
+  } catch {
+    return [];
+  }
+}
 
 /** Slug che sembrano file statici: non chiamare l'API post (es. richieste errate / bot). */
 const LOOKS_LIKE_STATIC_FILE = /\.(png|jpe?g|gif|webp|svg|ico|txt|xml|json|woff2?|webmanifest)$/i;

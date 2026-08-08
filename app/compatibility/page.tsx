@@ -8,6 +8,7 @@ import {
   fetchCompatibilityOsList,
 } from "@/lib/compatibility/serverApi";
 import type { DeviceType } from "@/lib/compatibility/types";
+import { SITE_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,9 @@ export const metadata: Metadata = {
   title: "Compatibilità Apple",
   description:
     "Dispositivi Apple e compatibilità con iOS, iPadOS e macOS: filtra per categoria e consulta le schede.",
+  // Canonical senza query: la pagina accetta ?type= come filtro, e ogni
+  // combinazione produrrebbe altrimenti un URL indicizzabile distinto.
+  alternates: { canonical: `${SITE_URL.replace(/\/$/, "")}/compatibility` },
 };
 
 const TYPE_LABEL: Record<DeviceType, string> = {

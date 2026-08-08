@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import { fetchPostBySlugDetailed, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import { brandedSeoTitle } from "@/lib/seo";
+import { SITE_URL } from "@/lib/constants";
 import ArticleBody from "@/components/ArticleBody";
 
 export const revalidate = 300;
@@ -19,7 +20,19 @@ export async function generateMetadata({ params }: ReaderPageProps) {
   const { articleSlug } = await params;
   const result = await fetchPostBySlugDetailed(articleSlug);
   // `absolute`: senza, il template "%s | TechJournal" del layout raddoppia il brand.
-  if (result.status === "found") return { title: { absolute: brandedSeoTitle(result.post.title) } };
+  if (result.status === "found") {
+    const { post } = result;
+    // Questa è una vista alternativa dello stesso articolo: senza canonical
+    // sarebbe contenuto duplicato per l'intero archivio. Punta alla pagina
+    // articolo, così i segnali si consolidano lì.
+    const articleUrl = `${SITE_URL.replace(/\/$/, "")}/${getCategoryUrlSlugFromWpSlug(
+      post.categorySlug,
+    )}/${post.slug}`;
+    return {
+      title: { absolute: brandedSeoTitle(post.title) },
+      alternates: { canonical: articleUrl },
+    };
+  }
   return { title: "Pagina non trovata" };
 }
 

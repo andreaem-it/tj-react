@@ -7,6 +7,7 @@ import { DeviceDetailCard } from "@/components/compatibility/DeviceDetailCard";
 import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
 import { fetchCompatibilityDevices, fetchDeviceDetail } from "@/lib/compatibility/serverApi";
 import type { DeviceDetailPayload } from "@/lib/compatibility/types";
+import { SITE_URL } from "@/lib/constants";
 
 /**
  * ISR: la pagina dipende solo da `params`, nessun searchParams/cookie. Con
@@ -58,6 +59,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${device.name} · compatibilità`,
     description: `Compatibilità OS per ${device.name} (${typeLabel}).`,
+    alternates: {
+      canonical: `${SITE_URL.replace(/\/$/, "")}/compatibility/device/${encodeURIComponent(slug)}`,
+    },
     ...(u && isAbsoluteHttpUrl(u) ? { openGraph: { images: [{ url: u }] } } : {}),
   };
 }

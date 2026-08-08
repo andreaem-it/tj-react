@@ -4,6 +4,7 @@ import { SITE_URL } from "@/lib/constants";
 export const metadata = {
   title: "API Documentation",
   description: "Technical references for TechJournal API and agent endpoints.",
+  alternates: { canonical: `${SITE_URL.replace(/\/$/, "")}/docs` },
 };
 
 export default function DocsPage() {

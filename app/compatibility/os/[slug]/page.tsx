@@ -7,6 +7,7 @@ import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
 import { parseStatus } from "@/lib/compatibility/filters";
 import { fetchOsDetail } from "@/lib/compatibility/serverApi";
 import type { CompatibilityStatus, OsDetailPayload } from "@/lib/compatibility/types";
+import { SITE_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${data.os.name} · compatibilità dispositivi`,
     description: `Dispositivi compatibili con ${data.os.name}.`,
+    // Canonical senza query: ?status= è un filtro, non una pagina distinta.
+    alternates: {
+      canonical: `${SITE_URL.replace(/\/$/, "")}/compatibility/os/${encodeURIComponent(slug)}`,
+    },
   };
 }
 
