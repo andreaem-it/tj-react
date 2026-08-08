@@ -1,5 +1,10 @@
 import type { PostWithMeta } from "@/lib/api";
 import type { PriceRadarProductListItem } from "@/lib/priceRadar/types";
+import { getPublicTjApiBaseUrl, resolvePublicApiUrl } from "@/lib/publicApiUrl";
+
+// Ri-esportate per i call site storici; l'implementazione vive in publicApiUrl
+// perché serve anche ai componenti client.
+export { getPublicTjApiBaseUrl, resolvePublicApiUrl };
 
 /** Timeout passati a fetchWithFallback dai call site (ms). */
 const TIMEOUT_PRICE_RADAR_MS = 5000;
@@ -27,18 +32,6 @@ function throttledFallbackWarn(log: () => void): void {
   log();
 }
 
-/**
- * Base pubblica tj-api (browser + SSR). Se assente o vuota → path relativi `/api/...`
- * (stesso origin, proxy Next).
- */
-export function getPublicTjApiBaseUrl(): string | null {
-  const raw = process.env.NEXT_PUBLIC_TJ_API_BASE_URL;
-  if (typeof raw !== "string") return null;
-  const t = raw.trim();
-  if (!t) return null;
-  return t.replace(/\/$/, "");
-}
-
 function normalizePath(path: string): string {
   if (path.startsWith("/")) return path;
   return `/${path}`;
@@ -49,16 +42,6 @@ function proxyPathOnly(pathWithQuery: string): string {
   return normalizePath(pathWithQuery);
 }
 
-/**
- * URL verso tj-api (`https://…/api/…`) oppure path relativo `/api/…` per il proxy Next.
- */
-export function resolvePublicApiUrl(path: string): string {
-  const base = getPublicTjApiBaseUrl();
-  const p = normalizePath(path);
-  if (base) return `${base}${p}`;
-  return p;
-}
-
 function isRetriableFetchError(e: unknown): boolean {
   if (e instanceof TypeError) return true;
   if (typeof e === "object" && e !== null && "name" in e) {
@@ -67,18 +50,36 @@ function isRetriableFetchError(e: unknown): boolean {
   return false;
 }
 
+/**
+ * Politica di cache della richiesta.
+ *
+ * `"no-store"` resta il default storico, ma va scelto consapevolmente: nell'App
+ * Router un fetch `no-store` rende **dinamica l'intera route** che lo esegue,
+ * annullando qualsiasi `export const revalidate` della pagina. Le pagine che
+ * possono tollerare dati leggermente stantii devono passare `{ revalidate }`,
+ * altrimenti ogni visita costa un render completo (più proxy, più tj-api).
+ */
+export type TjCachePolicy = "no-store" | { revalidate: number };
+
+function cacheInitFor(policy: TjCachePolicy): RequestInit {
+  return policy === "no-store"
+    ? { cache: "no-store" }
+    : { next: { revalidate: policy.revalidate } };
+}
+
 async function fetchWithTimeout(
   url: string,
   init: RequestInit,
   timeoutMs: number,
+  cachePolicy: TjCachePolicy,
 ): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(url, {
       ...init,
+      ...cacheInitFor(cachePolicy),
       signal: controller.signal,
-      cache: "no-store",
       credentials: "omit",
     });
   } finally {
@@ -94,9 +95,10 @@ async function attemptFetch(
   url: string,
   init: RequestInit,
   timeoutMs: number,
+  cachePolicy: TjCachePolicy,
 ): Promise<Response | null> {
   try {
-    return await fetchWithTimeout(url, init, timeoutMs);
+    return await fetchWithTimeout(url, init, timeoutMs, cachePolicy);
   } catch (e) {
     if (!isRetriableFetchError(e)) throw e;
     return null;
@@ -112,13 +114,14 @@ async function fetchWithFallback(
   init: RequestInit,
   context: string,
   timeoutMs: number,
+  cachePolicy: TjCachePolicy = "no-store",
   isFallbackAttempt = false,
 ): Promise<Response | null> {
   const proxyOnly = proxyPathOnly(pathWithQuery);
   const primary = resolvePublicApiUrl(pathWithQuery);
 
   if (isFallbackAttempt) {
-    const res = await attemptFetch(proxyOnly, init, timeoutMs);
+    const res = await attemptFetch(proxyOnly, init, timeoutMs, cachePolicy);
     if (res === null) {
       throttledApiWarn(() =>
         console.warn(`[tjApiClient] API error (${context}): network/timeout`),
@@ -128,7 +131,7 @@ async function fetchWithFallback(
   }
 
   if (primary === proxyOnly) {
-    const res = await attemptFetch(primary, init, timeoutMs);
+    const res = await attemptFetch(primary, init, timeoutMs, cachePolicy);
     if (res === null) {
       throttledApiWarn(() =>
         console.warn(`[tjApiClient] API error (${context}): network/timeout`),
@@ -137,7 +140,7 @@ async function fetchWithFallback(
     return res;
   }
 
-  const first = await attemptFetch(primary, init, timeoutMs);
+  const first = await attemptFetch(primary, init, timeoutMs, cachePolicy);
   if (first !== null) {
     return first;
   }
@@ -146,7 +149,7 @@ async function fetchWithFallback(
     console.warn(`[tjApiClient] Fallback to proxy (${context})`),
   );
 
-  return fetchWithFallback(pathWithQuery, init, context, timeoutMs, true);
+  return fetchWithFallback(pathWithQuery, init, context, timeoutMs, cachePolicy, true);
 }
 
 type ParseOutcome<T> =
@@ -396,12 +399,14 @@ export async function fetchTjProxyJson<T>(
   path: string,
   context: string,
   timeoutMs: number = TIMEOUT_COMPATIBILITY_MS,
+  cachePolicy: TjCachePolicy = "no-store",
 ): Promise<T | null> {
   const res = await fetchWithFallback(
     path,
     { headers: jsonHeaders },
     context,
     timeoutMs,
+    cachePolicy,
   );
   const outcome = await parseJsonSafe<T>(res, context);
   return outcome.status === "ok" ? outcome.data ?? null : null;

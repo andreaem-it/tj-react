@@ -28,11 +28,18 @@ export async function fetchCompatibilityOsList(): Promise<OperatingSystem[]> {
   return data?.operatingSystems ?? [];
 }
 
+/** Cache dati device: allineata al `revalidate` della pagina `/compatibility/device/[slug]`. */
+const DEVICE_DETAIL_REVALIDATE_S = 3600;
+
 export async function fetchDeviceDetail(slug: string): Promise<DeviceDetailPayload | null> {
   const enc = encodeURIComponent(slug);
+  // Senza politica di cache esplicita il fetch sarebbe `no-store`, che renderebbe
+  // dinamica l'intera pagina annullandone il `revalidate`.
   return fetchTjProxyJson<DeviceDetailPayload>(
     `/api/compatibility/device/${enc}`,
     `${CTX}/device`,
+    undefined,
+    { revalidate: DEVICE_DETAIL_REVALIDATE_S },
   );
 }
 

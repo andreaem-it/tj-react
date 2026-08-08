@@ -5,10 +5,34 @@ import { StatusBadge } from "@/components/compatibility/StatusBadge";
 import { ExperienceBadge } from "@/components/compatibility/ExperienceBadge";
 import { DeviceDetailCard } from "@/components/compatibility/DeviceDetailCard";
 import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
-import { fetchDeviceDetail } from "@/lib/compatibility/serverApi";
+import { fetchCompatibilityDevices, fetchDeviceDetail } from "@/lib/compatibility/serverApi";
 import type { DeviceDetailPayload } from "@/lib/compatibility/types";
 
-export const dynamic = "force-dynamic";
+/**
+ * ISR: la pagina dipende solo da `params`, nessun searchParams/cookie. Con
+ * `force-dynamic` ogni visita costava 3 invocation (pagina + proxy `/api/*` +
+ * tj-api); le schede di compatibilità cambiano di rado.
+ *
+ * `generateStaticParams` non è opzionale per ottenere ISR: senza, una route con
+ * segmento dinamico resta server-rendered a ogni richiesta e `revalidate` non
+ * ha effetto (verificato in `.next/prerender-manifest.json`).
+ */
+export const revalidate = 3600;
+/** Slug non presenti al build (device nuovi): generati on-demand e poi cacheati. */
+export const dynamicParams = true;
+
+export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
+  try {
+    const devices = await fetchCompatibilityDevices();
+    return devices
+      .map((d) => (typeof d.slug === "string" ? d.slug.trim() : ""))
+      .filter((slug) => slug.length > 0)
+      .map((slug) => ({ slug }));
+  } catch {
+    // API irraggiungibile al build: nessun prerender, le pagine si generano on-demand.
+    return [];
+  }
+}
 
 const TYPE_LABEL = { iphone: "iPhone", ipad: "iPad", mac: "Mac" } as const;
 

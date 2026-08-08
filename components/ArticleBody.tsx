@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
+import { logApiUrl } from "@/lib/constants";
+import { resolvePublicApiUrl } from "@/lib/publicApiUrl";
 import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
 
 const STORAGE_KEY = "article-font-size";
@@ -9,6 +10,43 @@ const MIN_LEVEL = 0;
 const MAX_LEVEL = 2;
 
 const VIEW_INCREMENT_STORAGE_PREFIX = "article-view-incremented";
+
+/**
+ * Solo `Accept`: gli header server-side (User-Agent, Referer) sono vietati dal
+ * browser e verrebbero comunque scartati. Tenendo la richiesta "semplice"
+ * evitiamo il preflight CORS quando `NEXT_PUBLIC_TJ_API_BASE_URL` punta a tj-api.
+ */
+const VIEW_REQUEST_HEADERS: Record<string, string> = { Accept: "application/json" };
+
+/** Conteggio views: tj-api restituisce `views`, il fallback WP `count`/`post_views`. */
+function parseViewsPayload(data: unknown): number | null {
+  if (!data || typeof data !== "object") return null;
+  const o = data as Record<string, unknown>;
+  for (const key of ["views", "count", "post_views"] as const) {
+    const raw = o[key];
+    if (raw == null) continue;
+    const n = typeof raw === "number" ? raw : Number(raw);
+    if (Number.isFinite(n) && n >= 0) return n;
+  }
+  return null;
+}
+
+/** sessionStorage può lanciare (Safari in navigazione privata): mai far cadere l'effect. */
+function hasIncrementedInSession(key: string): boolean {
+  try {
+    return sessionStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markIncrementedInSession(key: string): void {
+  try {
+    sessionStorage.setItem(key, "1");
+  } catch {
+    // storage non disponibile: al massimo si re-incrementa al prossimo mount
+  }
+}
 
 interface ArticleBodyProps {
   html: string;
@@ -40,52 +78,41 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
     }
   }, []);
 
-  useEffect(() => {
-    if (!postId) return;
-    const ctrl = new AbortController();
-    const tryFetch = async (url: string) => {
-      logApiUrl(url);
-      try {
-        const res = await fetch(url, { signal: ctrl.signal, headers: API_REQUEST_HEADERS });
-        if (!res.ok) return null;
-        const data = await res.json();
-        const n = typeof data?.views === "number" ? data.views : typeof data?.count === "number" ? data.count : Number(data?.post_views);
-        return Number.isFinite(n) && n >= 0 ? n : null;
-      } catch {
-        return null;
-      }
-    };
-    (async () => {
-      const n = await tryFetch(`/api/views/${postId}`);
-      if (n != null) setViewCountFetched(n);
-    })();
-    return () => ctrl.abort();
-  }, [postId]);
-
+  /**
+   * Una sola richiesta per mount.
+   *
+   * Il POST incrementa *e* restituisce il conteggio aggiornato, quindi alla prima
+   * lettura in sessione una GET separata sarebbe una seconda invocation per lo
+   * stesso dato. La GET serve solo a chi rilegge l'articolo nella stessa sessione,
+   * dove il POST è già stato fatto (il `viewCount` SSR da WP resta inaffidabile,
+   * vedi nota sopra).
+   */
   useEffect(() => {
     if (!postId || typeof window === "undefined") return;
-    const key = `${VIEW_INCREMENT_STORAGE_PREFIX}:${postId}`;
-    if (sessionStorage.getItem(key) === "1") return;
 
+    const key = `${VIEW_INCREMENT_STORAGE_PREFIX}:${postId}`;
+    const alreadyIncremented = hasIncrementedInSession(key);
+    const url = resolvePublicApiUrl(`/api/views/${postId}`);
     const ctrl = new AbortController();
-    void fetch(`/api/views/${postId}`, {
-      method: "POST",
-      headers: API_REQUEST_HEADERS,
-      signal: ctrl.signal,
-      keepalive: true,
-    })
-      .then(async (res) => {
+    logApiUrl(url);
+
+    void (async () => {
+      try {
+        const res = await fetch(url, {
+          method: alreadyIncremented ? "GET" : "POST",
+          headers: VIEW_REQUEST_HEADERS,
+          signal: ctrl.signal,
+          ...(alreadyIncremented ? {} : { keepalive: true }),
+        });
         if (!res.ok) return;
-        const data = await res.json();
-        const n = typeof data?.views === "number" ? data.views : Number(data?.views);
-        if (Number.isFinite(n) && n >= 0) {
-          setViewCountFetched(n);
-          sessionStorage.setItem(key, "1");
-        }
-      })
-      .catch(() => {
-        // ignore transient network errors
-      });
+        const views = parseViewsPayload(await res.json());
+        if (views == null) return;
+        setViewCountFetched(views);
+        if (!alreadyIncremented) markIncrementedInSession(key);
+      } catch {
+        // rete/abort: si tiene il conteggio SSR, nessun retry (costa un'invocation)
+      }
+    })();
 
     return () => ctrl.abort();
   }, [postId]);
