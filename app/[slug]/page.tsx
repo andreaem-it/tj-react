@@ -14,6 +14,7 @@ import {
 import HomeContent from "@/components/HomeContent";
 import { SITE_URL } from "@/lib/constants";
 import { postModifiedIso } from "@/lib/postDates";
+import { brandedSeoTitle, seoDescription } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const revalidate = 300;
@@ -34,10 +35,10 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   if (post) {
     const path = `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`;
     const canonical = `${SITE_URL.replace(/\/$/, "")}${path}`;
-    const description = post.excerpt?.slice(0, 160) || post.title;
+    const description = seoDescription(post.excerpt, post.title);
     const modifiedIso = postModifiedIso(post);
     return {
-      title: `${post.title} | TechJournal`,
+      title: { absolute: brandedSeoTitle(post.title) },
       description,
       alternates: { canonical },
       openGraph: {

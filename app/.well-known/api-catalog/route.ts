@@ -17,6 +17,7 @@ export async function GET() {
   return NextResponse.json(body, {
     headers: {
       "content-type": "application/linkset+json; charset=utf-8",
+      "cache-control": "public, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }

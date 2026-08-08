@@ -10,6 +10,16 @@ const usePassthroughImageLoader = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@mep-agency/next-iubenda"],
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "techjournal.it" }],
+        destination: "https://www.techjournal.it/:path*",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
@@ -31,12 +41,20 @@ const nextConfig: NextConfig = {
   async headers() {
     const securityHeaders = [
       { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      {
+        key: "Strict-Transport-Security",
+        value: "max-age=31536000; includeSubDomains; preload",
+      },
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "X-Frame-Options", value: "DENY" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     ];
 
     return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
       {
         source: "/manifest.webmanifest",
         headers: [
@@ -45,6 +63,7 @@ const nextConfig: NextConfig = {
             value: "public, max-age=86400, immutable",
           },
           { key: "Content-Type", value: "application/manifest+json; charset=utf-8" },
+          ...securityHeaders,
         ],
       },
       {
