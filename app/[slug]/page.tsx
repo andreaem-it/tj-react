@@ -17,7 +17,8 @@ import { postModifiedIso } from "@/lib/postDates";
 import { brandedSeoTitle, seoDescription } from "@/lib/seo";
 import type { Metadata } from "next";
 
-export const revalidate = 300;
+/** Rete di sicurezza: l'invalidazione primaria arriva dal webhook di pubblicazione. */
+export const revalidate = 3600;
 /** Slug non prerenderizzati (post legacy, categorie nuove): generati on-demand. */
 export const dynamicParams = true;
 

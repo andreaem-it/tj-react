@@ -2,8 +2,29 @@ import https from "node:https";
 import { unstable_cache } from "next/cache";
 import { buildWpTjRequestHeaders, WP_BASE, logApiUrl } from "@/lib/constants";
 
-/** TTL Data Cache / ISR allineato al plugin WP (`CACHE_TTL = 300`). */
-export const TJ_FETCH_REVALIDATE = 300;
+/**
+ * TTL Data Cache / ISR. Alzato da 300s da quando il webhook di pubblicazione
+ * invalida on-demand (`lib/cacheInvalidation.ts`): la freschezza arriva
+ * dall'evento, non dallo scadere del tempo. Resta come rete di sicurezza se il
+ * webhook non è configurato o fallisce.
+ */
+export const TJ_FETCH_REVALIDATE = 3600;
+
+/**
+ * TTL del fetch del *singolo* articolo, volutamente più corto.
+ *
+ * Liste e home sono invalidate dal webhook alla pubblicazione, quindi possono
+ * permettersi 3600s. Il contenuto di un articolo cambia però anche per
+ * modifiche successive, che **non** generano alcun webhook: se questo fetch
+ * usasse 3600s, il `revalidate = 900` della pagina articolo sarebbe inefficace,
+ * perché a ogni rigenerazione troverebbe comunque dati vecchi in Data Cache.
+ */
+export const TJ_POST_FETCH_REVALIDATE = 900;
+
+/** Tag di cache del singolo articolo, invalidabile per slug dal webhook. */
+export function postCacheTag(slug: string): string {
+  return `tj-post:${slug}`;
+}
 
 export interface WPCategory {
   id: number;
@@ -536,10 +557,13 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostBySlugResult> {
     return null;
   };
 
-  const fetchOpts = {
+  // Tag per-slug: senza, `revalidateTag` non raggiungerebbe il singolo articolo
+  // e una modifica resterebbe invisibile fino alla scadenza del revalidate.
+  // Niente `as const`: `next.tags` deve restare un `string[]` mutabile per RequestInit.
+  const fetchOpts: RequestInit = {
     headers: buildWpTjRequestHeaders(),
-    next: { revalidate: TJ_FETCH_REVALIDATE },
-  } as const;
+    next: { revalidate: TJ_POST_FETCH_REVALIDATE, tags: ["tj-post", postCacheTag(raw)] },
+  };
 
   try {
     const urlSingle = `${WP_BASE}/post/${encodeURIComponent(raw)}`;
@@ -619,8 +643,18 @@ async function fetchCategoriesRaw(): Promise<WPCategory[]> {
     : [];
 }
 
+/**
+ * Attenzione: `Header` sta nel layout e chiama questa funzione, quindi il suo
+ * `revalidate` fa da **tetto al revalidate di ogni pagina del sito** (Next
+ * prende il minimo su tutto l'albero di render). Con 600s qui, i 3600s di home
+ * e categorie non avevano alcun effetto.
+ *
+ * Le categorie cambiano molto di rado: TTL lungo più tag per l'invalidazione
+ * on-demand dal webhook.
+ */
 const fetchCategoriesCached = unstable_cache(fetchCategoriesRaw, ["tj-categories"], {
-  revalidate: 600,
+  revalidate: 3600,
+  tags: ["tj-categories"],
 });
 
 /**

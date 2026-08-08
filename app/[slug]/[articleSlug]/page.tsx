@@ -21,7 +21,16 @@ import { postModifiedIso } from "@/lib/postDates";
 import { brandedSeoTitle, seoDescription } from "@/lib/seo";
 import type { Metadata } from "next";
 
-export const revalidate = 300;
+/**
+ * Volutamente più basso di home e categorie (3600s).
+ *
+ * Il webhook WP scatta solo alla prima pubblicazione
+ * (`$old_status === 'publish'` esce subito), quindi **le modifiche a un
+ * articolo già pubblicato non invalidano nulla**: questo valore è l'unico
+ * meccanismo che le fa emergere. Alzabile a 3600 solo dopo aver esteso il
+ * plugin WP a notificare anche gli aggiornamenti.
+ */
+export const revalidate = 900;
 export const dynamicParams = true;
 export const maxDuration = 60;
 

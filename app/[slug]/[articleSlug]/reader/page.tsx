@@ -5,7 +5,8 @@ import { brandedSeoTitle } from "@/lib/seo";
 import { SITE_URL } from "@/lib/constants";
 import ArticleBody from "@/components/ArticleBody";
 
-export const revalidate = 300;
+/** Allineato alla pagina articolo: le modifiche non hanno un webhook. */
+export const revalidate = 900;
 
 interface ReaderPageProps {
   params: Promise<{ slug: string; articleSlug: string }>;

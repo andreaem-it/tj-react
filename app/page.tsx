@@ -11,7 +11,12 @@ import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
 /** Revalidate breve: migliora TTFB/bfcache mantenendo contenuti aggiornati. */
-export const revalidate = 120;
+/**
+ * Rete di sicurezza, non il meccanismo primario: la home viene invalidata
+ * on-demand dal webhook di pubblicazione (`/api/webhooks/wp-post-published`).
+ * Se il webhook non è configurato o fallisce, si riallinea entro un'ora.
+ */
+export const revalidate = 3600;
 
 const siteUrl = SITE_URL.replace(/\/$/, "");
 
