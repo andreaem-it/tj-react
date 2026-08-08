@@ -42,14 +42,14 @@ function slugFromPermalink(link: string | undefined): string | null {
  *
  * Gated dal secret: `revalidatePath` forza la rigenerazione di pagine costose,
  * quindi un endpoint aperto sarebbe un amplificatore di carico a costo zero per
- * chi lo chiama. Senza `TJ_WEBHOOK_SECRET` configurato l'invalidazione viene
+ * chi lo chiama. Senza `WP_WEBHOOK_SECRET` configurato l'invalidazione viene
  * saltata, non eseguita in chiaro.
  */
 async function invalidateForPublishedPost(request: NextRequest): Promise<void> {
-  const expected = process.env.TJ_WEBHOOK_SECRET?.trim();
+  const expected = process.env.WP_WEBHOOK_SECRET?.trim();
   if (!expected) {
     console.warn(
-      "[webhook] TJ_WEBHOOK_SECRET non configurato: invalidazione cache saltata " +
+      "[webhook] WP_WEBHOOK_SECRET non configurato: invalidazione cache saltata " +
         "(l'autopost social continua a funzionare, la verifica è a monte su tj-api).",
     );
     return;
