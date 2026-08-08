@@ -64,7 +64,10 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     const canonical = `${SITE_URL.replace(/\/$/, "")}/${urlSlug}`;
     const description = `Ultime notizie e articoli nella categoria ${cat.name} su TechJournal.`;
     return {
-      title: `${cat.name} | TechJournal`,
+      // `absolute` obbligatorio: una stringa semplice passa dal template
+      // "%s | TechJournal" del layout e produce il brand doppio
+      // ("Apple | TechJournal | TechJournal").
+      title: { absolute: brandedSeoTitle(cat.name) },
       description,
       alternates: { canonical },
       openGraph: { title: cat.name, description, url: canonical, siteName: "TechJournal" },

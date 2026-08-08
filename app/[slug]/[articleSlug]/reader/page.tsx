@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import { fetchPostBySlugDetailed, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
+import { brandedSeoTitle } from "@/lib/seo";
 import ArticleBody from "@/components/ArticleBody";
 
 export const revalidate = 300;
@@ -17,7 +18,8 @@ function formatDate(dateStr: string): string {
 export async function generateMetadata({ params }: ReaderPageProps) {
   const { articleSlug } = await params;
   const result = await fetchPostBySlugDetailed(articleSlug);
-  if (result.status === "found") return { title: `${result.post.title} | TechJournal` };
+  // `absolute`: senza, il template "%s | TechJournal" del layout raddoppia il brand.
+  if (result.status === "found") return { title: { absolute: brandedSeoTitle(result.post.title) } };
   return { title: "Pagina non trovata" };
 }
 
