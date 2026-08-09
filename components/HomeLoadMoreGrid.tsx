@@ -6,6 +6,23 @@ import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
 import type { PostWithMeta } from "@/lib/api";
 import { fetchPosts } from "@/lib/tjApiClient";
 
+/**
+ * Dimensione pagina di `/api/posts/:page` su tj-api. Il parametro `per_page` in
+ * query viene ignorato dall'endpoint (verificato: per_page=20 restituisce
+ * comunque 10 elementi), quindi il client deve conoscerla per calcolare da dove
+ * ripartire.
+ *
+ * Serve perché le due API paginano in modo diverso: `tj/v1/home` restituisce 20
+ * post dichiarando `pagesConsumed: 1`, mentre `/posts` pagina a 10. Ripartire
+ * dalla "pagina 2" significava richiedere i post 11–20, già tutti a schermo:
+ * il filtro anti-duplicati li scartava e la paginazione si spegneva al primo
+ * tentativo.
+ */
+const SERVER_PAGE_SIZE = 10;
+
+/** Pagine consecutive di soli duplicati tollerate prima di considerare esaurito l'archivio. */
+const MAX_DUPLICATE_PAGES = 3;
+
 interface HomeLoadMoreGridProps {
   /** Compatibilità retro: alcuni callsite passano ancora i post iniziali SSR. */
   initialPosts?: PostWithMeta[];
@@ -20,7 +37,14 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
   const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts);
   const [hasMore, setHasMore] = useState(initialPagesConsumed < initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
-  const nextPageRef = useRef(initialPagesConsumed + 1);
+  // La prima pagina utile si deduce da quanti post sono già a schermo, non da
+  // `initialPagesConsumed`: quel contatore è espresso nella paginazione di
+  // `tj/v1/home` (pagine da 20), incompatibile con quella di `/posts` (da 10).
+  const nextPageRef = useRef(
+    Math.max(initialPagesConsumed, Math.floor(initialPosts.length / SERVER_PAGE_SIZE)) + 1,
+  );
+  /** Pagine consecutive che non hanno portato nulla di nuovo. */
+  const duplicatePagesRef = useRef(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   // Mutex sincrono: lo state isLoading è asincrono e non previene trigger
   // simultanei (infinite scroll + click "Load more" nello stesso tick).
@@ -39,16 +63,24 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
         const newPosts = data.posts.filter(
           (p: PostWithMeta) => !seenIdsRef.current.has(p.id)
         );
+        const totalPages = data.totalPages ?? 1;
         if (newPosts.length === 0) {
-          // Solo duplicati: la API non ha più contenuti nuovi da offrire,
-          // fermiamo la paginazione per evitare fetch in loop.
-          setHasMore(false);
+          // Solo duplicati: può capitare per un disallineamento fra la
+          // paginazione del render iniziale e quella di `/posts`. Si avanza di
+          // una pagina invece di fermarsi subito, così un offset sbagliato si
+          // corregge da solo; il contatore evita il fetch in loop.
+          duplicatePagesRef.current += 1;
+          nextPageRef.current = pageToFetch + 1;
+          if (duplicatePagesRef.current >= MAX_DUPLICATE_PAGES || pageToFetch >= totalPages) {
+            setHasMore(false);
+          }
           return;
         }
+        duplicatePagesRef.current = 0;
         for (const p of newPosts) seenIdsRef.current.add(p.id);
         setGridPosts((prev) => [...prev, ...newPosts]);
         nextPageRef.current = pageToFetch + 1;
-        setHasMore(pageToFetch < (data.totalPages ?? 1));
+        setHasMore(pageToFetch < totalPages);
       } else {
         setHasMore(false);
       }
