@@ -9,6 +9,8 @@ export type ProxyToTjApiOptions = {
 };
 
 const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000;
+/** Identifica le chiamate server-to-server verso tj-api (vedi nota su AI Labyrinth). */
+const TJ_API_USER_AGENT = "TechJournal-Frontend/1.0 (+https://www.techjournal.it)";
 const IS_DEV = process.env.NODE_ENV !== "production";
 const MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024;
 const MAX_RESPONSE_BODY_BYTES = 10 * 1024 * 1024;
@@ -112,6 +114,18 @@ export async function proxyToTjApi(
   const contentTypeIn = request.headers.get("content-type");
   if (contentTypeIn) {
     headers.set("Content-Type", contentTypeIn);
+  }
+
+  // Senza User-Agent esplicito, fetch invia "node": Cloudflare lo classifica come
+  // bot e può servire AI Labyrinth al posto della risposta JSON, con conseguente
+  // 502 intermittente (rilevato in produzione su backend.techjournal.it).
+  headers.set("User-Agent", TJ_API_USER_AGENT);
+  // Header condiviso per la regola Skip su Cloudflare, stesso schema di
+  // WP_TJ_BYPASS_TOKEN verso api.techjournal.it. Va trattato come un segreto:
+  // chi lo conosce scavalca i controlli bot sull'host backend.
+  const bypassToken = process.env.TJ_API_BYPASS_TOKEN?.trim();
+  if (bypassToken) {
+    headers.set("X-TJ-API-Token", bypassToken);
   }
 
   const timeoutMs = options?.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
