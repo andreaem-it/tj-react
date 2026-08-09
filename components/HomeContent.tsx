@@ -51,6 +51,10 @@ export default function HomeContent({
         <div className="flex-1 min-w-0">
           <HomeLoadMoreGrid
             initialPosts={initialGridPosts}
+            /* Post già consumati dall'API, hero compresi: la griglia ne riceve
+               solo una parte, ma per calcolare la pagina da cui riprendere
+               serve il totale, altrimenti si richiedono post già a schermo. */
+            initialConsumedPosts={initialPosts}
             initialTotalPages={initialTotalPages}
             initialPagesConsumed={initialPagesConsumed}
             categoryId={categoryId}

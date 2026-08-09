@@ -26,6 +26,13 @@ const MAX_DUPLICATE_PAGES = 3;
 interface HomeLoadMoreGridProps {
   /** Compatibilità retro: alcuni callsite passano ancora i post iniziali SSR. */
   initialPosts?: PostWithMeta[];
+  /**
+   * Tutti i post già consumati dall'API per il render iniziale, hero compresi.
+   * La griglia ne mostra solo una parte (`HomeContent` ne assegna i primi
+   * all'hero), ma senza il totale calcolerebbe una pagina di ripresa
+   * sbagliata e richiederebbe contenuti già a schermo. Default: `initialPosts`.
+   */
+  initialConsumedPosts?: PostWithMeta[];
   initialTotalPages: number;
   initialPagesConsumed: number;
   categoryId?: number;
@@ -33,7 +40,15 @@ interface HomeLoadMoreGridProps {
 }
 
 export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
-  const { initialPosts = [], initialTotalPages, initialPagesConsumed, categoryId, emptyGridIsExpected } = props;
+  const {
+    initialPosts = [],
+    initialConsumedPosts,
+    initialTotalPages,
+    initialPagesConsumed,
+    categoryId,
+    emptyGridIsExpected,
+  } = props;
+  const consumedPosts = initialConsumedPosts ?? initialPosts;
   const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts);
   const [hasMore, setHasMore] = useState(initialPagesConsumed < initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +56,7 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
   // `initialPagesConsumed`: quel contatore è espresso nella paginazione di
   // `tj/v1/home` (pagine da 20), incompatibile con quella di `/posts` (da 10).
   const nextPageRef = useRef(
-    Math.max(initialPagesConsumed, Math.floor(initialPosts.length / SERVER_PAGE_SIZE)) + 1,
+    Math.max(initialPagesConsumed, Math.floor(consumedPosts.length / SERVER_PAGE_SIZE)) + 1,
   );
   /** Pagine consecutive che non hanno portato nulla di nuovo. */
   const duplicatePagesRef = useRef(0);
@@ -50,7 +65,9 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
   // simultanei (infinite scroll + click "Load more" nello stesso tick).
   const loadingRef = useRef(false);
   // ID già in griglia, aggiornato in modo sincrono per rilevare pagine di soli duplicati.
-  const seenIdsRef = useRef<Set<number>>(new Set(initialPosts.map((p) => p.id)));
+  // Seed con TUTTI i post già a schermo (hero incluso): altrimenti un articolo
+  // dell'hero potrebbe ricomparire nella griglia come duplicato visibile.
+  const seenIdsRef = useRef<Set<number>>(new Set(consumedPosts.map((p) => p.id)));
 
   const loadNextPage = useCallback(async () => {
     if (loadingRef.current || !hasMore) return;
