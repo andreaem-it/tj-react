@@ -71,7 +71,10 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored !== null) {
         const n = parseInt(stored, 10);
-        if (n >= MIN_LEVEL && n <= MAX_LEVEL) setLevel(n);
+        if (n >= MIN_LEVEL && n <= MAX_LEVEL) {
+          const timer = window.setTimeout(() => setLevel(n), 0);
+          return () => window.clearTimeout(timer);
+        }
       }
     } catch {
       // ignore
@@ -147,7 +150,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
             type="button"
             onClick={smaller}
             disabled={level === MIN_LEVEL}
-            className="w-8 h-8 rounded border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-sm font-bold transition-colors"
+            className="w-11 h-11 rounded border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-sm font-bold transition-colors"
             aria-label="Riduci dimensione testo"
           >
             A−
@@ -156,7 +159,7 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
             type="button"
             onClick={larger}
             disabled={level === MAX_LEVEL}
-            className="w-8 h-8 rounded border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-sm font-bold transition-colors"
+            className="w-11 h-11 rounded border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-sm font-bold transition-colors"
             aria-label="Aumenta dimensione testo"
           >
             A+

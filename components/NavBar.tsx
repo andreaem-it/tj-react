@@ -6,6 +6,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { fetchMegamenu as fetchMegamenuFromApi, type MegamenuPost } from "@/lib/tjApiClient";
+import { useDialogFocus } from "./useDialogFocus";
 
 export type { MegamenuPost };
 
@@ -121,6 +122,8 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
 
   const mobileMenuOpen = setControlledOpen !== undefined ? (controlledOpen ?? false) : internalOpen;
   const setMobileMenuOpen = setControlledOpen ?? setInternalOpen;
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), [setMobileMenuOpen]);
+  const mobileDialogRef = useDialogFocus<HTMLDivElement>(mobileMenuOpen, closeMobileMenu);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -204,6 +207,9 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                   href={categoryHref}
                   className="text-foreground hover:text-accent transition-colors text-base font-medium flex items-center gap-0.5 py-1"
                   onMouseEnter={() => slug != null && handleEnter(slug)}
+                  onFocus={() => slug != null && handleEnter(slug)}
+                  aria-expanded={activeSlug === slug}
+                  aria-controls={`megamenu-${slug}`}
                 >
                   {item.label}
                   <svg className="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
@@ -243,6 +249,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
           const label = item && "label" in item ? item.label : activeSlug;
           return (
             <div
+              id={`megamenu-${activeSlug}`}
               className="absolute top-full left-0 right-0 z-50 pt-0"
               onMouseEnter={handleEnter.bind(null, activeSlug)}
             >
@@ -255,6 +262,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
       {/* Popup menu a tutto schermo (mobile) */}
       {mobileMenuOpen && (
         <div
+          ref={mobileDialogRef}
           className="fixed inset-0 z-100 bg-background flex flex-col md:hidden"
           role="dialog"
           aria-modal="true"
@@ -264,7 +272,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
             <span className="text-foreground font-semibold">Menu</span>
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={closeMobileMenu}
               className="p-2 text-foreground hover:text-accent transition-colors rounded-lg hover:bg-surface-overlay"
               aria-label="Chiudi menu"
             >
@@ -285,7 +293,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                       className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
                       onClick={(event) => {
                         if (href === "/") handleHomeLinkClick(event);
-                        setMobileMenuOpen(false);
+                        closeMobileMenu();
                       }}
                     >
                       {item.label}
@@ -297,7 +305,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                 <TjLink
                   href="/search"
                   className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={closeMobileMenu}
                 >
                   Cerca
                 </TjLink>

@@ -8,11 +8,12 @@ interface PostsGridProps {
   hasMore: boolean;
   onLoadMore: () => void;
   isLoading?: boolean;
+  loadError?: boolean;
   /** Se true, la griglia può essere vuota perché tutti i post sono in hero (es. categoria con 3 articoli). */
   emptyGridIsExpected?: boolean;
 }
 
-export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, emptyGridIsExpected }: PostsGridProps) {
+export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, loadError, emptyGridIsExpected }: PostsGridProps) {
   if (posts.length === 0) {
     if (hasMore) {
       return (
@@ -24,7 +25,7 @@ export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, empty
               disabled={isLoading}
               className="px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity"
             >
-              {isLoading ? "Caricamento..." : "More Posts"}
+              {isLoading ? "Caricamento..." : loadError ? "Riprova" : "Carica altri articoli"}
             </button>
           </div>
         </section>
@@ -40,6 +41,13 @@ export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, empty
 
   return (
     <section>
+      <p className="sr-only" role="status" aria-live="polite">
+        {isLoading
+          ? "Caricamento di altri articoli in corso"
+          : loadError
+            ? "Impossibile caricare altri articoli. Puoi riprovare."
+            : ""}
+      </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         {posts.map((post, index) => (
           <ArticleCard key={post.id} post={post} priority={index === 0} />
@@ -54,7 +62,7 @@ export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, empty
             disabled={isLoading}
             className="px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity"
           >
-            {isLoading ? "Caricamento..." : "More Posts"}
+            {isLoading ? "Caricamento..." : loadError ? "Riprova" : "Carica altri articoli"}
           </button>
         </div>
       )}

@@ -2,9 +2,7 @@ import HeroSection from "./HeroSection";
 import HomeLoadMoreGrid from "./HomeLoadMoreGrid";
 import SocialFollowButtons from "./SocialFollowButtons";
 import OfferteSidebar from "./OfferteSidebar";
-import TrendingSidebar from "./TrendingSidebar";
-import MostReadSidebar from "./MostReadSidebar";
-import TrendingByPeriodSidebar from "./TrendingByPeriodSidebar";
+import HomeRankingsSidebar from "./HomeRankingsSidebar";
 import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
 import type { PostWithMeta } from "@/lib/api";
 
@@ -14,7 +12,8 @@ interface HomeContentProps {
   /** Pagine già caricate lato server (per "Load more" senza duplicati). */
   initialPagesConsumed?: number;
   offertePosts: PostWithMeta[];
-  trendingPosts: PostWithMeta[];
+  /** Compatibilità con le pagine categoria; le classifiche temporali sostituiscono il vecchio blocco duplicato. */
+  trendingPosts?: PostWithMeta[];
   mostReadPosts: PostWithMeta[];
   weekTrendingPosts: PostWithMeta[];
   monthTrendingPosts: PostWithMeta[];
@@ -26,7 +25,6 @@ export default function HomeContent({
   initialTotalPages,
   initialPagesConsumed = 1,
   offertePosts,
-  trendingPosts,
   mostReadPosts,
   weekTrendingPosts,
   monthTrendingPosts,
@@ -70,9 +68,11 @@ export default function HomeContent({
             height={250}
             adSlot={homeSidebarSlot}
           />
-          <MostReadSidebar posts={mostReadPosts} />
-          <TrendingByPeriodSidebar weekPosts={weekTrendingPosts} monthPosts={monthTrendingPosts} />
-          <TrendingSidebar posts={trendingPosts} />
+          <HomeRankingsSidebar
+            mostReadPosts={mostReadPosts}
+            weekPosts={weekTrendingPosts}
+            monthPosts={monthTrendingPosts}
+          />
         </div>
       </div>
     </div>

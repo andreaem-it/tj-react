@@ -52,6 +52,7 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
   const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts);
   const [hasMore, setHasMore] = useState(initialPagesConsumed < initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   // La prima pagina utile si deduce da quanti post sono già a schermo, non da
   // `initialPagesConsumed`: quel contatore è espresso nella paginazione di
   // `tj/v1/home` (pagine da 20), incompatibile con quella di `/posts` (da 10).
@@ -74,6 +75,7 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
     loadingRef.current = true;
     const pageToFetch = nextPageRef.current;
     setIsLoading(true);
+    setLoadError(false);
     try {
       const data = await fetchPosts(pageToFetch, categoryId);
       if (data.posts?.length) {
@@ -102,7 +104,7 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
         setHasMore(false);
       }
     } catch {
-      // Errore transitorio: lasciamo possibile il retry manuale.
+      setLoadError(true);
     } finally {
       loadingRef.current = false;
       setIsLoading(false);
@@ -159,6 +161,7 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
         hasMore={hasMore}
         onLoadMore={onLoadMore}
         isLoading={isLoading}
+        loadError={loadError}
         emptyGridIsExpected={emptyGridIsExpected}
       />
       <div ref={sentinelRef} className="h-px w-full" aria-hidden />

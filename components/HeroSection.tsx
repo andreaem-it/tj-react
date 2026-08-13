@@ -14,7 +14,8 @@ interface HeroSectionProps {
 export default function HeroSection({ posts }: HeroSectionProps) {
   const [first, second, third, fourth] = posts;
   const hasFourth = Boolean(fourth);
-  const mobileHeroHeight = "min-h-[220px] sm:min-h-[260px]";
+  const leadMobileHeight = "min-h-[240px] sm:min-h-[280px]";
+  const secondaryMobileHeight = "min-h-[160px] sm:min-h-[190px]";
 
   if (!first) return null;
 
@@ -22,25 +23,25 @@ export default function HeroSection({ posts }: HeroSectionProps) {
     <section className="w-full mb-6 md:mb-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-2 gap-2 md:gap-3">
         {/* Colonna 1 (6/12): elemento grande — relative + min-h riserva spazio; card absolute inset-0 evita CLS */}
-        <div className={`relative lg:col-start-1 lg:col-span-6 lg:row-span-2 ${mobileHeroHeight} lg:min-h-[320px]`}>
+        <div className={`relative lg:col-start-1 lg:col-span-6 lg:row-span-2 ${leadMobileHeight} lg:min-h-[320px]`}>
           <ArticleCard post={first} variant="hero" size="large" priority />
         </div>
         {/* Colonna 2 (3/12): elemento medio */}
-        <div className={`relative lg:col-start-7 lg:col-span-3 lg:row-span-2 ${mobileHeroHeight} lg:min-h-[320px]`}>
+        <div className={`relative lg:col-start-7 lg:col-span-3 lg:row-span-2 ${secondaryMobileHeight} lg:min-h-[320px]`}>
           {second && <ArticleCard post={second} variant="hero" size="medium" />}
         </div>
         {/* Colonna 3 (3/12): due piccoli impilati, oppure uno solo che occupa entrambe le righe */}
         <div
           className={
             hasFourth
-              ? `relative lg:col-start-10 lg:col-span-3 lg:row-start-1 ${mobileHeroHeight} lg:min-h-[158px]`
-              : `relative lg:col-start-10 lg:col-span-3 lg:row-span-2 ${mobileHeroHeight} lg:min-h-[320px]`
+              ? `relative lg:col-start-10 lg:col-span-3 lg:row-start-1 ${secondaryMobileHeight} lg:min-h-[158px]`
+              : `relative lg:col-start-10 lg:col-span-3 lg:row-span-2 ${secondaryMobileHeight} lg:min-h-[320px]`
           }
         >
           {third && <ArticleCard post={third} variant="hero" size="small" />}
         </div>
         {hasFourth && (
-          <div className={`relative lg:col-start-10 lg:col-span-3 lg:row-start-2 ${mobileHeroHeight} lg:min-h-[158px]`}>
+          <div className={`relative lg:col-start-10 lg:col-span-3 lg:row-start-2 ${secondaryMobileHeight} lg:min-h-[158px]`}>
             <ArticleCard post={fourth} variant="hero" size="small" />
           </div>
         )}

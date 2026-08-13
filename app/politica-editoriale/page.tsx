@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 

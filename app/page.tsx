@@ -53,7 +53,6 @@ export default async function HomePage() {
   let totalPages = 1;
   let pagesConsumed = 0;
   let offertePosts = emptyPosts;
-  let trendingPosts = emptyPosts;
   let mostReadPosts = emptyPosts;
   let weekTrendingPosts = emptyPosts;
   let monthTrendingPosts = emptyPosts;
@@ -88,14 +87,12 @@ export default async function HomePage() {
       }
       return;
     }
-    const [offerte, trendingResp, mostRead, trendingByPeriod] = await Promise.all([
+    const [offerte, mostRead, trendingByPeriod] = await Promise.all([
       fetchPostsByCategorySlug("offerte", 5).catch(() => emptyPosts),
-      fetchPosts({ perPage: 20, page: 1 }).catch(() => ({ posts: emptyPosts })),
       fetchMostReadPosts({ limit: 5 }).catch(() => emptyPosts),
       fetchTrendingWeekAndMonth({ limit: 5 }).catch(() => ({ week: emptyPosts, month: emptyPosts })),
     ]);
     offertePosts = offerte;
-    trendingPosts = trendingResp.posts ?? emptyPosts;
     mostReadPosts = mostRead;
     weekTrendingPosts = trendingByPeriod.week ?? emptyPosts;
     monthTrendingPosts = trendingByPeriod.month ?? emptyPosts;
@@ -113,7 +110,6 @@ export default async function HomePage() {
       totalPages = homeData.initial.totalPages ?? 1;
       pagesConsumed = homeData.initial.pagesConsumed ?? 1;
       offertePosts = homeData.offerte ?? emptyPosts;
-      trendingPosts = homeData.trending ?? emptyPosts;
       mostReadPosts = homeData.mostRead ?? emptyPosts;
       weekTrendingPosts = homeData.weekTrending ?? emptyPosts;
       monthTrendingPosts = homeData.monthTrending ?? emptyPosts;
@@ -138,7 +134,6 @@ export default async function HomePage() {
         initialTotalPages={totalPages}
         initialPagesConsumed={pagesConsumed}
         offertePosts={offertePosts}
-        trendingPosts={trendingPosts}
         mostReadPosts={mostReadPosts}
         weekTrendingPosts={weekTrendingPosts}
         monthTrendingPosts={monthTrendingPosts}

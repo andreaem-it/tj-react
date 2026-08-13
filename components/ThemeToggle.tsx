@@ -1,31 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import {
   SITE_THEME_STORAGE_KEY,
   type SiteTheme,
-  getStoredOrPreferredTheme,
   applySiteThemeToDocument,
+  getSiteThemeFromDom,
+  subscribeSiteThemeClass,
 } from "@/lib/siteTheme";
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<SiteTheme>("dark");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const initial = getStoredOrPreferredTheme();
-    setTheme(initial);
-    applySiteThemeToDocument(initial);
-  }, []);
+  const theme = useSyncExternalStore(subscribeSiteThemeClass, getSiteThemeFromDom, () => "dark");
 
   const toggleTheme = () => {
-    setTheme((prev) => {
-      const next: SiteTheme = prev === "dark" ? "light" : "dark";
-      applySiteThemeToDocument(next);
-      window.localStorage.setItem(SITE_THEME_STORAGE_KEY, next);
-      return next;
-    });
+    const next: SiteTheme = theme === "dark" ? "light" : "dark";
+    applySiteThemeToDocument(next);
+    window.localStorage.setItem(SITE_THEME_STORAGE_KEY, next);
   };
 
   const label =
@@ -35,12 +25,12 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="inline-flex items-center justify-center rounded-full border border-border bg-surface-overlay p-2 text-foreground hover:border-accent hover:text-accent transition-colors"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-overlay text-foreground hover:border-accent hover:text-accent transition-colors"
       aria-label={label}
       title={label}
     >
       {/* Evita mismatch visivo prima del montaggio: mostra sempre l'icona luna finché non è montato */}
-      {mounted && theme === "light" ? (
+      {theme === "light" ? (
         // Sole
         <svg
           className="h-4 w-4"
@@ -80,4 +70,3 @@ export default function ThemeToggle() {
     </button>
   );
 }
-

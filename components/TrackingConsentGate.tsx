@@ -5,6 +5,11 @@ import { useIubenda } from "@mep-agency/next-iubenda";
 
 const GA_NEED_EVENT = "techjournal:ga-needed";
 
+type TrackingWindow = Window & {
+  __iubendaGaConsentUpdate?: () => void;
+  adsbygoogle?: unknown[] & { requestNonPersonalizedAds?: number };
+};
+
 /**
  * Integrazione next-iubenda con tracciamento:
  * - GA: evento techjournal:ga-needed + __iubendaGaConsentUpdate al consenso "measurement".
@@ -33,7 +38,7 @@ export default function TrackingConsentGate() {
     // In DOM i timer restituiscono `number`; con @types/node `ReturnType<typeof setInterval>` diventa Timeout e rompe il build.
     let intervalId: number | undefined;
     const tryGrant = (): boolean => {
-      const grant = (window as any).__iubendaGaConsentUpdate as (() => void) | undefined;
+      const grant = (window as TrackingWindow).__iubendaGaConsentUpdate;
       if (typeof grant !== "function") return false;
       grant();
       return true;
@@ -59,8 +64,10 @@ export default function TrackingConsentGate() {
   }, [allowMeasurement]);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !(window as any).adsbygoogle) return;
-    (window as any).adsbygoogle.requestNonPersonalizedAds = allowMarketing ? 0 : 1;
+    if (typeof window === "undefined") return;
+    const adsbygoogle = (window as TrackingWindow).adsbygoogle;
+    if (!adsbygoogle) return;
+    adsbygoogle.requestNonPersonalizedAds = allowMarketing ? 0 : 1;
   }, [allowMarketing]);
 
   return null;

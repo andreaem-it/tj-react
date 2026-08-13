@@ -1,5 +1,4 @@
 import Link from "next/link";
-import ShareButtons from "./ShareButtons";
 import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
 
 interface TrendingSidebarProps {
@@ -8,7 +7,7 @@ interface TrendingSidebarProps {
   currentPost?: { title: string; shareUrl: string };
 }
 
-export default function TrendingSidebar({ posts, currentSlug, currentPost }: TrendingSidebarProps) {
+export default function TrendingSidebar({ posts, currentSlug }: TrendingSidebarProps) {
   const relatedPosts = currentSlug ? posts.filter((p) => p.slug !== currentSlug) : posts;
   const list = relatedPosts.slice(0, 8);
 

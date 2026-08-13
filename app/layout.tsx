@@ -22,6 +22,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.techjournal.it"
 
 /** Next.js 14+: themeColor va in viewport, non in metadata (evita warning in runtime). */
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f9fafb" },
     { media: "(prefers-color-scheme: dark)", color: "#1a1a1a" },

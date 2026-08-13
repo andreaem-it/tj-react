@@ -51,7 +51,8 @@ export default function AdSenseUnit({
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.location.hostname !== "localhost") {
-      setUseRealAd(true);
+      const timer = window.setTimeout(() => setUseRealAd(true), 0);
+      return () => window.clearTimeout(timer);
     }
   }, []);
 
@@ -60,8 +61,8 @@ export default function AdSenseUnit({
     const target = wrapperRef.current;
     if (!target) return;
     if (!("IntersectionObserver" in window)) {
-      setIsVisible(true);
-      return;
+      const timer = globalThis.setTimeout(() => setIsVisible(true), 0);
+      return () => globalThis.clearTimeout(timer);
     }
     const observer = new IntersectionObserver(
       (entries) => {
@@ -88,7 +89,7 @@ export default function AdSenseUnit({
     };
     const push = (): boolean => {
       if (typeof window === "undefined" || pushedRef.current) return false;
-      const w = window as any;
+      const w = window as Window & { adsbygoogle?: unknown[] };
       if (!w.adsbygoogle) {
         requestScriptLoad();
         return false;

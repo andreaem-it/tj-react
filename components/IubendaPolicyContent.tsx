@@ -34,8 +34,8 @@ export default function IubendaPolicyContent({
   title,
   showIubendaButtons = true,
 }: IubendaPolicyContentProps) {
-  const [data, setData] = useState<ApiResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<ApiResponse | null>(() => policyId ? null : { success: false });
+  const [loading, setLoading] = useState(Boolean(policyId));
   const safeContent = useMemo(() => sanitizeRichHtml(data?.content ?? ""), [data?.content]);
   const iubenda = useIubenda();
   const hasProvider =
@@ -44,12 +44,9 @@ export default function IubendaPolicyContent({
 
   useEffect(() => {
     if (!policyId) {
-      setLoading(false);
-      setData({ success: false });
       return;
     }
     let cancelled = false;
-    setLoading(true);
     fetch(`/api/iubenda-policy?id=${encodeURIComponent(policyId)}&type=${type}`)
       .then((res) => res.json())
       .then((json: ApiResponse) => {

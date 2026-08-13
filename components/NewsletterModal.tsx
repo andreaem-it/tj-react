@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useDialogFocus } from "./useDialogFocus";
 
 const STORAGE_KEY = "newsletter-dismissed-v1";
 const SUCCESS_AUTO_CLOSE_MS = 2500;
@@ -25,14 +26,15 @@ export default function NewsletterModal() {
     }
   }, []);
 
-  const close = () => {
+  const close = useCallback(() => {
     setOpen(false);
     try {
       window.localStorage.setItem(STORAGE_KEY, "1");
     } catch {
       // ignore
     }
-  };
+  }, []);
+  const dialogRef = useDialogFocus<HTMLDivElement>(open, close);
 
   // Dopo l'iscrizione riuscita il messaggio resta visibile, poi il box si
   // chiude da solo (chiusura manuale sempre possibile con il pulsante X).
@@ -81,6 +83,7 @@ export default function NewsletterModal() {
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-2.5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 sm:pb-6 pointer-events-none"
       role="dialog"
       aria-modal="true"
@@ -111,7 +114,11 @@ export default function NewsletterModal() {
             tool-name="newsletter-subscribe"
             tool-description="Subscribe a user email to TechJournal newsletter updates"
           >
+            <label htmlFor="newsletter-email" className="sr-only">
+              Indirizzo email
+            </label>
             <input
+              id="newsletter-email"
               type="email"
               name="email"
               tool-param-description="Email address to subscribe"
@@ -119,7 +126,7 @@ export default function NewsletterModal() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="La tua email"
-              className="flex-1 rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent min-h-11"
+              className="flex-1 rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent min-h-11"
             />
             <button
               type="submit"

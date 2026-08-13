@@ -6,6 +6,7 @@
   --foreground: #111827;
   --muted: #6b7280;
   --accent: #f5a623;
+  --accent-text: #925800;
   --header-bg: #ffffff;
   --content-bg: #ffffff;
   --sidebar-bg: #f3f4f6;
@@ -22,6 +23,7 @@
   --foreground: #ffffff;
   --muted: #9ca3af;
   --accent: #f5a623;
+  --accent-text: #f5a623;
   --header-bg: #212121;
   /* Stesso tono neutro della sidebar: niente dominante blu */
   --content-bg: #252525;
@@ -37,6 +39,7 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
   --color-header-bg: var(--header-bg);
   --color-content-bg: var(--content-bg);
   --color-sidebar-bg: var(--sidebar-bg);
@@ -46,10 +49,53 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* L'accento di brand resta invariato per superfici e bordi; sui piccoli testi
+   usa una variante più scura nel tema chiaro per raggiungere WCAG AA. */
+.text-accent,
+.hover\:text-accent:hover,
+.group:hover .group-hover\:text-accent {
+  color: var(--accent-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .article-body-wrapper .article-content {

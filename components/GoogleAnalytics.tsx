@@ -18,10 +18,8 @@ const hasIubendaConfig =
 export default function GoogleAnalytics() {
   const [shouldLoad, setShouldLoad] = useState(false);
 
-  if (!measurementId) return null;
-
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!measurementId || typeof window === "undefined") return;
     let cancelled = false;
 
     const enable = () => {
@@ -54,7 +52,7 @@ export default function GoogleAnalytics() {
     };
   }, []);
 
-  if (!shouldLoad) return null;
+  if (!measurementId || !shouldLoad) return null;
 
   const consentScript = `
     window.dataLayer = window.dataLayer || [];
