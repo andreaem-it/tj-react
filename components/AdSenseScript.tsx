@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
-import Script from "next/script";
+import { useEffect, useLayoutEffect } from "react";
 import { adsenseJsUrl } from "@/lib/thirdPartyScriptUrls";
 
 const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
 const ADSENSE_NEED_EVENT = "techjournal:adsense-needed";
 const eagerAdSenseLoad = process.env.NEXT_PUBLIC_ADSENSE_EAGER_LOAD === "1";
 const ADSENSE_FAILSAFE_MS = 3500;
+const ADSENSE_SCRIPT_ID = "techjournal-adsense";
 
 /**
  * Carica lo script di Google AdSense una sola volta (usare in layout).
@@ -15,11 +15,9 @@ const ADSENSE_FAILSAFE_MS = 3500;
  * così è pronta prima degli useEffect degli slot laterali.
  */
 export default function AdSenseScript() {
-  const [loadScript, setLoadScript] = useState(false);
-
   useLayoutEffect(() => {
     if (typeof window === "undefined" || window.location.hostname === "localhost") return;
-    const w = window as any;
+    const w = window as Window & { adsbygoogle?: unknown[] & { requestNonPersonalizedAds?: number } };
     w.adsbygoogle = w.adsbygoogle || [];
     w.adsbygoogle.requestNonPersonalizedAds = 1;
   }, []);
@@ -32,7 +30,16 @@ export default function AdSenseScript() {
 
     const enableScript = () => {
       if (cancelled) return;
-      setLoadScript(true);
+      if (clientId && !document.getElementById(ADSENSE_SCRIPT_ID)) {
+        const script = document.createElement("script");
+        script.id = ADSENSE_SCRIPT_ID;
+        script.async = true;
+        script.src = adsenseJsUrl(clientId);
+        if (!script.src.startsWith(window.location.origin)) {
+          script.crossOrigin = "anonymous";
+        }
+        document.head.appendChild(script);
+      }
       if (waitForUserInteraction) {
         window.removeEventListener("pointerdown", onFirstInteraction);
         window.removeEventListener("keydown", onFirstInteraction);
@@ -76,14 +83,5 @@ export default function AdSenseScript() {
     };
   }, []);
 
-  if (!clientId || !loadScript) return null;
-  const src = adsenseJsUrl(clientId);
-  const proxied = src.startsWith("/");
-  return (
-    <Script
-      src={src}
-      strategy="afterInteractive"
-      {...(proxied ? {} : { crossOrigin: "anonymous" as const })}
-    />
-  );
+  return null;
 }

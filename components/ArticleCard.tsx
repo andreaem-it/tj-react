@@ -14,18 +14,13 @@ interface ArticleCardProps {
   priority?: boolean;
 }
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  const now = new Date();
-  // Clamp a 0: con clock skew (data futura) evita "-3 ore fa".
-  const diffMs = Math.max(0, now.getTime() - d.getTime());
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffMins < 60) return `${diffMins} min fa`;
-  if (diffHours < 24) return `${diffHours} ore fa`;
-  if (diffDays < 7) return `${diffDays} giorni fa`;
-  return d.toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" });
+function formatAbsoluteDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("it-IT", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Europe/Rome",
+  });
 }
 
 export default function ArticleCard({ post, variant = "default", size, priority }: ArticleCardProps) {
@@ -148,7 +143,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
           </h2>
         </TjLink>
         <time className="text-muted text-sm mt-1 block" dateTime={post.date}>
-          {formatDate(post.date)}
+          {formatAbsoluteDate(post.date)}
         </time>
       </div>
     </article>
