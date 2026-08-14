@@ -1,7 +1,7 @@
 import { SITE_URL } from "@/lib/constants";
 
 const BASE = SITE_URL.replace(/\/$/, "");
-const LOGO_URL = "https://static.techjournal.it/2024/01/logo-techjournal-250.png";
+const LOGO_URL = `${BASE}/techjournal-logo.png`;
 
 interface ArticleStructuredDataProps {
   headline: string;
