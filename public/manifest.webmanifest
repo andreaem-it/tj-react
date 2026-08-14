@@ -10,9 +10,9 @@
   "lang": "it",
   "icons": [
     {
-      "src": "/techjournal-ico.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
+      "src": "/techjournal-favicon.png",
+      "type": "image/png",
+      "sizes": "1135x1069",
       "purpose": "any"
     }
   ]

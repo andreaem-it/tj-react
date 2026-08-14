@@ -56,8 +56,9 @@ export const metadata: Metadata = {
   },
   /** Icone servite da /public (affidabili, niente dipendenze da domini esterni). */
   icons: {
-    icon: [{ url: "/techjournal-ico.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/techjournal-ico.svg", type: "image/svg+xml" }],
+    icon: [{ url: "/techjournal-favicon.png", type: "image/png", sizes: "1135x1069" }],
+    shortcut: [{ url: "/techjournal-favicon.png", type: "image/png" }],
+    apple: [{ url: "/techjournal-favicon.png", type: "image/png", sizes: "1135x1069" }],
   },
   appleWebApp: {
     capable: true,
