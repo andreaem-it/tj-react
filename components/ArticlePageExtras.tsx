@@ -1,11 +1,11 @@
-import type { PostWithMeta } from "@/lib/api";
+import type { PostListItem } from "@/lib/api";
 import TrendingSidebar from "@/components/TrendingSidebar";
 import RelatedArticlesSlider from "@/components/RelatedArticlesSlider";
 import InlineBannerPlaceholder from "@/components/InlineBannerPlaceholder";
 
 interface ArticleRelatedProps {
   /** Correlati già caricati lato server (fetchRelatedPosts). */
-  posts: PostWithMeta[];
+  posts: PostListItem[];
 }
 
 export function ArticleRelatedPosts({ posts }: ArticleRelatedProps) {
@@ -21,7 +21,7 @@ export function ArticleRelatedPosts({ posts }: ArticleRelatedProps) {
 interface ArticleSidebarProps {
   articleSlug: string;
   /** Trending già caricati lato server (fetchMostReadPosts / fetchTrendingWeekAndMonth). */
-  trendingPosts: PostWithMeta[];
+  trendingPosts: PostListItem[];
   postTitle: string;
   shareUrl: string;
   sidebarAdSlot?: string;

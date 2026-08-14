@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
 import { BLUR_DATA_URL } from "@/lib/constants";
 
 interface OfferteSidebarProps {
-  posts: PostWithMeta[];
+  posts: PostListItem[];
 }
 
 export default function OfferteSidebar({ posts }: OfferteSidebarProps) {

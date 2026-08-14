@@ -110,28 +110,28 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   };
 }
 
-/** Fallback per errori transitori dell'API (post fetch fallito ≠ post inesistente). */
-function ArticleUnavailable() {
-  return (
-    <div className="max-w-3xl mx-auto py-16 px-4 text-center">
-      <h1 className="text-2xl font-bold text-foreground mb-2">Articolo non disponibile</h1>
-      <p className="text-muted mb-6">
-        Il contenuto non è raggiungibile in questo momento. Riprova tra poco.
-      </p>
-      <TjLink href="/" className="text-accent hover:underline font-medium">
-        Torna alla home
-      </TjLink>
-    </div>
-  );
-}
-
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
   const result = await fetchPostBySlugDetailed(articleSlug);
   // Post inesistente: 404 vero (evita soft-404 indicizzati).
   if (result.status === "not_found") notFound();
-  // Errore transitorio upstream: pagina di cortesia, no-index via generateMetadata.
-  if (result.status === "error") return <ArticleUnavailable />;
+  // Errore transitorio upstream: si lancia, NON si restituisce una pagina di
+  // cortesia.
+  //
+  // Restituire JSX qui era un render "riuscito" per Next, che finiva quindi
+  // nel prerender cache e veniva servito come HTTP 200: un blip dell'API
+  // congelava un articolo reale su "Articolo non disponibile" per l'intera
+  // durata della cache (osservato in produzione su URL linkati dalla home,
+  // mentre l'upstream rispondeva 200 correttamente). Per Google era contenuto
+  // sottile su un URL indicizzabile.
+  //
+  // Lanciando, invece: la pagina non viene mai scritta in cache, le versioni
+  // già generate continuano a essere servite (stale) e solo le pagine mai
+  // generate rispondono 5xx — che i crawler ritentano, a differenza di un 200
+  // sbagliato.
+  if (result.status === "error") {
+    throw new Error(`[Article] fetch upstream fallito per lo slug "${articleSlug}"`);
+  }
   const post = result.post;
 
   const postCategoryUrlSlug = getCategoryUrlSlugFromWpSlug(post.categorySlug);

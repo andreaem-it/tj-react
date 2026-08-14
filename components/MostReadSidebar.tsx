@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
 
 interface MostReadSidebarProps {
-  posts: PostWithMeta[];
+  posts: PostListItem[];
   title?: string;
 }
 

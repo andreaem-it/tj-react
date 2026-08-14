@@ -55,9 +55,36 @@ export interface PostWithMeta {
   viewCount: number | null;
 }
 
-/** Risposta tj/v1/posts */
+/**
+ * Post così come compare in una lista (griglie, sidebar, correlati, ricerca).
+ *
+ * Volutamente privo di `content` e `link`: nessuna card li usa, ma finivano
+ * comunque serializzati nel payload RSC di ogni pagina, perché le liste sono
+ * passate come props a Client Components (`PostsGrid`, `HomeRankingsSidebar`,
+ * `RelatedArticlesSlider`). Misurato prima della rimozione: 88 KB su 276 KB di
+ * HTML in home erano corpi di articoli mai renderizzati.
+ *
+ * Il contenuto integrale resta disponibile dove serve davvero — la pagina
+ * articolo — via `fetchPostBySlugDetailed`, che restituisce `PostWithMeta`.
+ */
+export type PostListItem = Omit<PostWithMeta, "content" | "link">;
+
+/**
+ * Campi che l'API espone in lista ma che nessun consumatore di lista legge.
+ * Rimossi qui, alla sorgente, invece che in ogni componente.
+ */
+function toListItem(post: PostWithMeta): PostListItem {
+  // Copia + delete (anziché destructuring) così un nuovo campo aggiunto a
+  // `PostWithMeta` continua a propagarsi alle liste senza modifiche qui.
+  const item: Partial<PostWithMeta> = { ...post };
+  delete item.content;
+  delete item.link;
+  return item as PostListItem;
+}
+
+/** Risposta tj/v1/posts, già alleggerita (vedi `toListItem`). */
 interface TjPostsResponse {
-  posts: PostWithMeta[];
+  posts: PostListItem[];
   totalPages: number;
 }
 
@@ -69,14 +96,14 @@ export interface TjPostsResult extends TjPostsResponse {
   error?: true;
 }
 
-/** Risposta tj/v1/home */
+/** Risposta tj/v1/home, già alleggerita (vedi `toListItem`). */
 interface TjHomeResponse {
-  initial: { posts: PostWithMeta[]; totalPages: number; pagesConsumed: number };
-  offerte: PostWithMeta[];
-  trending: PostWithMeta[];
-  mostRead: PostWithMeta[];
-  weekTrending: PostWithMeta[];
-  monthTrending: PostWithMeta[];
+  initial: { posts: PostListItem[]; totalPages: number; pagesConsumed: number };
+  offerte: PostListItem[];
+  trending: PostListItem[];
+  mostRead: PostListItem[];
+  weekTrending: PostListItem[];
+  monthTrending: PostListItem[];
 }
 
 /** Fetch tj/v1 via Node https (bypass cache Next.js, per Load more). */
@@ -142,7 +169,7 @@ export function fetchPostsPageFromWordPress(
   page: number,
   perPage: number,
   categoryId?: number
-): Promise<{ posts: PostWithMeta[]; totalPages: number }> {
+): Promise<{ posts: PostListItem[]; totalPages: number }> {
   const params = new URLSearchParams({
     per_page: String(perPage),
     page: String(page),
@@ -151,10 +178,12 @@ export function fetchPostsPageFromWordPress(
     params.set("category", String(categoryId));
   }
   const url = `${WP_BASE}/posts?${params.toString()}`;
-  return fetchTjWithNodeHttps<TjPostsResponse>(url).then((data) => ({
-    posts: data.posts ?? [],
-    totalPages: data.totalPages ?? 1,
-  }));
+  return fetchTjWithNodeHttps<{ posts?: PostWithMeta[]; totalPages?: number }>(url).then(
+    (data) => ({
+      posts: (data.posts ?? []).map(toListItem),
+      totalPages: data.totalPages ?? 1,
+    })
+  );
 }
 
 /**
@@ -234,7 +263,9 @@ async function fetchTjPostsDirect(params: {
     console.error(`[TJ API] fetchTjPosts HTTP ${res.status}${cfHint} (${url})`);
     return { posts: [], totalPages: 1, error: true };
   }
-  const data = (await res.json()) as TjPostsResponse;
+  // L'upstream espone anche `content`/`link`: alleggeriti subito, prima di
+  // entrare in Data Cache e nel payload RSC.
+  const data = (await res.json()) as { posts?: PostWithMeta[]; totalPages?: number };
   const headerStr = res.headers.get("X-TJ-Total-Pages");
   const fromHeader =
     headerStr != null && headerStr !== "" ? Number(headerStr) : Number.NaN;
@@ -242,7 +273,7 @@ async function fetchTjPostsDirect(params: {
     Number.isFinite(fromHeader) && fromHeader >= 1
       ? fromHeader
       : Math.max(1, data.totalPages ?? 1);
-  return { posts: data.posts ?? [], totalPages };
+  return { posts: (data.posts ?? []).map(toListItem), totalPages };
 }
 
 function fetchTjPostsCacheKey(params: {
@@ -322,7 +353,7 @@ export async function fetchPosts(params: {
 export async function fetchPostsForInitialDisplay(params: {
   categoryId?: number;
   categories?: WPCategory[];
-}): Promise<{ posts: PostWithMeta[]; totalPages: number; pagesConsumed: number }> {
+}): Promise<{ posts: PostListItem[]; totalPages: number; pagesConsumed: number }> {
   const { categoryId, categories } = params;
   const categoryIds =
     categoryId != null && categories?.length
@@ -342,7 +373,7 @@ export async function fetchPostsForInitialDisplay(params: {
     };
   }
 
-  const all: PostWithMeta[] = [];
+  const all: PostListItem[] = [];
   let page = 1;
   let totalPages = 1;
   const PER_PAGE = 10;
@@ -374,7 +405,7 @@ export const MEGAMENU_POSTS_TARGET = 5;
 export async function fetchPostsForMegamenu(params: {
   categoryId?: number;
   categories?: WPCategory[];
-}): Promise<PostWithMeta[]> {
+}): Promise<PostListItem[]> {
   const { categoryId, categories } = params;
   const categoryIds =
     categoryId != null && categories
@@ -424,7 +455,7 @@ const MOST_READ_SAMPLE_PER_PAGE = 40;
 export async function fetchMostReadPosts(params: {
   categoryId?: number;
   limit?: number;
-}): Promise<PostWithMeta[]> {
+}): Promise<PostListItem[]> {
   const { categoryId, limit = 5 } = params;
   const first = await fetchTjPosts({
     perPage: MOST_READ_SAMPLE_PER_PAGE,
@@ -441,13 +472,13 @@ export async function fetchMostReadPosts(params: {
               perPage: MOST_READ_SAMPLE_PER_PAGE,
               page: i + 2,
               category: categoryId ?? undefined,
-            }).catch(() => ({ posts: [] as PostWithMeta[], totalPages: 1 }))
+            }).catch(() => ({ posts: [] as PostListItem[], totalPages: 1 }))
           )
         )
       : [];
 
   const seen = new Set<number>();
-  const sample: PostWithMeta[] = [];
+  const sample: PostListItem[] = [];
   for (const { posts } of [first, ...rest]) {
     for (const p of posts) {
       if (seen.has(p.id)) continue;
@@ -469,7 +500,7 @@ export async function fetchSearchPosts(params: {
   query: string;
   page?: number;
   perPage?: number;
-}): Promise<{ posts: PostWithMeta[]; totalPages: number }> {
+}): Promise<{ posts: PostListItem[]; totalPages: number }> {
   const { query, page = 1, perPage = 10 } = params;
   const q = String(query).trim();
   if (!q) return { posts: [], totalPages: 0 };
@@ -480,7 +511,7 @@ export async function fetchRelatedPosts(params: {
   baseSlug: string;
   categoryId: number;
   limit?: number;
-}): Promise<PostWithMeta[]> {
+}): Promise<PostListItem[]> {
   const { baseSlug, categoryId, limit = 12 } = params;
   const perPage = Math.min(50, limit + 3);
   const { posts } = await fetchTjPosts({ perPage, page: 1, category: categoryId });
@@ -497,7 +528,7 @@ export async function fetchRelatedPosts(params: {
 export async function fetchTrendingWeekAndMonth(params: {
   categoryId?: number;
   limit?: number;
-}): Promise<{ week: PostWithMeta[]; month: PostWithMeta[] }> {
+}): Promise<{ week: PostListItem[]; month: PostListItem[] }> {
   const { categoryId, limit = 5 } = params;
   const after = new Date();
   after.setDate(after.getDate() - 30);
@@ -545,7 +576,13 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostBySlugResult> {
   if (!raw) return { status: "not_found" };
 
   const parsePost = async (res: Response): Promise<PostWithMeta | null> => {
-    const data = (await res.json()) as PostWithMeta | TjPostsResponse | null;
+    // Percorso del singolo articolo: qui `content` serve davvero, quindi si
+    // legge la risposta grezza dell'upstream, non la forma alleggerita usata
+    // dalle liste.
+    const data = (await res.json()) as
+      | PostWithMeta
+      | { posts?: PostWithMeta[] }
+      | null;
     if (!data || typeof data !== "object") return null;
     if ("posts" in data && Array.isArray(data.posts)) {
       const first = data.posts[0];
@@ -701,7 +738,7 @@ export function resolveCategoryByUrlSlug(
 export async function fetchPostsByCategorySlug(
   slug: string,
   perPage = 5
-): Promise<PostWithMeta[]> {
+): Promise<PostListItem[]> {
   const categories = await fetchCategories();
   const wpSlug = URL_SLUG_TO_WP_SLUG[slug] ?? slug;
   const cat = categories.find((c) => c.slug === wpSlug);
@@ -730,7 +767,30 @@ export async function fetchHome(): Promise<TjHomeResponse | null> {
           console.error(`[TJ API] fetchHome HTTP ${res.status}${cfHint} (${url})`);
           throw new Error("upstream");
         }
-        return (await res.json()) as TjHomeResponse;
+        const raw = (await res.json()) as {
+          initial?: { posts?: PostWithMeta[]; totalPages?: number; pagesConsumed?: number };
+          offerte?: PostWithMeta[];
+          trending?: PostWithMeta[];
+          mostRead?: PostWithMeta[];
+          weekTrending?: PostWithMeta[];
+          monthTrending?: PostWithMeta[];
+        };
+        // Come per `fetchTjPostsDirect`: `content`/`link` via prima della Data
+        // Cache, così l'intero batch home resta leggero.
+        const list = (posts?: PostWithMeta[]): PostListItem[] =>
+          (posts ?? []).map(toListItem);
+        return {
+          initial: {
+            posts: list(raw.initial?.posts),
+            totalPages: raw.initial?.totalPages ?? 1,
+            pagesConsumed: raw.initial?.pagesConsumed ?? 1,
+          },
+          offerte: list(raw.offerte),
+          trending: list(raw.trending),
+          mostRead: list(raw.mostRead),
+          weekTrending: list(raw.weekTrending),
+          monthTrending: list(raw.monthTrending),
+        } satisfies TjHomeResponse;
       },
       ["tj-home"],
       { revalidate: TJ_FETCH_REVALIDATE, tags: ["tj-home"] },

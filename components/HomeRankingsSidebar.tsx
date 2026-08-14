@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useId, useState } from "react";
-import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
 
 type RankingKey = "read" | "week" | "month";
 
 interface HomeRankingsSidebarProps {
-  mostReadPosts: PostWithMeta[];
-  weekPosts: PostWithMeta[];
-  monthPosts: PostWithMeta[];
+  mostReadPosts: PostListItem[];
+  weekPosts: PostListItem[];
+  monthPosts: PostListItem[];
 }
 
 const labels: Record<RankingKey, string> = {
@@ -23,7 +23,7 @@ export default function HomeRankingsSidebar({
   weekPosts,
   monthPosts,
 }: HomeRankingsSidebarProps) {
-  const groups: Record<RankingKey, PostWithMeta[]> = {
+  const groups: Record<RankingKey, PostListItem[]> = {
     read: mostReadPosts,
     week: weekPosts,
     month: monthPosts,

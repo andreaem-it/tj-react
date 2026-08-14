@@ -1,8 +1,8 @@
-import type { PostWithMeta } from "@/lib/api";
+import type { PostListItem } from "@/lib/api";
 import ArticleCardStatic from "./ArticleCardStatic";
 
 interface PostsGridStaticProps {
-  posts: PostWithMeta[];
+  posts: PostListItem[];
   emptyGridIsExpected?: boolean;
 }
 

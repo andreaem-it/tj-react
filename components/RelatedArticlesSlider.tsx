@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import ArticleCard from "./ArticleCard";
-import type { PostWithMeta } from "@/lib/api";
+import type { PostListItem } from "@/lib/api";
 
 const PER_SLIDE = 3;
 
 interface RelatedArticlesSliderProps {
-  posts: PostWithMeta[];
+  posts: PostListItem[];
 }
 
 export default function RelatedArticlesSlider({ posts }: RelatedArticlesSliderProps) {

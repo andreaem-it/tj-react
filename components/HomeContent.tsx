@@ -4,21 +4,29 @@ import SocialFollowButtons from "./SocialFollowButtons";
 import OfferteSidebar from "./OfferteSidebar";
 import HomeRankingsSidebar from "./HomeRankingsSidebar";
 import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
-import type { PostWithMeta } from "@/lib/api";
+import type { PostListItem } from "@/lib/api";
 
 interface HomeContentProps {
-  initialPosts: PostWithMeta[];
+  initialPosts: PostListItem[];
   initialTotalPages: number;
   /** Pagine già caricate lato server (per "Load more" senza duplicati). */
   initialPagesConsumed?: number;
-  offertePosts: PostWithMeta[];
+  offertePosts: PostListItem[];
   /** Compatibilità con le pagine categoria; le classifiche temporali sostituiscono il vecchio blocco duplicato. */
-  trendingPosts?: PostWithMeta[];
-  mostReadPosts: PostWithMeta[];
-  weekTrendingPosts: PostWithMeta[];
-  monthTrendingPosts: PostWithMeta[];
+  trendingPosts?: PostListItem[];
+  mostReadPosts: PostListItem[];
+  weekTrendingPosts: PostListItem[];
+  monthTrendingPosts: PostListItem[];
   categoryId?: number;
+  /**
+   * Testo dell'H1. Le pagine categoria devono passare il proprio: senza,
+   * ereditavano l'H1 della home e ogni archivio (`/apple`, `/tech`, …)
+   * dichiarava a Google lo stesso argomento, in contraddizione col `<title>`.
+   */
+  heading?: string;
 }
+
+const DEFAULT_HEADING = "TechJournal: notizie su Apple, Tech e Gadget";
 
 export default function HomeContent({
   initialPosts,
@@ -29,6 +37,7 @@ export default function HomeContent({
   weekTrendingPosts,
   monthTrendingPosts,
   categoryId,
+  heading = DEFAULT_HEADING,
 }: HomeContentProps) {
   const HERO_POSTS_TARGET = 4;
   const heroPosts = initialPosts.slice(0, HERO_POSTS_TARGET);
@@ -40,9 +49,7 @@ export default function HomeContent({
 
   return (
     <div className="max-w-7xl mx-auto px-[5px] md:px-4 py-6">
-      <h1 className="sr-only">
-        TechJournal: notizie su Apple, Tech e Gadget
-      </h1>
+      <h1 className="sr-only">{heading}</h1>
       {/* Sezione in testa: tutta la larghezza, 4 articoli (1 grande + 3 a destra). La sidebar inizia sotto. */}
       <HeroSection posts={heroPosts} />
       <div className="flex flex-col lg:flex-row gap-8">

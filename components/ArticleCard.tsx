@@ -3,11 +3,11 @@
 import Image from "next/image";
 import TjLink from "@/components/TjLink";
 import { useState } from "react";
-import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
 import { BLUR_DATA_URL } from "@/lib/constants";
 
 interface ArticleCardProps {
-  post: PostWithMeta;
+  post: PostListItem;
   variant?: "default" | "hero" | "strip";
   size?: "large" | "medium" | "small";
   /** Imposta priority per le immagini above-the-fold (hero, prime card). */

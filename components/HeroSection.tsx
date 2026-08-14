@@ -1,8 +1,8 @@
 import ArticleCard from "./ArticleCard";
-import type { PostWithMeta } from "@/lib/api";
+import type { PostListItem } from "@/lib/api";
 
 interface HeroSectionProps {
-  posts: PostWithMeta[];
+  posts: PostListItem[];
 }
 
 /**

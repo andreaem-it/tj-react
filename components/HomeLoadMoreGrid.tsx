@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PostsGrid from "./PostsGrid";
 import InlineBannerPlaceholder from "./InlineBannerPlaceholder";
-import type { PostWithMeta } from "@/lib/api";
+import type { PostListItem } from "@/lib/api";
 import { fetchPosts } from "@/lib/tjApiClient";
 
 /**
@@ -25,14 +25,14 @@ const MAX_DUPLICATE_PAGES = 3;
 
 interface HomeLoadMoreGridProps {
   /** Compatibilità retro: alcuni callsite passano ancora i post iniziali SSR. */
-  initialPosts?: PostWithMeta[];
+  initialPosts?: PostListItem[];
   /**
    * Tutti i post già consumati dall'API per il render iniziale, hero compresi.
    * La griglia ne mostra solo una parte (`HomeContent` ne assegna i primi
    * all'hero), ma senza il totale calcolerebbe una pagina di ripresa
    * sbagliata e richiederebbe contenuti già a schermo. Default: `initialPosts`.
    */
-  initialConsumedPosts?: PostWithMeta[];
+  initialConsumedPosts?: PostListItem[];
   initialTotalPages: number;
   initialPagesConsumed: number;
   categoryId?: number;
@@ -49,7 +49,7 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
     emptyGridIsExpected,
   } = props;
   const consumedPosts = initialConsumedPosts ?? initialPosts;
-  const [gridPosts, setGridPosts] = useState<PostWithMeta[]>(initialPosts);
+  const [gridPosts, setGridPosts] = useState<PostListItem[]>(initialPosts);
   const [hasMore, setHasMore] = useState(initialPagesConsumed < initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -80,7 +80,7 @@ export default function HomeLoadMoreGrid(props: HomeLoadMoreGridProps) {
       const data = await fetchPosts(pageToFetch, categoryId);
       if (data.posts?.length) {
         const newPosts = data.posts.filter(
-          (p: PostWithMeta) => !seenIdsRef.current.has(p.id)
+          (p: PostListItem) => !seenIdsRef.current.has(p.id)
         );
         const totalPages = data.totalPages ?? 1;
         if (newPosts.length === 0) {

@@ -4,7 +4,7 @@ import {
   fetchPosts,
   fetchPostsByCategorySlug,
   fetchTrendingWeekAndMonth,
-  type PostWithMeta,
+  type PostListItem,
 } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 import { SITE_URL } from "@/lib/constants";
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
 };
 
-const emptyPosts: PostWithMeta[] = [];
+const emptyPosts: PostListItem[] = [];
 const INITIAL_POSTS_TARGET = 12;
 const RETRY_DELAYS_MS = [0, 250, 700] as const;
 

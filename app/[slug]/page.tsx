@@ -148,6 +148,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       weekTrendingPosts={weekTrendingPosts}
       monthTrendingPosts={monthTrendingPosts}
       categoryId={cat.id}
+      // Senza questo, l'archivio erediterebbe l'H1 della home: stesso H1 su
+      // /apple, /tech, /ia… e in contraddizione col title della pagina.
+      heading={`${cat.name}: ultime notizie e articoli`}
     />
   );
 }

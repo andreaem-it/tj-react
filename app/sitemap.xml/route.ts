@@ -3,7 +3,7 @@ import {
   fetchCategories,
   getCategoryUrlSlugFromWpSlug,
   getCategoryUrlSlug,
-  type PostWithMeta,
+  type PostListItem,
 } from "@/lib/api";
 import { postModifiedIso } from "@/lib/postDates";
 import { SITE_URL } from "@/lib/constants";
@@ -83,8 +83,8 @@ ${urls}
 `;
 }
 
-async function fetchPostsPagesBatched(pages: number[]): Promise<PostWithMeta[]> {
-  const out: PostWithMeta[] = [];
+async function fetchPostsPagesBatched(pages: number[]): Promise<PostListItem[]> {
+  const out: PostListItem[] = [];
   for (let i = 0; i < pages.length; i += POST_FETCH_CONCURRENCY) {
     const slice = pages.slice(i, i + POST_FETCH_CONCURRENCY);
     const chunks = await Promise.all(
@@ -92,7 +92,7 @@ async function fetchPostsPagesBatched(pages: number[]): Promise<PostWithMeta[]> 
         fetchPosts({
           perPage: POSTS_PER_SITEMAP_PAGE,
           page,
-        }).catch(() => ({ posts: [] as PostWithMeta[], totalPages: 1 })),
+        }).catch(() => ({ posts: [] as PostListItem[], totalPages: 1 })),
       ),
     );
     for (const c of chunks) {

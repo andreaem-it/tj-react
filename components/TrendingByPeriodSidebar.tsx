@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
 
 interface TrendingByPeriodSidebarProps {
-  weekPosts: PostWithMeta[];
-  monthPosts: PostWithMeta[];
+  weekPosts: PostListItem[];
+  monthPosts: PostListItem[];
 }
 
-function PostList({ posts, title }: { posts: PostWithMeta[]; title: string }) {
+function PostList({ posts, title }: { posts: PostListItem[]; title: string }) {
   if (posts.length === 0) return null;
   return (
     <div className="mb-6 last:mb-0">
