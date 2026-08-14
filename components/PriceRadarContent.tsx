@@ -16,6 +16,7 @@ import { getBetaOffers } from "@/lib/priceRadarBetaData";
 
 const TECHRADAR_OFFERS_URL = `${TECHRADAR_API_BASE}/offers.php`;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minuti
+const MIN_DISPLAY_DISCOUNT_PERCENT = 3;
 
 interface CachedData {
   offers: TechRadarOffer[];
@@ -58,17 +59,47 @@ async function fetchBetaOffers(): Promise<TechRadarOffer[]> {
 }
 
 function mapSqliteProductsToOffers(products: PriceRadarProductListItem[]): TechRadarOffer[] {
-  return products.map((p) => ({
-    title: p.title ?? `Prodotto ${p.asin}`,
-    price: p.current_price ?? 0,
-    previous_avg_price: p.max_price_30d ?? p.current_price ?? 0,
-    discount_percent: p.discount_percent,
-    image: p.image_url ?? "",
-    url: p.url,
-    asin: p.asin,
-    created_at: p.last_price_change_at ?? p.last_checked_at ?? new Date().toISOString(),
-    productId: p.id,
-  }));
+  return products
+    .filter((p) => {
+      const title = p.title?.trim() ?? "";
+      const image = p.image_url?.trim() ?? "";
+      return (
+        title.length > 0 &&
+        !/^Prodotto\s+[A-Z0-9]{10}$/i.test(title) &&
+        image.length > 0 &&
+        p.current_price != null &&
+        p.current_price > 0 &&
+        p.max_price_30d != null &&
+        p.max_price_30d > p.current_price &&
+        p.discount_percent >= MIN_DISPLAY_DISCOUNT_PERCENT
+      );
+    })
+    .map((p) => ({
+      title: p.title!.trim(),
+      price: p.current_price!,
+      previous_avg_price: p.max_price_30d!,
+      discount_percent: p.discount_percent,
+      image: p.image_url!.trim(),
+      url: p.url,
+      asin: p.asin,
+      created_at: p.last_price_change_at ?? p.last_checked_at ?? new Date().toISOString(),
+      productId: p.id,
+    }));
+}
+
+function isDisplayableOffer(offer: TechRadarOffer): boolean {
+  const title = offer.title.trim();
+  return (
+    title.length > 0 &&
+    !/^Prodotto\s+[A-Z0-9]{10}$/i.test(title) &&
+    offer.image.trim().length > 0 &&
+    Number.isFinite(offer.price) &&
+    offer.price > 0 &&
+    Number.isFinite(offer.previous_avg_price) &&
+    offer.previous_avg_price > offer.price &&
+    Number.isFinite(offer.discount_percent) &&
+    offer.discount_percent >= MIN_DISPLAY_DISCOUNT_PERCENT
+  );
 }
 
 async function fetchSqliteOffers(params: {
@@ -91,6 +122,7 @@ async function fetchSqliteOffers(params: {
     brand: params.brand || undefined,
     category: params.category || undefined,
     status: "active",
+    discountOnly: true,
   });
   const products = Array.isArray(data.products) ? data.products : [];
   const offers = mapSqliteProductsToOffers(products);
@@ -202,10 +234,11 @@ export default function PriceRadarContent() {
   }, [loadOffers]);
 
   const filteredAndSorted = useMemo(() => {
+    const displayableOffers = offers.filter(isDisplayableOffer);
     if (PRICE_RADAR_SQLITE_ENABLED) {
-      return offers;
+      return displayableOffers;
     }
-    let result = offers;
+    let result = displayableOffers;
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(
