@@ -16,7 +16,12 @@ function TechJournalLogo() {
   const useRasterBrand = true;
 
   if (useRasterBrand) {
-    return <Image src="/techjournal-logo.png" alt="TechJournal" width={1645} height={265} className="h-9 w-auto object-contain" priority />;
+    return (
+      <>
+        <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-9 w-auto object-contain dark:hidden" priority aria-hidden />
+        <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-9 w-auto object-contain dark:block" priority aria-hidden />
+      </>
+    );
   }
 
   return (
@@ -118,7 +123,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Link href="/" className="flex items-center shrink-0 min-w-0 rounded-sm bg-[#0d0f12] px-2 py-1">
+          <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="TechJournal">
             <TechJournalLogo />
           </Link>
           <div className="flex items-center gap-3 shrink-0">
