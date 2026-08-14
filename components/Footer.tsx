@@ -1,15 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const LOGO_URL = "/techjournal-logo.png";
-
 export default function Footer() {
   return (
     <footer className="relative z-10 bg-header-bg border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-[10px] sm:px-4 xl:px-12 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/" className="flex items-center shrink-0 rounded-sm bg-[#0d0f12] px-2 py-1">
-            <Image src={LOGO_URL} alt="TechJournal" width={1645} height={265} className="h-7 w-auto object-contain" />
+          <Link href="/" className="flex items-center shrink-0" aria-label="TechJournal">
+            <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-7 w-auto object-contain dark:hidden" aria-hidden />
+            <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-7 w-auto object-contain dark:block" aria-hidden />
           </Link>
           <p className="text-muted text-sm">
             © {new Date().getFullYear()} TechJournal. Tutti i diritti riservati.

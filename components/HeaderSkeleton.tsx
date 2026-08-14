@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "./Skeleton";
 
-const LOGO_URL = "/techjournal-logo.png";
-
 /** Skeleton dell'header per streaming: mostrato mentre Header carica i dati da WordPress. */
 export default function HeaderSkeleton() {
   return (
@@ -13,15 +11,17 @@ export default function HeaderSkeleton() {
           <div className="md:hidden w-10 h-10 shrink-0">
             <Skeleton className="w-full h-full rounded" />
           </div>
-          <Link href="/" className="flex items-center shrink-0 min-w-0 rounded-sm bg-[#0d0f12] px-2 py-1">
+          <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="TechJournal">
             <Image
-              src={LOGO_URL}
-              alt="TechJournal"
-              width={1645}
-              height={265}
-              className="h-9 w-auto object-contain"
+              src="/techjournal-logo-grey.png"
+              alt=""
+              width={1640}
+              height={263}
+              className="h-9 w-auto object-contain dark:hidden"
               priority
+              aria-hidden
             />
+            <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-9 w-auto object-contain dark:block" priority aria-hidden />
           </Link>
           <div className="flex items-center gap-4 shrink-0">
             <Skeleton className="w-6 h-6 rounded" />
