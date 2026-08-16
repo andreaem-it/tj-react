@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import type { TechRadarOffer, SortOption } from "@/lib/techradar";
 import {
   TECHRADAR_API_BASE,
@@ -8,15 +8,19 @@ import {
   PRICE_RADAR_BETA_ENABLED,
   PRICE_RADAR_SQLITE_ENABLED,
 } from "@/lib/techradar";
-import type { PriceRadarProductListItem } from "@/lib/priceRadar/types";
 import { API_REQUEST_HEADERS, logApiUrl } from "@/lib/constants";
 import { fetchPriceRadarFilters, fetchPriceRadarProducts } from "@/lib/tjApiClient";
+import {
+  isDisplayableOffer,
+  mapProductsToOffers,
+  sortOffers,
+  type PriceRadarInitialData,
+} from "@/lib/priceRadar/offers";
 import PriceRadarCard from "./PriceRadarCard";
 import { getBetaOffers } from "@/lib/priceRadarBetaData";
 
 const TECHRADAR_OFFERS_URL = `${TECHRADAR_API_BASE}/offers.php`;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minuti
-const MIN_DISPLAY_DISCOUNT_PERCENT = 3;
 
 interface CachedData {
   offers: TechRadarOffer[];
@@ -58,50 +62,6 @@ async function fetchBetaOffers(): Promise<TechRadarOffer[]> {
   return offers;
 }
 
-function mapSqliteProductsToOffers(products: PriceRadarProductListItem[]): TechRadarOffer[] {
-  return products
-    .filter((p) => {
-      const title = p.title?.trim() ?? "";
-      const image = p.image_url?.trim() ?? "";
-      return (
-        title.length > 0 &&
-        !/^Prodotto\s+[A-Z0-9]{10}$/i.test(title) &&
-        image.length > 0 &&
-        p.current_price != null &&
-        p.current_price > 0 &&
-        p.max_price_30d != null &&
-        p.max_price_30d > p.current_price &&
-        p.discount_percent >= MIN_DISPLAY_DISCOUNT_PERCENT
-      );
-    })
-    .map((p) => ({
-      title: p.title!.trim(),
-      price: p.current_price!,
-      previous_avg_price: p.max_price_30d!,
-      discount_percent: p.discount_percent,
-      image: p.image_url!.trim(),
-      url: p.url,
-      asin: p.asin,
-      created_at: p.last_price_change_at ?? p.last_checked_at ?? new Date().toISOString(),
-      productId: p.id,
-    }));
-}
-
-function isDisplayableOffer(offer: TechRadarOffer): boolean {
-  const title = offer.title.trim();
-  return (
-    title.length > 0 &&
-    !/^Prodotto\s+[A-Z0-9]{10}$/i.test(title) &&
-    offer.image.trim().length > 0 &&
-    Number.isFinite(offer.price) &&
-    offer.price > 0 &&
-    Number.isFinite(offer.previous_avg_price) &&
-    offer.previous_avg_price > offer.price &&
-    Number.isFinite(offer.discount_percent) &&
-    offer.discount_percent >= MIN_DISPLAY_DISCOUNT_PERCENT
-  );
-}
-
 async function fetchSqliteOffers(params: {
   search: string;
   sort: SortOption;
@@ -125,7 +85,7 @@ async function fetchSqliteOffers(params: {
     discountOnly: true,
   });
   const products = Array.isArray(data.products) ? data.products : [];
-  const offers = mapSqliteProductsToOffers(products);
+  const offers = mapProductsToOffers(products);
   memoryCache = { offers, fetchedAt: Date.now(), cacheKey };
   return offers;
 }
@@ -135,20 +95,6 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "newest", label: "Più recenti" },
   { value: "price", label: "Prezzo più basso" },
 ];
-
-function sortOffers(offers: TechRadarOffer[], sort: SortOption): TechRadarOffer[] {
-  const copy = [...offers];
-  switch (sort) {
-    case "discount":
-      return copy.sort((a, b) => b.discount_percent - a.discount_percent);
-    case "newest":
-      return copy.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    case "price":
-      return copy.sort((a, b) => a.price - b.price);
-    default:
-      return copy;
-  }
-}
 
 function PriceRadarComingSoon() {
   return (
@@ -175,17 +121,33 @@ function PriceRadarComingSoon() {
   );
 }
 
-export default function PriceRadarContent() {
-  const [offers, setOffers] = useState<TechRadarOffer[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function PriceRadarContent({
+  initialData,
+}: {
+  initialData: PriceRadarInitialData;
+}) {
+  const [offers, setOffers] = useState<TechRadarOffer[]>(initialData.offers);
+  // I dati arrivano già renderizzati dal server: partire da `true` rimetterebbe
+  // lo skeleton al posto del contenuto al primo paint. Si parte in caricamento
+  // solo quando il fetch server-side è fallito e il client deve ritentare,
+  // altrimenti si vedrebbe un lampo di "Nessuna offerta".
+  const [loading, setLoading] = useState(initialData.failed);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [sort, setSort] = useState<SortOption>("discount");
   const [brand, setBrand] = useState("");
   const [category, setCategory] = useState("");
-  const [brands, setBrands] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [brands, setBrands] = useState<string[]>(initialData.brands);
+  const [categories, setCategories] = useState<string[]>(initialData.categories);
+
+  /**
+   * Il primo giro dell'effetto corrisponde ai filtri di default, che il server
+   * ha già risolto: si salta il refetch, a meno che il fetch server-side non
+   * sia fallito. Senza questa guardia ogni visita rifarebbe subito la stessa
+   * chiamata appena idratata.
+   */
+  const skipInitialLoad = useRef(!initialData.failed);
 
   const loadOffers = useCallback(async () => {
     setLoading(true);
@@ -205,8 +167,13 @@ export default function PriceRadarContent() {
     }
   }, [search, sort, brand, category]);
 
+  // Filtri già serviti dal server: nessuna chiamata da rifare al mount.
+  const hasServerFilters =
+    initialData.brands.length > 0 || initialData.categories.length > 0;
+
   useEffect(() => {
     if (!PRICE_RADAR_SQLITE_ENABLED) return;
+    if (hasServerFilters) return;
     let cancelled = false;
     void fetchPriceRadarFilters()
       .then((data) => {
@@ -223,14 +190,18 @@ export default function PriceRadarContent() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hasServerFilters]);
 
   useEffect(() => {
-    if (PRICE_RADAR_ENABLED || PRICE_RADAR_BETA_ENABLED || PRICE_RADAR_SQLITE_ENABLED) {
-      void loadOffers();
-    } else {
-      setLoading(false);
+    if (!PRICE_RADAR_ENABLED && !PRICE_RADAR_BETA_ENABLED && !PRICE_RADAR_SQLITE_ENABLED) {
+      return;
     }
+    // Primo giro con i filtri di default: il server ha già fornito il risultato.
+    if (skipInitialLoad.current) {
+      skipInitialLoad.current = false;
+      return;
+    }
+    void loadOffers();
   }, [loadOffers]);
 
   const filteredAndSorted = useMemo(() => {
