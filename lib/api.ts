@@ -350,6 +350,28 @@ export async function fetchPosts(params: {
   return fetchTjPosts({ perPage, page, categoryIds: ids, requestCache });
 }
 
+/**
+ * Numero di articoli di una categoria, figlie incluse.
+ *
+ * Con `per_page=1` il totale delle pagine coincide con il totale degli
+ * articoli, quindi basta leggere l'header senza scaricare alcun contenuto.
+ *
+ * Ritorna `null` — non 0 — quando l'upstream è in errore: lì `fetchTjPosts`
+ * degrada a `totalPages: 1`, e interpretarlo come "categoria da 1 articolo"
+ * significherebbe mettere in `noindex` un archivio sano (`/apple`, 1075
+ * articoli) al primo blip dell'API. Chi decide l'indicizzazione deve poter
+ * distinguere "poche" da "non lo so".
+ */
+export async function fetchCategoryPostCount(
+  categoryId: number,
+  categories: WPCategory[],
+): Promise<number | null> {
+  const categoryIds = getCategoryIdsIncludingChildren(categories, categoryId);
+  const { totalPages, error } = await fetchPosts({ perPage: 1, page: 1, categoryIds });
+  if (error) return null;
+  return totalPages;
+}
+
 export async function fetchPostsForInitialDisplay(params: {
   categoryId?: number;
   categories?: WPCategory[];

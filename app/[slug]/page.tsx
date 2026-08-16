@@ -10,12 +10,17 @@ import {
   resolveCategoryByUrlSlug,
   getCategoryUrlSlugFromWpSlug,
   getCategoryUrlSlug,
+  fetchCategoryPostCount,
   type WPCategory,
 } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 import { SITE_URL } from "@/lib/constants";
 import { postModifiedIso } from "@/lib/postDates";
-import { brandedSeoTitle, seoDescription } from "@/lib/seo";
+import {
+  brandedSeoTitle,
+  seoDescription,
+  MIN_POSTS_FOR_INDEXABLE_CATEGORY,
+} from "@/lib/seo";
 import type { Metadata } from "next";
 
 /** Rete di sicurezza: l'invalidazione primaria arriva dal webhook di pubblicazione. */
@@ -131,6 +136,11 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     const canonical = `${SITE_URL.replace(/\/$/, "")}/${urlSlug}`;
     const label = categoryLabel(cat, categories);
     const description = categoryDescription(label);
+    // `null` = conteggio non disponibile (upstream in errore): si lascia
+    // indicizzabile. Meglio un archivio scarno di troppo in indice che togliere
+    // /apple dall'indice per un timeout dell'API.
+    const postCount = await fetchCategoryPostCount(cat.id, categories);
+    const isThin = postCount !== null && postCount < MIN_POSTS_FOR_INDEXABLE_CATEGORY;
     return {
       // `absolute` obbligatorio: una stringa semplice passa dal template
       // "%s | TechJournal" del layout e produce il brand doppio
@@ -138,6 +148,9 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       title: { absolute: brandedSeoTitle(label) },
       description,
       alternates: { canonical },
+      // `follow` sempre attivo: l'archivio non va in indice ma i link agli
+      // articoli devono continuare a passare segnali.
+      ...(isThin ? { robots: { index: false, follow: true } } : {}),
       openGraph: { title: label, description, url: canonical, siteName: "TechJournal" },
       twitter: { card: "summary", title: label, description },
     };

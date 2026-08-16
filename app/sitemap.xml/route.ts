@@ -1,10 +1,12 @@
 import {
   fetchPosts,
   fetchCategories,
+  fetchCategoryPostCount,
   getCategoryUrlSlugFromWpSlug,
   getCategoryUrlSlug,
   type PostListItem,
 } from "@/lib/api";
+import { MIN_POSTS_FOR_INDEXABLE_CATEGORY } from "@/lib/seo";
 import { postModifiedIso } from "@/lib/postDates";
 import { SITE_URL } from "@/lib/constants";
 import { fetchSitemapJson } from "@/lib/sitemapFetch";
@@ -117,8 +119,23 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
   } catch {
     // API irraggiungibile
   }
+  // Conteggi in parallelo: servono a non dichiarare in sitemap archivi che la
+  // pagina serve con `noindex`. Dichiararli sarebbe una contraddizione di
+  // segnali, e spenderebbe crawl budget su URL che non si vogliono in indice.
+  const categoryCounts = new Map<number, number | null>();
+  await Promise.all(
+    categories.map(async (cat) => {
+      const count = await fetchCategoryPostCount(cat.id, categories).catch(() => null);
+      categoryCounts.set(cat.id, count);
+    }),
+  );
+
   for (const cat of categories) {
     if (cat.slug === "offerte") continue;
+    // `null` = conteggio non disponibile: l'URL resta, coerentemente con
+    // `generateMetadata`, che in quel caso non applica il noindex.
+    const count = categoryCounts.get(cat.id) ?? null;
+    if (count !== null && count < MIN_POSTS_FOR_INDEXABLE_CATEGORY) continue;
     const urlSlug = getCategoryUrlSlug(cat);
     entries.push({
       url: `${base}/${urlSlug}`,

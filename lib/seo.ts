@@ -1,3 +1,19 @@
+/**
+ * Sotto questa soglia un archivio di categoria non viene indicizzato né messo
+ * in sitemap: è una pagina di puro elenco, troppo scarna per posizionarsi, che
+ * consuma crawl budget sottraendolo agli articoli.
+ *
+ * Il valore non è arbitrario: la distribuzione degli articoli per categoria ha
+ * uno stacco netto fra 9 e 16 (1, 1, 2, 4, 8, 9 → 16, 19, 21, 28, …). A 10
+ * cadono le sei categorie residuali (stadia, xros, wi-fi, ios-games,
+ * playstation, offerte) e nessuna di quelle vive; la soglia darebbe lo stesso
+ * esito ovunque fra 10 e 15, quindi è stabile rispetto alla crescita.
+ *
+ * Un archivio che supera la soglia torna indicizzabile da solo al successivo
+ * revalidate: non serve alcun intervento.
+ */
+export const MIN_POSTS_FOR_INDEXABLE_CATEGORY = 10;
+
 const SITE_NAME = "TechJournal";
 const TITLE_SEPARATOR = " | ";
 /**
