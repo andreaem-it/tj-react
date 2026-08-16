@@ -295,3 +295,11 @@ html:not(.dark) .iubenda-uspr-btn[data-tp-float="bottom-left"]:hover {
   background-color: var(--content-bg) !important;
   color: var(--accent) !important;
 }
+/* Il wordmark usa un grigio medio su fondi chiari e il bianco nel tema scuro. */
+.techjournal-logo [fill="rgb(126,122,115)"] {
+  fill: #6f7680;
+}
+
+.dark .techjournal-logo [fill="rgb(126,122,115)"] {
+  fill: #ffffff;
+}

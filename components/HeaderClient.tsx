@@ -28,7 +28,7 @@ function TechJournalLogo() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 2048 408"
-      className="h-9 w-auto object-contain"
+      className="techjournal-logo h-9 w-auto object-contain"
       role="img"
       aria-label="TechJournal"
     >
