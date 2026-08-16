@@ -10,6 +10,7 @@ import {
   resolveCategoryByUrlSlug,
   getCategoryUrlSlugFromWpSlug,
   getCategoryUrlSlug,
+  type WPCategory,
 } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
 import { SITE_URL } from "@/lib/constants";
@@ -46,6 +47,47 @@ export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
 
 /** Slug che sembrano file statici: non chiamare l'API post (es. richieste errate / bot). */
 const LOOKS_LIKE_STATIC_FILE = /\.(png|jpe?g|gif|webp|svg|ico|txt|xml|json|woff2?|webmanifest)$/i;
+
+/**
+ * Etichetta univoca della categoria per title, description e H1.
+ *
+ * Due categorie WP possono condividere il `name`: "iOS" esiste sia su `/ios`
+ * sia su `/ios-games`, e usando solo `cat.name` i due archivi ottenevano title
+ * e description **identici** su URL entrambi indicizzabili. Quando c'è
+ * collisione si ricade sullo slug, che è unico per definizione.
+ */
+function categoryLabel(cat: WPCategory, categories: WPCategory[]): string {
+  const collides = categories.some((c) => c.id !== cat.id && c.name === cat.name);
+  if (!collides) return cat.name;
+
+  const urlSlug = getCategoryUrlSlug(cat);
+  const namePrefix = cat.name.toLowerCase().replace(/\s+/g, "-");
+  // "iOS" + slug "ios-games" -> si tiene la capitalizzazione redazionale del
+  // nome e si aggiunge solo la parte distintiva ("iOS Games", non "Ios Games").
+  const rest = urlSlug.startsWith(`${namePrefix}-`) ? urlSlug.slice(namePrefix.length + 1) : urlSlug;
+  // Se lo slug non aggiunge nulla al nome (slug "ios" per la categoria "iOS")
+  // non c'è niente da distinguere: raddoppiarlo darebbe "iOS Ios".
+  if (!rest || rest.replace(/-/g, " ").toLowerCase() === cat.name.toLowerCase()) {
+    return cat.name;
+  }
+  const humanized = rest
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ");
+  return `${cat.name} ${humanized}`;
+}
+
+/**
+ * Description dell'archivio: 70-160 caratteri.
+ *
+ * La versione precedente ("Ultime notizie e articoli nella categoria X su
+ * TechJournal.") si fermava a 61-69 caratteri su ogni archivio — sotto la
+ * soglia utile e segnalata come "too short" su 17 pagine dall'audit.
+ */
+function categoryDescription(label: string): string {
+  return `Tutte le notizie su ${label}: aggiornamenti quotidiani, approfondimenti, guide e recensioni selezionate dalla redazione di TechJournal.`;
+}
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -87,16 +129,17 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   if (cat) {
     const urlSlug = getCategoryUrlSlug(cat);
     const canonical = `${SITE_URL.replace(/\/$/, "")}/${urlSlug}`;
-    const description = `Ultime notizie e articoli nella categoria ${cat.name} su TechJournal.`;
+    const label = categoryLabel(cat, categories);
+    const description = categoryDescription(label);
     return {
       // `absolute` obbligatorio: una stringa semplice passa dal template
       // "%s | TechJournal" del layout e produce il brand doppio
       // ("Apple | TechJournal | TechJournal").
-      title: { absolute: brandedSeoTitle(cat.name) },
+      title: { absolute: brandedSeoTitle(label) },
       description,
       alternates: { canonical },
-      openGraph: { title: cat.name, description, url: canonical, siteName: "TechJournal" },
-      twitter: { card: "summary", title: cat.name, description },
+      openGraph: { title: label, description, url: canonical, siteName: "TechJournal" },
+      twitter: { card: "summary", title: label, description },
     };
   }
   return { title: "Pagina non trovata" };
@@ -150,7 +193,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       categoryId={cat.id}
       // Senza questo, l'archivio erediterebbe l'H1 della home: stesso H1 su
       // /apple, /tech, /ia… e in contraddizione col title della pagina.
-      heading={`${cat.name}: ultime notizie e articoli`}
+      heading={`${categoryLabel(cat, categories)}: ultime notizie e articoli`}
     />
   );
 }

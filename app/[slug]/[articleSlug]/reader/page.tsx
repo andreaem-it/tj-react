@@ -32,6 +32,12 @@ export async function generateMetadata({ params }: ReaderPageProps) {
     return {
       title: { absolute: brandedSeoTitle(post.title) },
       alternates: { canonical: articleUrl },
+      // Il canonical da solo non è bastato: Google ha indicizzato comunque le
+      // varianti /reader (visibili in Search Console con impression proprie,
+      // es. /iphone/i-prezzi-dei-nuovi-iphone-14-in-italia/reader). Il canonical
+      // è un suggerimento, `noindex` è una direttiva. `follow` resta attivo così
+      // i link interni della vista lettura continuano a passare segnali.
+      robots: { index: false, follow: true },
     };
   }
   return { title: "Pagina non trovata" };
