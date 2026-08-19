@@ -11,9 +11,16 @@ import {
   getCategoryUrlSlugFromWpSlug,
   getCategoryUrlSlug,
   fetchCategoryPostCount,
+  type PostListItem,
   type WPCategory,
 } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
+import HotTopicsSidebar from "@/components/home/HotTopicsSidebar";
+import {
+  hasUsableTrafficSignal,
+  hotTopics,
+  prepareItems,
+} from "@/lib/home/ranking";
 import { SITE_URL } from "@/lib/constants";
 import { postModifiedIso } from "@/lib/postDates";
 import {
@@ -98,6 +105,23 @@ interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
+/**
+ * Argomenti del momento per la sidebar.
+ *
+ * Funzione a sé e non codice nel corpo del componente: leggere l'orologio dentro
+ * un Server Component viola la regola di purezza del compilatore React. Qui
+ * `Date.now()` sta al confine, e `hotTopics` continua a riceverlo come
+ * parametro restando riproducibile.
+ */
+function computeHotTopics(posts: readonly PostListItem[]) {
+  return hotTopics(prepareItems(posts), Date.now(), { limit: 6 });
+}
+
+/** Come sopra: l'orologio si legge fuori dal componente. */
+function trafficIsUsable(posts: readonly PostListItem[]): boolean {
+  return hasUsableTrafficSignal(posts, { now: Date.now() });
+}
+
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
   if (LOOKS_LIKE_STATIC_FILE.test(slug)) {
@@ -179,19 +203,38 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const cat = resolveCategoryByUrlSlug(categories, slug);
   if (!cat) notFound();
 
-  const [
-    { posts: initialPosts, totalPages, pagesConsumed },
-    offertePosts,
-    trendingPosts,
-    mostReadPosts,
-    { week: weekTrendingPosts, month: monthTrendingPosts },
-  ] = await Promise.all([
-    fetchPostsForInitialDisplay({ categoryId: cat.id, categories }),
-    fetchPostsByCategorySlug("offerte", 5),
-    fetchPosts({ perPage: 20, page: 1 }).then((r) => r.posts),
-    fetchMostReadPosts({ categoryId: cat.id, limit: 5 }),
-    fetchTrendingWeekAndMonth({ categoryId: cat.id, limit: 5 }),
-  ]);
+  const [{ posts: initialPosts, totalPages, pagesConsumed }, offertePosts, trendingPosts] =
+    await Promise.all([
+      fetchPostsForInitialDisplay({ categoryId: cat.id, categories }),
+      fetchPostsByCategorySlug("offerte", 5),
+      fetchPosts({ perPage: 20, page: 1 }).then((r) => r.posts),
+    ]);
+
+  /**
+   * Le classifiche di lettura si caricano **solo se c'è qualcosa da ordinare**.
+   *
+   * Misurato in produzione: `viewCount` da WordPress è uniformemente 0 su tutti
+   * gli articoli recenti — il campo è morto dopo la migrazione del contatore su
+   * Postgres, e i conteggi veri vivono in tj-api. Le tab "Più letti / Settimana /
+   * Mese" ordinavano quindi per un valore costante, cioè presentavano l'ordine
+   * cronologico come una classifica di lettura.
+   *
+   * Il controllo è gratuito: usa gli articoli già scaricati. Quando il segnale
+   * manca si risparmiano anche le tre richieste da 40 articoli di
+   * `fetchMostReadPosts` e le 40 di `fetchTrendingWeekAndMonth`, che oggi
+   * servivano a produrre un ordinamento privo di significato.
+   */
+  const signalPool = [...initialPosts, ...trendingPosts];
+  const trafficUsable = trafficIsUsable(signalPool);
+
+  const [mostReadPosts, { week: weekTrendingPosts, month: monthTrendingPosts }] = trafficUsable
+    ? await Promise.all([
+        fetchMostReadPosts({ categoryId: cat.id, limit: 5 }),
+        fetchTrendingWeekAndMonth({ categoryId: cat.id, limit: 5 }),
+      ])
+    : [[] as PostListItem[], { week: [] as PostListItem[], month: [] as PostListItem[] }];
+
+  const topics = trafficUsable ? [] : computeHotTopics(signalPool);
 
   return (
     <HomeContent
@@ -203,6 +246,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       mostReadPosts={mostReadPosts}
       weekTrendingPosts={weekTrendingPosts}
       monthTrendingPosts={monthTrendingPosts}
+      // Stessa scelta della home: dove la classifica di lettura non ha dati, il
+      // suo posto lo prende un modulo costruito su un dato che possediamo.
+      rankingsSlot={topics.length > 0 ? <HotTopicsSidebar topics={topics} /> : undefined}
       categoryId={cat.id}
       // Senza questo, l'archivio erediterebbe l'H1 della home: stesso H1 su
       // /apple, /tech, /ia… e in contraddizione col title della pagina.

@@ -1,24 +1,30 @@
 import type { CompatibilityStatus } from "@/lib/compatibility/types";
 
-const STYLE: Record<
-  CompatibilityStatus,
-  { label: string; className: string }
-> = {
+/**
+ * Esito della compatibilità.
+ *
+ * I colori erano fissati sul tema scuro (`text-emerald-200` su fondo chiarissimo
+ * in tema chiaro): illeggibili con il tema chiaro attivo. Ora il testo usa una
+ * tinta scura di base e passa a quella chiara solo in `dark`, come già fanno i
+ * badge di affidabilità degli articoli e del price score.
+ */
+const STYLE: Record<CompatibilityStatus, { label: string; className: string }> = {
   supported: {
     label: "Supportato",
-    className: "bg-emerald-600/20 text-emerald-200 border-emerald-500/40",
+    className:
+      "border-emerald-600/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300",
   },
   unsupported: {
     label: "Non supportato",
-    className: "bg-red-600/20 text-red-200 border-red-500/40",
+    className: "border-red-600/40 bg-red-500/10 text-red-800 dark:text-red-300",
   },
   partial: {
     label: "Parziale",
-    className: "bg-amber-500/20 text-amber-100 border-amber-500/40",
+    className: "border-amber-600/40 bg-amber-500/10 text-amber-800 dark:text-amber-300",
   },
   community: {
     label: "Community",
-    className: "bg-sky-600/20 text-sky-100 border-sky-500/40",
+    className: "border-sky-600/40 bg-sky-500/10 text-sky-800 dark:text-sky-300",
   },
 };
 

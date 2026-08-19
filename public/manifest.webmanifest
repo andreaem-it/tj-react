@@ -2,18 +2,28 @@
   "name": "TechJournal — Notizie Apple, Tech e Gadget",
   "short_name": "TechJournal",
   "description": "Ultime notizie su Apple, iPhone, Mac, app e tecnologia. Recensioni, guide e offerte.",
-  "start_url": "https://www.techjournal.it/",
-  "scope": "https://www.techjournal.it/",
-  "display": "browser",
+  "start_url": "/",
+  "scope": "/",
+  "id": "/",
+  "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
   "lang": "it",
+  "dir": "ltr",
+  "categories": ["news", "magazines", "technology"],
   "icons": [
+    { "src": "/icons/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
     {
-      "src": "/techjournal-favicon.png",
+      "src": "/icons/icon-maskable-512.png",
       "type": "image/png",
-      "sizes": "1135x1069",
-      "purpose": "any"
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    { "name": "Price Radar", "url": "/price-radar", "description": "Prezzi monitorati e storico" },
+    { "name": "Compatibilità Apple", "url": "/compatibility", "description": "Quale dispositivo riceve quale versione" },
+    { "name": "Argomenti", "url": "/topic", "description": "Tutti gli argomenti seguiti" }
   ]
 }

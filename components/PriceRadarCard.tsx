@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { TechRadarOffer } from "@/lib/techradar";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { postPriceRadarProductClick } from "@/lib/tjApiClient";
@@ -106,8 +107,17 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
         </h2>
 
         <div className="space-y-1 mb-4">
+          {/*
+            Il campo si chiama `previous_avg_price` ma trasporta `max_price_30d`
+            (vedi `mapProductsToOffers`): è il prezzo **più alto** degli ultimi
+            trenta giorni, non la media. Etichettarlo "prezzo medio" e barrarlo
+            gonfiava lo sconto percepito, ed è il confronto meno favorevole al
+            lettore fra quelli possibili. Qui si dichiara per quello che è; la
+            media vera, ponderata sul tempo, sta nella pagina prodotto.
+          */}
           <p className="text-muted text-sm">
-            Prezzo medio: <span className="line-through">{formatPrice(offer.previous_avg_price)}</span>
+            Massimo 30 giorni:{" "}
+            <span className="line-through">{formatPrice(offer.previous_avg_price)}</span>
           </p>
           <p className="text-foreground font-bold text-lg">
             Prezzo attuale: <span className="text-accent">{formatPrice(offer.price)}</span>
@@ -118,6 +128,16 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
             </p>
           )}
         </div>
+
+        {offer.asin && (
+          <Link
+            href={`/price-radar/${offer.asin}`}
+            prefetch={false}
+            className="relative z-20 mb-2 flex items-center justify-center gap-1 text-sm text-muted transition-colors hover:text-accent"
+          >
+            Storico prezzi e valutazione
+          </Link>
+        )}
 
         <a
           href={offer.url}

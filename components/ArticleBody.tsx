@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { logApiUrl } from "@/lib/constants";
 import { resolvePublicApiUrl } from "@/lib/publicApiUrl";
-import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
 
 const STORAGE_KEY = "article-font-size";
 const MIN_LEVEL = 0;
@@ -49,12 +48,25 @@ function markIncrementedInSession(key: string): void {
 }
 
 interface ArticleBodyProps {
-  html: string;
+  /**
+   * HTML **già sanificato** lato server da `enrichArticle`.
+   *
+   * Il nome della prop è la garanzia richiesta al chiamante, e il motivo per cui
+   * si chiama così: prima questo componente invocava `sanitizeRichHtml` in un
+   * `useMemo`, il che significava spedire `sanitize-html` nel bundle client di
+   * ogni pagina articolo per ri-sanificare, a ogni idratazione, HTML che il
+   * server aveva già sanificato per produrre lo stesso markup.
+   *
+   * Un nome neutro come `html` avrebbe reso invisibile la precondizione nei
+   * punti di chiamata; con `safeHtml` chi passa contenuto grezzo se ne accorge
+   * leggendo la propria riga di codice.
+   */
+  safeHtml: string;
   viewCount?: number | null;
   postId?: number;
 }
 
-export default function ArticleBody({ html, viewCount: viewCountProp, postId }: ArticleBodyProps) {
+export default function ArticleBody({ safeHtml, viewCount: viewCountProp, postId }: ArticleBodyProps) {
   const [level, setLevel] = useState(1);
   const [viewCountFetched, setViewCountFetched] = useState<number | null>(null);
   // Dopo la migrazione su Postgres, viewCount SSR da WP è spesso 0: preferire il conteggio live da /api/views.
@@ -64,7 +76,6 @@ export default function ArticleBody({ html, viewCount: viewCountProp, postId }: 
       : viewCountProp != null && viewCountProp > 0
         ? viewCountProp
         : viewCountFetched;
-  const safeHtml = useMemo(() => sanitizeRichHtml(html), [html]);
 
   useEffect(() => {
     try {

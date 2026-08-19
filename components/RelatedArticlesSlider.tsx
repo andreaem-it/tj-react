@@ -7,10 +7,12 @@ import type { PostListItem } from "@/lib/api";
 const PER_SLIDE = 3;
 
 interface RelatedArticlesSliderProps {
+  /** Intestazione della sezione; il valore predefinito promette pertinenza. */
+  heading?: string;
   posts: PostListItem[];
 }
 
-export default function RelatedArticlesSlider({ posts }: RelatedArticlesSliderProps) {
+export default function RelatedArticlesSlider({ posts, heading }: RelatedArticlesSliderProps) {
   const totalSlides = Math.ceil(posts.length / PER_SLIDE) || 1;
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -23,7 +25,7 @@ export default function RelatedArticlesSlider({ posts }: RelatedArticlesSliderPr
     <section className="mt-8 pt-6 border-t border-border">
       <div className="flex items-center justify-between gap-4 mb-4">
         <h2 className="text-foreground text-lg font-semibold">
-          Articoli correlati
+          {heading ?? "Articoli correlati"}
         </h2>
         <div className="flex items-center gap-2">
           <button

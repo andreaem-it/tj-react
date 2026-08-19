@@ -54,6 +54,12 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
+  /**
+   * Il manifest esisteva in `public/` ma **nessuna pagina lo dichiarava**, quindi
+   * il browser non lo scaricava mai e il sito non era installabile. Dichiararlo
+   * è ciò che lo rende attivo.
+   */
+  manifest: "/manifest.webmanifest",
   /** Icone servite da /public (affidabili, niente dipendenze da domini esterni). */
   icons: {
     icon: [{ url: "/techjournal-favicon.png", type: "image/png", sizes: "1135x1069" }],

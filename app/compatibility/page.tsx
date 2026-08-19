@@ -8,6 +8,7 @@ import {
   fetchCompatibilityOsList,
 } from "@/lib/compatibility/serverApi";
 import type { DeviceType } from "@/lib/compatibility/types";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { SITE_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -79,7 +80,8 @@ export default async function CompatibilityIndexPage({
   const showGroups = !type;
 
   return (
-    <div className="w-full max-w-4xl py-8 px-2 sm:px-0">
+    <div className="w-full min-w-0 max-w-4xl py-8 px-2 sm:px-0">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Compatibilità" }]} />
       <h1 className="text-2xl font-bold tracking-tight text-[var(--foreground)] mb-2">
         Compatibilità dispositivi Apple
       </h1>
@@ -172,19 +174,27 @@ export default async function CompatibilityIndexPage({
 
         {devices.length === 0 && (
           <p className="text-[var(--muted)] text-sm">
-            Nessun dispositivo in elenco. I dati si gestiscono dal pannello TechJournal Admin (voce
-            Compatibilità).
+            {/* Testo rivolto al lettore e non alla redazione: il messaggio
+                precedente rimandava al pannello di amministrazione, ed è
+                esattamente quello che il pubblico ha letto per tutto il tempo in
+                cui le chiamate lato server fallivano. */}
+            L&apos;elenco dei dispositivi non è al momento disponibile. Riprova fra poco.
           </p>
         )}
       </div>
 
       <div className="mt-12 pt-6 border-t border-[var(--border)]">
-        <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">Sistemi operativi</h2>
+        <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">
+          Quali dispositivi supporta una versione
+        </h2>
         {operatingSystems.length === 0 ? (
           <p className="text-sm text-[var(--muted)]">Nessun OS definito.</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
-            {operatingSystems.slice(0, 32).map((os) => (
+            {[...operatingSystems]
+              .sort((a, b) => (b.releaseYear ?? 0) - (a.releaseYear ?? 0))
+              .slice(0, 32)
+              .map((os) => (
               <li key={os.id}>
                 <Link
                   href={`/compatibility/os/${encodeURIComponent(os.slug)}`}
@@ -193,7 +203,7 @@ export default async function CompatibilityIndexPage({
                   {os.name}
                 </Link>
               </li>
-            ))}
+              ))}
             {operatingSystems.length > 32 && (
               <li className="text-xs text-[var(--muted)] self-center">…</li>
             )}

@@ -6,7 +6,13 @@ import {
   getCategoryUrlSlug,
   type PostListItem,
 } from "@/lib/api";
-import { MIN_POSTS_FOR_INDEXABLE_CATEGORY } from "@/lib/seo";
+import {
+  MIN_ARTICLES_FOR_INDEXABLE_HUB,
+  MIN_POSTS_FOR_INDEXABLE_CATEGORY,
+} from "@/lib/seo";
+import { loadTopicArticles } from "@/lib/content/hubData";
+import { getIndexableProductAsins } from "@/lib/priceRadar/productServer";
+import { HUB_TOPICS } from "@/lib/content/topics";
 import { postModifiedIso } from "@/lib/postDates";
 import { SITE_URL } from "@/lib/constants";
 import { fetchSitemapJson } from "@/lib/sitemapFetch";
@@ -111,7 +117,35 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/price-radar`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/compatibility`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${base}/topic`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
   ];
+
+  /**
+   * Hub di argomento, con lo stesso criterio applicato agli archivi di
+   * categoria: entra in sitemap solo ciò che la pagina serve come indicizzabile.
+   *
+   * Basta una pagina di risultati per termine: qui serve solo sapere se l'hub
+   * supera `MIN_ARTICLES_FOR_INDEXABLE_HUB`, non comporre la pagina. Le richieste
+   * passano dalla stessa Data Cache degli hub, quindi in condizioni normali sono
+   * cache hit.
+   */
+  const hubArticleCounts = await Promise.all(
+    HUB_TOPICS.map(async (topic) => {
+      const articles = await loadTopicArticles(topic, { pages: 1 }).catch(() => []);
+      return { topic, count: articles.length, latest: articles[0]?.date };
+    }),
+  );
+
+  for (const { topic, count, latest } of hubArticleCounts) {
+    if (count < MIN_ARTICLES_FOR_INDEXABLE_HUB) continue;
+    const lastModified = latest ? new Date(latest) : now;
+    entries.push({
+      url: `${base}/topic/${topic.slug}`,
+      lastModified,
+      changeFrequency: "daily",
+      priority: 0.8,
+    });
+  }
 
   let categories: Awaited<ReturnType<typeof fetchCategories>> = [];
   try {
@@ -170,12 +204,13 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     // API irraggiungibile: sitemap senza post
   }
 
-  const [devicesPayload, osPayload, prPayload] = await Promise.all([
+  const [devicesPayload, osPayload, indexableProductAsins] = await Promise.all([
     fetchSitemapJson<{ devices?: Array<{ slug?: string }> }>("/api/compatibility/devices"),
     fetchSitemapJson<{ operatingSystems?: Array<{ slug?: string }> }>("/api/compatibility/os"),
-    fetchSitemapJson<{ products?: Array<{ asin?: string }> }>(
-      "/api/price-radar/products?status=active",
-    ),
+    // Non l'elenco grezzo dei prodotti: solo quelli la cui pagina è
+    // indicizzabile. Prima entravano tutti, e ognuno puntava a un segnaposto
+    // identico agli altri.
+    getIndexableProductAsins().catch(() => new Set<string>()),
   ]);
 
   for (const d of devicesPayload?.devices ?? []) {
@@ -200,9 +235,7 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
     });
   }
 
-  for (const p of prPayload?.products ?? []) {
-    const asin = typeof p.asin === "string" ? p.asin.trim() : "";
-    if (asin.length < 5) continue;
+  for (const asin of indexableProductAsins) {
     entries.push({
       url: `${base}/price-radar/${encodeURIComponent(asin)}`,
       lastModified: now,

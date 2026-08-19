@@ -7,20 +7,12 @@ import { usePathname } from "next/navigation";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { fetchMegamenu as fetchMegamenuFromApi, type MegamenuPost } from "@/lib/tjApiClient";
 import { useDialogFocus } from "./useDialogFocus";
+// Sorgente unica: la stessa lista serve all'internal linking automatico per
+// sapere quali archivi sono già raggiungibili da ogni pagina (vedi `lib/siteNav`).
+import { NAV_ITEMS } from "@/lib/siteNav";
+import SearchLauncher from "@/components/search/SearchLauncher";
 
 export type { MegamenuPost };
-
-const NAV_ITEMS = [
-  { label: "Ultime Notizie", href: "/" },
-  { label: "Apple", slug: "apple" },
-  { label: "Apps", slug: "apps" },
-  { label: "Tech", slug: "tech" },
-  { label: "Gaming", slug: "gaming" },
-  { label: "Smart Home", slug: "smart-home" },
-  { label: "IA", slug: "ia" },
-  { label: "Price Radar", href: "/price-radar" },
-  { label: "Compatibilità", href: "/compatibility" },
-];
 
 interface NavBarProps {
   /** @deprecated I link alle categorie usano ora solo lo slug (es. /apple). */
@@ -230,15 +222,11 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
               </TjLink>
             );
           })}
-          <TjLink
-            href="/search"
-            className="ml-auto text-foreground hover:text-accent transition-colors p-1"
-            aria-label="Cerca"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </TjLink>
+          {/* Ricerca globale: apre la tendina ⌘K invece di portare a /search.
+              La pagina resta raggiungibile — dal menu mobile e dal fondo della
+              tendina stessa — perché è indicizzabile, condivisibile e funziona
+              senza JavaScript. */}
+          <SearchLauncher className="ml-auto p-1 text-foreground transition-colors hover:text-accent" />
         </nav>
 
         {/* Megamenu fisso sotto la barra: stessa posizione per tutte le voci */}
@@ -284,10 +272,12 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
           <nav className="flex-1 overflow-auto py-6 px-4">
             <ul className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
-                const href =
-                  "href" in item && item.href ? item.href : item.slug ? `/${item.slug}` : "/";
+                // Il tipo `NavItem` è un'unione: una voce ha `href` **oppure**
+                // `slug`, mai entrambi. Il ripiego su "/" del codice precedente
+                // era irraggiungibile.
+                const href = "href" in item ? item.href : `/${item.slug}`;
                 return (
-                  <li key={"href" in item ? item.href : item.slug ?? ""}>
+                  <li key={href}>
                     <TjLink
                       href={href}
                       className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"

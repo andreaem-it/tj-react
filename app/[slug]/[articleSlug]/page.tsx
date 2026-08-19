@@ -5,7 +5,6 @@ import {
   fetchMostReadPosts,
   fetchPostBySlugDetailed,
   fetchPosts,
-  fetchRelatedPosts,
   fetchTrendingWeekAndMonth,
   getCategoryUrlSlugFromWpSlug,
   type PostWithMeta,
@@ -16,9 +15,20 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import ArticleStructuredData from "@/components/ArticleStructuredData";
 import { ArticleRelatedPosts, ArticleSidebar } from "@/components/ArticlePageExtras";
 import InlineBannerPlaceholder from "@/components/InlineBannerPlaceholder";
+import ArticleTopics from "@/components/article/ArticleTopics";
+import ReliabilityBadge from "@/components/article/ReliabilityBadge";
+import SaveArticleButton from "@/components/personal/SaveArticleButton";
+import TableOfContents from "@/components/article/TableOfContents";
 import { BLUR_DATA_URL, SITE_URL } from "@/lib/constants";
-import { postModifiedIso } from "@/lib/postDates";
+import { articleUpdatedIso, postModifiedIso } from "@/lib/postDates";
 import { brandedSeoTitle, seoDescription } from "@/lib/seo";
+import { CONTENT_TYPE_LABEL } from "@/lib/content/classify";
+import { enrichArticle } from "@/lib/content/enrich";
+import { shouldRenderToc } from "@/lib/content/toc";
+import ProductPriceCard from "@/components/priceRadar/ProductPriceCard";
+import { loadArticleProducts } from "@/lib/priceRadar/articleProducts";
+import StoryTimelineSection from "@/components/article/StoryTimeline";
+import { loadArticleRelated } from "@/lib/content/articleRelated";
 import type { Metadata } from "next";
 
 /**
@@ -66,6 +76,14 @@ function formatDate(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   if (diffHours < 24) return `Pubblicato ${diffHours} ore fa`;
   return `Pubblicato il ${d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}`;
+}
+
+function formatDayMonthYear(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("it-IT", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
@@ -143,20 +161,53 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   // Stesso formato del canonical (senza trailing slash): evita URL duplicati in condivisione.
   const shareUrl = `${SITE_URL.replace(/\/$/, "")}${articleHref}`;
   const modifiedIso = postModifiedIso(post);
+  const updatedIso = articleUpdatedIso(post);
+  const categoryHref = `/${postCategoryUrlSlug}`;
   const sidebarAdSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_SIDEBAR;
+
+  /**
+   * Un'unica passata sul contenuto, lato server: sanitizzazione, testo semplice,
+   * conteggio parole, tempo di lettura, topic, ancore degli heading e link
+   * interni. Il risultato entra nella cache di pagina insieme all'HTML, quindi
+   * il costo si paga una volta per rigenerazione e non per visita.
+   */
+  const enrichment = enrichArticle({
+    title: post.title,
+    excerpt: post.excerpt,
+    content: post.content,
+    categorySlug: post.categorySlug,
+    categoryHref,
+  });
 
   // Correlati e trending caricati lato server (RSC): dati corretti per categoria
   // e per visualizzazioni, niente fetch client di /api/posts/1.
-  const [relatedPosts, mostReadPosts, trendingFallback] = await Promise.all([
-    fetchRelatedPosts({ baseSlug: post.slug, categoryId: post.categoryId }).catch(
-      () => [] as PostWithMeta[]
-    ),
+  const [articleRelated, mostReadPosts, trendingFallback, articleProducts] = await Promise.all([
+    /**
+     * Correlati e sviluppi della storia, ordinati per argomenti in comune.
+     *
+     * Sostituisce `fetchRelatedPosts`, che restituiva "stessa categoria,
+     * ordinati per numero di letture": su un contatore che in produzione vale
+     * fra 0 e 5 quell'ordine era casuale, e la categoria escludeva proprio gli
+     * articoli più pertinenti — nel campione reale cinque pezzi su iPhone 18
+     * stanno in quattro categorie diverse.
+     */
+    loadArticleRelated({
+      post,
+      topics: enrichment.topics,
+    }).catch(() => ({ related: [] as PostWithMeta[], byTopic: false, story: null })),
     fetchMostReadPosts({ limit: 9 }).catch(() => [] as PostWithMeta[]),
     // Pre-fetch in parallelo: usato solo se mostReadPosts è vuoto (nessun dato di view).
     fetchTrendingWeekAndMonth({ limit: 9 }).catch(() => ({
       week: [] as PostWithMeta[],
       month: [] as PostWithMeta[],
     })),
+    // Nella stessa `Promise.all` e non dopo: aggiungere una richiesta in serie
+    // al percorso critico dell'articolo per un riquadro accessorio sarebbe uno
+    // scambio pessimo. Se fallisce, l'articolo si rende senza.
+    loadArticleProducts({
+      contentHtml: post.content,
+      articleTopics: enrichment.topics,
+    }).catch(() => []),
   ]);
   const trendingPosts = mostReadPosts.length > 0 ? mostReadPosts : trendingFallback.month;
 
@@ -176,17 +227,32 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         dateModified={modifiedIso}
         authorName={post.authorName}
         url={articleHref}
+        contentType={enrichment.contentType}
+        section={post.categoryName}
+        topics={enrichment.topics}
+        wordCount={enrichment.wordCount}
+        readingMinutes={enrichment.readingMinutes}
       />
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0 w-full max-w-full bg-content-bg rounded-lg overflow-hidden">
           <header className="w-full max-w-full min-w-0 px-3 pt-6 pb-4 md:p-8 box-border">
             <Breadcrumbs items={breadcrumbItems} />
-            <TjLink
-              href={`/${postCategoryUrlSlug}`}
-              className="text-muted text-sm font-semibold uppercase tracking-wide hover:underline wrap-anywhere max-w-full"
-            >
-              {post.categoryName}
-            </TjLink>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 max-w-full">
+              <TjLink
+                href={categoryHref}
+                className="text-muted text-sm font-semibold uppercase tracking-wide hover:underline wrap-anywhere max-w-full"
+              >
+                {post.categoryName}
+              </TjLink>
+              {/* Il formato si dichiara solo quando aggiunge qualcosa: scrivere
+                  "Notizia" su una notizia è una tautologia che occupa spazio. */}
+              {enrichment.contentType !== "news" && (
+                <span className="text-accent-text text-sm font-semibold uppercase tracking-wide">
+                  {CONTENT_TYPE_LABEL[enrichment.contentType]}
+                </span>
+              )}
+              <ReliabilityBadge reliability={enrichment.reliability} />
+            </div>
             <h1 className="text-foreground text-2xl md:text-4xl font-bold mt-2 mb-3 max-w-3xl wrap-anywhere">
               {post.title}
             </h1>
@@ -213,8 +279,25 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 </TjLink>
               </span>
               <time dateTime={post.date}>{formatDate(post.date)}</time>
+              {enrichment.readingMinutes > 0 && (
+                <span>{enrichment.readingMinutes} min di lettura</span>
+              )}
               <ShareButtons title={post.title} url={shareUrl} variant="light" />
+              <SaveArticleButton id={post.id} path={articleHref} title={post.title} />
             </div>
+
+            {/* §19 — la cronologia completa degli aggiornamenti richiede un
+                modello dati che WordPress oggi non espone; la data, che invece
+                c'è, è già l'informazione che il lettore usa per capire se sta
+                leggendo qualcosa di attuale. */}
+            {updatedIso && (
+              <p className="mt-3 text-sm text-muted">
+                Aggiornato il{" "}
+                <time dateTime={updatedIso} className="text-foreground">
+                  {formatDayMonthYear(updatedIso)}
+                </time>
+              </p>
+            )}
 
             {post.imageUrl && (
               <div className="mt-6 relative w-full max-w-3xl aspect-video rounded-lg overflow-hidden bg-content-bg">
@@ -233,7 +316,45 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </header>
 
           <div className="px-3 py-6 md:p-8">
-            <ArticleBody html={post.content} postId={post.id} />
+            {shouldRenderToc(enrichment.toc) && <TableOfContents entries={enrichment.toc} />}
+            <ArticleBody safeHtml={enrichment.safeHtml} postId={post.id} />
+
+            {/* Price Radar dentro l'articolo: il prezzo di cui si parla, con la
+                media registrata e la valutazione, invece del solo "è in
+                offerta". Compare unicamente se il prodotto è davvero associato —
+                ASIN citato nel pezzo o argomento specifico in comune. */}
+            {articleProducts.length > 0 && (
+              <section className="mt-8 border-t border-border pt-5" aria-labelledby="tj-art-prodotti">
+                <h2
+                  id="tj-art-prodotti"
+                  className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted"
+                >
+                  {articleProducts.length === 1 ? "Prezzo monitorato" : "Prezzi monitorati"}
+                </h2>
+                <div className="flex flex-col gap-3">
+                  {articleProducts.map((entry) => (
+                    <ProductPriceCard
+                      key={entry.product.id}
+                      entry={entry}
+                      eyebrow={
+                        entry.reason === "topic" && entry.topic ? entry.topic.name : undefined
+                      }
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {enrichment.topics.length > 0 && (
+              <div className="mt-8 border-t border-border pt-5">
+                <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                  Argomenti
+                </h2>
+                <ArticleTopics topics={enrichment.topics} skipHref={categoryHref} />
+              </div>
+            )}
+            {articleRelated.story && <StoryTimelineSection story={articleRelated.story} />}
+
             <InlineBannerPlaceholder
               width="100%"
               height={90}
@@ -243,7 +364,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               fullWidthResponsive={false}
             />
           </div>
-          <ArticleRelatedPosts posts={relatedPosts} />
+          <ArticleRelatedPosts
+            posts={articleRelated.related}
+            byTopic={articleRelated.byTopic}
+          />
         </article>
 
         <ArticleSidebar

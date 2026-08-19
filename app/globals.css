@@ -128,13 +128,45 @@ body {
   margin-bottom: 0.5rem;
 }
 
+/* Ancore degli heading iniettate da `lib/content/toc.ts`: l'header del sito è
+   sticky, quindi senza offset il titolo di sezione finisce coperto e il lettore
+   atterra su un punto apparentemente sbagliato. */
+.article-body-wrapper .article-content h2,
+.article-body-wrapper .article-content h3 {
+  scroll-margin-top: 5rem;
+}
+
+/* Nessuno `scroll-behavior: smooth` su `html`: con l'App Router quella regola
+   non riguarda solo i salti alle ancore ma anche il ritorno in cima a ogni
+   cambio di route, che diventa un'animazione a scorrimento su articoli lunghi.
+   Il salto istantaneo all'ancora è il compromesso corretto. */
+
 .article-body-wrapper .article-content a {
-  color: var(--accent);
+  /* `--accent-text`, non `--accent`: l'arancione di brand su fondo bianco sta
+     attorno a 2:1 di contrasto, sotto il minimo WCAG AA per il testo. La
+     variante scura vale 5:1 in tema chiaro e resta l'arancione in tema scuro,
+     dove il contrasto è già sufficiente. */
+  color: var(--accent-text);
   text-decoration: none;
 }
 
 .article-body-wrapper .article-content a:hover {
   text-decoration: underline;
+}
+
+/* Link interni generati automaticamente verso hub e archivi
+   (`lib/content/internalLinks.ts`). Sottolineatura tratteggiata sempre visibile:
+   il lettore distingue il rimando editoriale dal link a una fonte esterna, e in
+   redazione si vede a occhio quanti ne sta inserendo il sistema. */
+.article-body-wrapper .article-content a.tj-entity-link {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.article-body-wrapper .article-content a.tj-entity-link:hover {
+  text-decoration-style: solid;
 }
 
 .article-body-wrapper .article-content strong {

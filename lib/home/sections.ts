@@ -1,0 +1,132 @@
+import type { ContentType } from "@/lib/content/types";
+
+/**
+ * Configurazione delle sezioni della home (§56).
+ *
+ * La home smette di essere un layout scritto nel JSX e diventa un elenco di
+ * sezioni dichiarate: attivarne una, spostarla o cambiarne la dimensione è una
+ * riga qui, non una modifica al componente.
+ *
+ * ## Quanto in là spingere l'astrazione
+ *
+ * Non c'è alcun registro di plugin né risoluzione dinamica dei componenti: il
+ * `type` viene tradotto in JSX da uno `switch` esplicito. Con una decina di
+ * sezioni, un sistema più generale costerebbe indirezione senza restituire
+ * nulla — e il progetto chiede espressamente di non sovraingegnerizzare (§85).
+ * Quello che serve davvero è che l'**ordine e le condizioni** stiano in un solo
+ * posto leggibile, e questo lo ottiene.
+ *
+ * Regola valida per tutte: **una sezione senza dati non si renderizza**. Niente
+ * intestazioni che annunciano il vuoto, niente contenitori che occupano spazio
+ * in attesa di contenuto.
+ */
+
+export type HomeSectionType =
+  /** Apertura: la storia principale più le secondarie. */
+  | "hero"
+  /** Flusso cronologico con caricamento progressivo. */
+  | "latest"
+  /** L'argomento del momento, scelto dal calore dei topic. */
+  | "topicSpotlight"
+  /** Contenuti evergreen: guide e confronti. */
+  | "evergreen"
+  /** Occasioni verificate dal price score. */
+  | "priceRadar"
+  /** Ingresso al database di compatibilità. */
+  | "compatibility";
+
+export interface HomeSectionConfig {
+  id: string;
+  type: HomeSectionType;
+  /** Titolo mostrato. Assente per le sezioni che non ne hanno uno (hero). */
+  title?: string;
+  /** Sottotitolo esplicativo, dove il titolo da solo non basta. */
+  subtitle?: string;
+  /** Link "vedi tutto" a destra del titolo. */
+  moreHref?: string;
+  moreLabel?: string;
+  enabled: boolean;
+  limit?: number;
+  /** Ordine crescente di comparsa. */
+  priority: number;
+  filters?: {
+    /** Tipi editoriali ammessi nella sezione. */
+    contentTypes?: readonly ContentType[];
+  };
+}
+
+/**
+ * Sezioni della home, nell'ordine in cui compaiono.
+ *
+ * L'ordine non è arbitrario: apertura e attualità per primi, perché sono il
+ * motivo per cui si arriva su una testata; poi l'argomento del momento, che
+ * porta dalla singola notizia alla storia; poi gli evergreen e gli strumenti,
+ * che sono il motivo per **tornare**.
+ */
+export const HOME_SECTIONS: readonly HomeSectionConfig[] = [
+  {
+    id: "hero",
+    type: "hero",
+    enabled: true,
+    limit: 4,
+    priority: 10,
+  },
+  {
+    id: "spotlight",
+    type: "topicSpotlight",
+    enabled: true,
+    limit: 4,
+    priority: 20,
+  },
+  {
+    id: "latest",
+    type: "latest",
+    enabled: true,
+    priority: 30,
+  },
+  {
+    id: "evergreen",
+    type: "evergreen",
+    title: "Guide e confronti",
+    subtitle: "Contenuti che restano utili anche fra sei mesi.",
+    enabled: true,
+    limit: 4,
+    priority: 40,
+    filters: { contentTypes: ["guide", "comparison", "deep-dive"] },
+  },
+  {
+    id: "price-radar",
+    type: "priceRadar",
+    enabled: true,
+    limit: 4,
+    moreHref: "/price-radar",
+    moreLabel: "Tutti i prezzi monitorati",
+    priority: 50,
+  },
+  {
+    id: "compatibility",
+    type: "compatibility",
+    title: "Compatibilità Apple",
+    subtitle:
+      "Quale iPhone riceve quale versione di iOS, con le schede tecniche di ogni modello.",
+    enabled: true,
+    moreHref: "/compatibility",
+    moreLabel: "Apri il database",
+    priority: 60,
+  },
+];
+
+/** Sezioni attive, già ordinate. */
+export function enabledSections(
+  sections: readonly HomeSectionConfig[] = HOME_SECTIONS,
+): HomeSectionConfig[] {
+  return sections.filter((section) => section.enabled).sort((a, b) => a.priority - b.priority);
+}
+
+/** Configurazione di una sezione, se attiva. */
+export function sectionById(
+  id: string,
+  sections: readonly HomeSectionConfig[] = HOME_SECTIONS,
+): HomeSectionConfig | undefined {
+  return sections.find((section) => section.id === id && section.enabled);
+}

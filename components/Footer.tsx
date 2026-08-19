@@ -20,6 +20,12 @@ export default function Footer() {
             <Link href="/contatti" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Contatti
             </Link>
+            <Link href="/topic" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+              Argomenti
+            </Link>
+            <Link href="/personale" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+              Area personale
+            </Link>
             <Link href="/compatibility" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Compatibilità Apple
             </Link>

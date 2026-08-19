@@ -123,8 +123,20 @@ function PriceRadarComingSoon() {
 
 export default function PriceRadarContent({
   initialData,
+  /**
+   * Blocco renderizzato subito sotto l'intestazione.
+   *
+   * Arriva come `children` e non come import perché è un Server Component che
+   * carica i propri dati: passarlo dall'esterno lo lascia sul server, mentre
+   * importarlo qui lo trascinerebbe nel bundle del browser. È anche l'unico modo
+   * di collocarlo *dopo* l'H1 senza spezzare la gerarchia dei titoli — messo
+   * come fratello della pagina finirebbe prima, e per giunta affiancato, dato
+   * che in `AppShell` i children stanno in un contenitore flex.
+   */
+  headerSlot,
 }: {
   initialData: PriceRadarInitialData;
+  headerSlot?: React.ReactNode;
 }) {
   const [offers, setOffers] = useState<TechRadarOffer[]>(initialData.offers);
   // I dati arrivano già renderizzati dal server: partire da `true` rimetterebbe
@@ -290,6 +302,8 @@ export default function PriceRadarContent({
           Offerte selezionate di prodotti tech su Amazon, aggiornate periodicamente.
         </p>
       </header>
+
+      {headerSlot && <div className="mb-10">{headerSlot}</div>}
 
       {/* Barra filtri */}
       <div className="flex flex-col gap-4 mb-8">

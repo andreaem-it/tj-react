@@ -1,7 +1,14 @@
-"use client";
-
 import Image from "next/image";
 import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
+
+/*
+ * Server Component: non usa hook né gestori di eventi, e la direttiva
+ * `"use client"` che aveva prima trascinava `sanitize-html` — 236 KB — nel
+ * bundle del browser. Oggi il componente non è montato da nessuna pagina, quindi
+ * il peso non si vede: il giorno in cui finisse sulla pagina articolo
+ * annullerebbe la rimozione fatta in `ArticleBody`, che serviva esattamente a
+ * togliere quel chunk da lì.
+ */
 
 export type Author = {
   name: string;

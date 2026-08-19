@@ -128,7 +128,7 @@ export default function AdSenseUnit({
         style={style}
         aria-label="Spazio pubblicitario (visibile in produzione)"
       >
-        <span className="text-center px-2">Annuncio (solo in produzione)</span>
+        <span className="text-center px-2">Annuncio</span>
       </div>
     );
   }
