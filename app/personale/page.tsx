@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import PersonalDashboard from "@/components/personal/PersonalDashboard";
+import PushOptIn from "@/components/push/PushOptIn";
 
 /**
  * Area personale.
@@ -33,6 +34,18 @@ export default function PersonalPage() {
         le preferenze non si ritrovano.
       </p>
       <PersonalDashboard />
+
+      <div className="mt-10 border-t border-border pt-6">
+        <h2 className="text-lg font-bold text-foreground">Notifiche</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted">
+          Unica eccezione a quanto detto sopra: attivarle invia al server l&apos;indirizzo che il
+          browser genera per ricevere notifiche, non altro. Resta un&apos;azione tua, non
+          automatica.
+        </p>
+        <div className="mt-4">
+          <PushOptIn />
+        </div>
+      </div>
     </div>
   );
 }
