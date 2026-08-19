@@ -93,6 +93,13 @@ export const HOME_SECTIONS: readonly HomeSectionConfig[] = [
     limit: 4,
     priority: 40,
     filters: { contentTypes: ["guide", "comparison", "deep-dive"] },
+    // Non un nuovo archivio: `/guide` è la categoria WordPress reale da cui la
+    // sezione stessa pesca il supplemento quando il pool di apertura non
+    // basta (vedi EvergreenSection in app/page.tsx). Ogni altra sezione ha
+    // un "vedi tutto" verso una pagina vera; questa no, ed era un vicolo
+    // cieco — l'unica delle sei senza modo di vedere più di 4 elementi.
+    moreHref: "/guide",
+    moreLabel: "Tutte le guide",
   },
   {
     id: "price-radar",
