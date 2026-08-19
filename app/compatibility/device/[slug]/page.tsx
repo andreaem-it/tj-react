@@ -232,6 +232,13 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
 
       <DeviceDetailCard device={device} latestSupportedOs={latestSupportedOs} />
 
+      <TjLink
+        href={`/compatibility/confronta?a=${encodeURIComponent(device.slug)}`}
+        className="mb-8 inline-flex items-center gap-1 text-sm text-accent hover:underline"
+      >
+        Confronta {device.name} con un altro dispositivo →
+      </TjLink>
+
       {/* La risposta prima della tabella: chi arriva qui ha una domanda, non
           voglia di leggere sei righe e dedurla. */}
       {answer && (

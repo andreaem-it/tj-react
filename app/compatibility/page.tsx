@@ -85,9 +85,15 @@ export default async function CompatibilityIndexPage({
       <h1 className="text-2xl font-bold tracking-tight text-[var(--foreground)] mb-2">
         Compatibilità dispositivi Apple
       </h1>
-      <p className="text-[var(--muted)] text-sm mb-6 max-w-2xl">
+      <p className="text-[var(--muted)] text-sm mb-2 max-w-2xl">
         Scopri se il tuo dispositivo Apple è compatibile con un sistema operativo, quali sono supportati e quali no.
       </p>
+      <Link
+        href="/compatibility/confronta"
+        className="mb-6 inline-flex items-center gap-1 text-sm text-[var(--accent)] hover:underline"
+      >
+        Confronta due dispositivi →
+      </Link>
 
       <TypeFilter active={type} />
 
