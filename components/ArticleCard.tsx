@@ -112,7 +112,13 @@ export default function ArticleCard({ post, variant = "default", size, priority 
 
   return (
     <article className="flex flex-col group">
-      <TjLink href={href} className="block overflow-hidden rounded-lg aspect-[16/10] relative bg-content-bg">
+      {/* Stesso motivo di `ArticleCardStatic`: l'`alt` arriva dal CMS e spesso è
+          vuoto, lasciando il link immagine senza nome accessibile. */}
+      <TjLink
+        href={href}
+        aria-label={post.title}
+        className="block overflow-hidden rounded-lg aspect-[16/10] relative bg-content-bg"
+      >
         {post.imageUrl ? (
           <Image
             src={post.imageUrl}

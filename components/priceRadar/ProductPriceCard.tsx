@@ -37,6 +37,10 @@ export default function ProductPriceCard({
       {product.image_url && (
         <TjLink
           href={detailHref}
+          // L'immagine è decorativa (`alt=""`) perché il titolo la segue: senza
+          // questa etichetta il link resta però privo di nome accessibile, e chi
+          // naviga per collegamenti sente solo "link".
+          aria-label={title}
           className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-white"
         >
           <Image

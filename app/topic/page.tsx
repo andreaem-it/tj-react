@@ -3,6 +3,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import TjLink from "@/components/TjLink";
 import { SITE_URL } from "@/lib/constants";
 import { HUB_TOPICS } from "@/lib/content/topics";
+import { slugify } from "@/lib/content/text";
 import type { Topic, TopicKind } from "@/lib/content/types";
 
 /**
@@ -52,6 +53,18 @@ function groupOf(topic: Topic): string {
   return GROUPS.find((group) => group.kinds.includes(topic.kind))?.label ?? "Altro";
 }
 
+/**
+ * Identificatore valido a partire dall'etichetta del gruppo.
+ *
+ * Le etichette contengono spazi ("Sistemi operativi"), e uno spazio in un `id`
+ * non è solo scorretto: `aria-labelledby` separa il valore sugli spazi, quindi
+ * l'attributo puntava a due identificatori inesistenti — "group-Sistemi" e
+ * "operativi" — e il gruppo restava di fatto senza nome accessibile.
+ */
+function groupId(label: string): string {
+  return `group-${slugify(label)}`;
+}
+
 export default function TopicIndexPage() {
   const grouped = GROUPS.map((group) => ({
     label: group.label,
@@ -71,9 +84,9 @@ export default function TopicIndexPage() {
 
       <div className="flex flex-col gap-10">
         {grouped.map((group) => (
-          <section key={group.label} aria-labelledby={`group-${group.label}`}>
+          <section key={group.label} aria-labelledby={groupId(group.label)}>
             <h2
-              id={`group-${group.label}`}
+              id={groupId(group.label)}
               className="mb-4 text-lg font-bold text-foreground md:text-xl"
             >
               {group.label}

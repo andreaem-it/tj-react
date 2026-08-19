@@ -201,7 +201,11 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                   onMouseEnter={() => slug != null && handleEnter(slug)}
                   onFocus={() => slug != null && handleEnter(slug)}
                   aria-expanded={activeSlug === slug}
-                  aria-controls={`megamenu-${slug}`}
+                  /* `aria-controls` solo a pannello aperto: il megamenu esiste
+                     nel DOM unicamente quando `activeSlug` coincide, e un
+                     riferimento a un elemento assente è un attributo rotto —
+                     compariva su ogni pagina del sito, tre volte. */
+                  aria-controls={activeSlug === slug ? `megamenu-${slug}` : undefined}
                 >
                   {item.label}
                   <svg className="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
