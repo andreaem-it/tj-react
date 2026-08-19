@@ -35,6 +35,9 @@ export default function Footer() {
             <Link href="/politica-editoriale" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Politica editoriale
             </Link>
+            <Link href="/ai-e-automazione" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+              Automazione e AI
+            </Link>
             <Link href="/privacy" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Privacy e Cookie policy
             </Link>

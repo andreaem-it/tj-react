@@ -261,6 +261,12 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly",
       priority: 0.4,
     },
+    {
+      url: `${base}/ai-e-automazione`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
     { url: `${base}/privacy`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
     // /cookie-policy e /termini NON vanno qui: sono redirect puri (verso
     // /privacy e /chi-siamo). Dichiarare URL che rispondono 3xx spreca crawl
