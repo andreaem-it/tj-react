@@ -6,6 +6,13 @@ export type ProxyToTjApiOptions = {
   methodOverride?: string;
   /** Timeout fetch verso tj-api (ms). Default 10s; webhook lunghi es. 120000. */
   timeoutMs?: number;
+  /**
+   * Sostituisce il corpo della richiesta in ingresso con JSON calcolato dal
+   * chiamante (es. il webhook di pubblicazione, che arricchisce il payload WP
+   * con topic e classificazione prima di inoltrarlo). Se assente si inoltra il
+   * corpo originale byte per byte, comportamento di sempre.
+   */
+  bodyOverride?: unknown;
 };
 
 const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000;
@@ -111,9 +118,13 @@ export async function proxyToTjApi(
     headers.set("X-TJ-Webhook-Secret", webhookSecret);
   }
 
-  const contentTypeIn = request.headers.get("content-type");
-  if (contentTypeIn) {
-    headers.set("Content-Type", contentTypeIn);
+  if (options?.bodyOverride !== undefined) {
+    headers.set("Content-Type", "application/json");
+  } else {
+    const contentTypeIn = request.headers.get("content-type");
+    if (contentTypeIn) {
+      headers.set("Content-Type", contentTypeIn);
+    }
   }
 
   // Senza User-Agent esplicito, fetch invia "node": Cloudflare lo classifica come
@@ -134,7 +145,9 @@ export async function proxyToTjApi(
 
   try {
     let body: BodyInit | undefined;
-    if (method !== "GET" && method !== "HEAD") {
+    if (options?.bodyOverride !== undefined) {
+      body = JSON.stringify(options.bodyOverride);
+    } else if (method !== "GET" && method !== "HEAD") {
       const reqLenHeader = request.headers.get("content-length");
       const reqLen =
         typeof reqLenHeader === "string" && reqLenHeader.trim() !== ""

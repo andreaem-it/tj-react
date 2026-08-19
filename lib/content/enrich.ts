@@ -8,7 +8,7 @@ import { injectInternalLinks } from "@/lib/content/internalLinks";
 import { matchTopics, primaryTopics } from "@/lib/content/match";
 import { buildToc } from "@/lib/content/toc";
 import { countWords, htmlToText } from "@/lib/content/text";
-import type { ArticleEnrichment } from "@/lib/content/types";
+import type { ArticleEnrichment, ContentType, Reliability } from "@/lib/content/types";
 import { ALWAYS_REACHABLE_HREFS } from "@/lib/siteNav";
 
 /**
@@ -84,5 +84,42 @@ export function enrichArticle(input: EnrichArticleInput): ArticleEnrichment {
     wordCount,
     toc,
     safeHtml: withLinks,
+  };
+}
+
+export interface ArticleTopicsInput {
+  title: string;
+  excerpt?: string;
+  /** HTML grezzo dell'articolo, così come arriva da WordPress. */
+  content: string;
+  categorySlug?: string;
+}
+
+/**
+ * Solo la classificazione — niente TOC, niente link interni — per chi deve
+ * sapere di cosa parla un articolo senza renderlo. Oggi serve al webhook di
+ * pubblicazione per targettizzare le notifiche push per argomento: usa lo
+ * stesso `matchTopics` su titolo + estratto + **contenuto completo**, non la
+ * versione più leggera di `classifyPost` (solo titolo + estratto, pensata per
+ * classificare liste intere senza scaricare ogni corpo articolo). Qui il
+ * corpo c'è già — il webhook lo ha appena scaricato per l'invalidazione della
+ * cache — quindi non c'è motivo di accontentarsi del match più povero.
+ */
+export function classifyArticleTopics(input: ArticleTopicsInput): {
+  contentType: ContentType;
+  reliability: Reliability;
+  topicSlugs: string[];
+} {
+  const sanitized = sanitizeRichHtml(input.content ?? "");
+  const contentText = htmlToText(sanitized);
+  const matches = matchTopics({
+    title: input.title,
+    excerpt: input.excerpt,
+    contentText,
+  });
+  return {
+    contentType: classifyContentType({ title: input.title, categorySlug: input.categorySlug }),
+    reliability: classifyReliability({ title: input.title, excerpt: input.excerpt }),
+    topicSlugs: primaryTopics(matches).map((topic) => topic.slug),
   };
 }
