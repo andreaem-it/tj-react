@@ -1,26 +1,51 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import TjLink from "@/components/TjLink";
 import { usePersonal } from "@/lib/personal/usePersonal";
 import { findWatchedProduct, unwatchProduct, watchProduct } from "@/lib/personal/store";
 import { formatEuro } from "@/lib/priceRadar/rating";
+import { getActivePushSubscriptionEndpoint } from "@/lib/push/subscription";
 
 /**
  * "Avvisami quando scende" con soglia di prezzo (§24).
  *
  * ## Cosa fa e cosa non fa, dichiarato all'utente
  *
- * Registra nel browser il prodotto e la soglia. **Non manda notifiche**: servirebbe
- * un account, un archivio delle sottoscrizioni e chiavi push, che qui non
- * esistono. La soglia viene confrontata quando l'utente torna, e l'Area personale
- * mostra quali prodotti l'hanno raggiunta.
+ * Registra sempre il prodotto e la soglia nel browser (`localStorage`), come
+ * prima. **In più**, se questo browser ha le notifiche push attive
+ * (`PushOptIn`), registra lo stesso avviso anche lato server — da lì uno
+ * scraper confronta la soglia a ogni rilevazione e manda una notifica reale
+ * quando scatta (`tj-api`, `checkAndNotifyWatches`).
  *
- * Il pulsante lo dice esplicitamente invece di chiamarsi "Avvisami": promettere
- * un avviso che non arriverà è il modo più rapido di perdere chi si fida. Il
- * giorno in cui esisteranno account e push, la soglia salvata qui è già il dato
- * da sincronizzare.
+ * Senza notifiche attive resta come prima: salvato solo nel browser, nessun
+ * avviso. Il componente lo dice esplicitamente in entrambi i casi — promettere
+ * un avviso che non arriverà è il modo più rapido di perdere chi si fida.
  */
+async function registerServerWatch(asin: string, targetPrice: number | null): Promise<void> {
+  if (targetPrice == null || !Number.isFinite(targetPrice) || targetPrice <= 0) return;
+  const endpoint = await getActivePushSubscriptionEndpoint();
+  if (!endpoint) return;
+  await fetch("/api/price-radar/watch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ endpoint, asin, targetPrice }),
+  }).catch(() => {
+    // Resta salvato in locale: al prossimo salvataggio (o al prossimo avvio
+    // con notifiche attive) si riprova. Non è un errore da mostrare qui.
+  });
+}
+
+async function removeServerWatch(asin: string): Promise<void> {
+  const endpoint = await getActivePushSubscriptionEndpoint();
+  if (!endpoint) return;
+  await fetch("/api/price-radar/watch", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ endpoint, asin }),
+  }).catch(() => {});
+}
+
 export default function WatchPriceButton({
   asin,
   title,
@@ -42,6 +67,18 @@ export default function WatchPriceButton({
   const [target, setTarget] = useState(() =>
     currentPrice != null && currentPrice > 0 ? String(Math.floor(currentPrice * 0.9)) : "",
   );
+  /** `null` finché non è nota: evita di mostrare per un istante il messaggio sbagliato. */
+  const [pushActive, setPushActive] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActivePushSubscriptionEndpoint().then((endpoint) => {
+      if (!cancelled) setPushActive(Boolean(endpoint));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (watched) {
     return (
@@ -54,15 +91,28 @@ export default function WatchPriceButton({
           .{" "}
           <button
             type="button"
-            onClick={() => update((current) => unwatchProduct(current, asin))}
+            onClick={() => {
+              update((current) => unwatchProduct(current, asin));
+              void removeServerWatch(asin);
+            }}
             className="text-accent hover:underline"
           >
             Non seguire più
           </button>
         </p>
         <p className="mt-1 text-xs text-muted">
-          Salvato in questo browser. Non invia notifiche: la soglia viene verificata quando torni,
-          in <TjLink href="/personale" className="text-accent hover:underline">Area personale</TjLink>.
+          {pushActive ? (
+            "Notifiche attive: ti avviseremo su questo browser quando il prezzo raggiunge la soglia."
+          ) : (
+            <>
+              Salvato in questo browser. Non invia notifiche: la soglia viene verificata quando
+              torni, in{" "}
+              <TjLink href="/personale" className="text-accent hover:underline">
+                Area personale
+              </TjLink>
+              .
+            </>
+          )}
         </p>
       </div>
     );
@@ -88,13 +138,11 @@ export default function WatchPriceButton({
       onSubmit={(event) => {
         event.preventDefault();
         const parsed = Number.parseFloat(target.replace(",", "."));
+        const targetPrice = Number.isFinite(parsed) ? parsed : null;
         update((current) =>
-          watchProduct(
-            current,
-            { asin, title, targetPrice: Number.isFinite(parsed) ? parsed : null },
-            Date.now(),
-          ),
+          watchProduct(current, { asin, title, targetPrice }, Date.now()),
         );
+        void registerServerWatch(asin, targetPrice);
         setOpen(false);
       }}
     >
@@ -127,8 +175,9 @@ export default function WatchPriceButton({
         </button>
       </div>
       <p className="mt-2 text-xs text-muted">
-        Salvato solo in questo browser. Non invia notifiche: la soglia viene verificata quando torni
-        sul sito.
+        {pushActive
+          ? "Notifiche attive su questo browser: ti avviseremo quando il prezzo raggiunge la soglia."
+          : "Salvato solo in questo browser. Non invia notifiche: la soglia viene verificata quando torni sul sito."}
       </p>
     </form>
   );
