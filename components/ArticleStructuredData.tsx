@@ -35,6 +35,8 @@ interface ArticleStructuredDataProps {
   datePublished: string;
   dateModified?: string;
   authorName: string;
+  /** Slug WordPress dell'autore (§40): se assente, l'URL ricade su `/chi-siamo`. */
+  authorSlug?: string;
   url: string;
   contentType?: ContentType;
   /** Sezione editoriale, cioè il nome della categoria. */
@@ -54,6 +56,7 @@ export default function ArticleStructuredData({
   datePublished,
   dateModified,
   authorName,
+  authorSlug,
   url,
   contentType = "news",
   section,
@@ -103,7 +106,7 @@ export default function ArticleStructuredData({
     author: {
       "@type": "Person",
       name: authorName,
-      url: `${BASE}/chi-siamo`,
+      url: authorSlug ? `${BASE}/autore/${authorSlug}` : `${BASE}/chi-siamo`,
     },
     publisher: {
       "@type": "Organization",

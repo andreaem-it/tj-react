@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import TjLink from "@/components/TjLink";
 import {
+  fetchAuthorBySlug,
   fetchMostReadPosts,
   fetchPostBySlugDetailed,
   fetchPosts,
@@ -11,6 +12,7 @@ import {
 } from "@/lib/api";
 import ShareButtons from "@/components/ShareButtons";
 import ArticleBody from "@/components/ArticleBody";
+import AuthorCard from "@/components/AuthorCard";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ArticleStructuredData from "@/components/ArticleStructuredData";
 import { ArticleRelatedPosts, ArticleSidebar } from "@/components/ArticlePageExtras";
@@ -184,34 +186,41 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   // Correlati e trending caricati lato server (RSC): dati corretti per categoria
   // e per visualizzazioni, niente fetch client di /api/posts/1.
-  const [articleRelated, mostReadPosts, trendingFallback, articleProducts] = await Promise.all([
-    /**
-     * Correlati e sviluppi della storia, ordinati per argomenti in comune.
-     *
-     * Sostituisce `fetchRelatedPosts`, che restituiva "stessa categoria,
-     * ordinati per numero di letture": su un contatore che in produzione vale
-     * fra 0 e 5 quell'ordine era casuale, e la categoria escludeva proprio gli
-     * articoli più pertinenti — nel campione reale cinque pezzi su iPhone 18
-     * stanno in quattro categorie diverse.
-     */
-    loadArticleRelated({
-      post,
-      topics: enrichment.topics,
-    }).catch(() => ({ related: [] as PostWithMeta[], byTopic: false, story: null })),
-    fetchMostReadPosts({ limit: 9 }).catch(() => [] as PostWithMeta[]),
-    // Pre-fetch in parallelo: usato solo se mostReadPosts è vuoto (nessun dato di view).
-    fetchTrendingWeekAndMonth({ limit: 9 }).catch(() => ({
-      week: [] as PostWithMeta[],
-      month: [] as PostWithMeta[],
-    })),
-    // Nella stessa `Promise.all` e non dopo: aggiungere una richiesta in serie
-    // al percorso critico dell'articolo per un riquadro accessorio sarebbe uno
-    // scambio pessimo. Se fallisce, l'articolo si rende senza.
-    loadArticleProducts({
-      contentHtml: post.content,
-      articleTopics: enrichment.topics,
-    }).catch(() => []),
-  ]);
+  const [articleRelated, mostReadPosts, trendingFallback, articleProducts, authorProfile] =
+    await Promise.all([
+      /**
+       * Correlati e sviluppi della storia, ordinati per argomenti in comune.
+       *
+       * Sostituisce `fetchRelatedPosts`, che restituiva "stessa categoria,
+       * ordinati per numero di letture": su un contatore che in produzione vale
+       * fra 0 e 5 quell'ordine era casuale, e la categoria escludeva proprio gli
+       * articoli più pertinenti — nel campione reale cinque pezzi su iPhone 18
+       * stanno in quattro categorie diverse.
+       */
+      loadArticleRelated({
+        post,
+        topics: enrichment.topics,
+      }).catch(() => ({ related: [] as PostWithMeta[], byTopic: false, story: null })),
+      fetchMostReadPosts({ limit: 9 }).catch(() => [] as PostWithMeta[]),
+      // Pre-fetch in parallelo: usato solo se mostReadPosts è vuoto (nessun dato di view).
+      fetchTrendingWeekAndMonth({ limit: 9 }).catch(() => ({
+        week: [] as PostWithMeta[],
+        month: [] as PostWithMeta[],
+      })),
+      // Nella stessa `Promise.all` e non dopo: aggiungere una richiesta in serie
+      // al percorso critico dell'articolo per un riquadro accessorio sarebbe uno
+      // scambio pessimo. Se fallisce, l'articolo si rende senza.
+      loadArticleProducts({
+        contentHtml: post.content,
+        articleTopics: enrichment.topics,
+      }).catch(() => []),
+      // `authorSlug` è assente finché il plugin non è aggiornato (§40): in quel
+      // caso `fetchAuthorBySlug` risponde `null` e il box "Scritto da" non
+      // compare, invece di rompere il render.
+      (post.authorSlug ? fetchAuthorBySlug(post.authorSlug) : Promise.resolve(null)).catch(
+        () => null,
+      ),
+    ]);
   const trendingPosts = mostReadPosts.length > 0 ? mostReadPosts : trendingFallback.month;
 
   const breadcrumbItems = [
@@ -229,6 +238,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         datePublished={post.date}
         dateModified={modifiedIso}
         authorName={post.authorName}
+        authorSlug={post.authorSlug}
         url={articleHref}
         contentType={enrichment.contentType}
         section={post.categoryName}
@@ -278,7 +288,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               )}
               <span>
                 Di{" "}
-                <TjLink href="/chi-siamo" className="hover:underline text-foreground">
+                <TjLink
+                  href={post.authorSlug ? `/autore/${post.authorSlug}` : "/chi-siamo"}
+                  className="hover:underline text-foreground"
+                >
                   {post.authorName}
                 </TjLink>
               </span>
@@ -360,6 +373,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <SourceList sources={enrichment.sources} />
             <Faq entries={enrichment.faq} />
             {articleRelated.story && <StoryTimelineSection story={articleRelated.story} />}
+
+            {authorProfile && (
+              <div className="mt-8 border-t border-border pt-5">
+                <AuthorCard author={authorProfile} />
+              </div>
+            )}
 
             <InlineBannerPlaceholder
               width="100%"

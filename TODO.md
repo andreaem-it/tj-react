@@ -22,6 +22,7 @@ Stato rispetto al **RESOCONTO-PROGETTO.md** e ai fix operativi.
 ## Deploy WordPress
 
 - [ ] Pubblicare sul sito WordPress la versione aggiornata del plugin che espone il campo JSON **`modified`** negli endpoint `tj/v1` (lista e singolo post). Fino al deploy, il frontend continua a usare **`date`** come fallback.
+- [ ] Pubblicare il plugin **v1.2.0** (`scripts/wp-plugin/techjournal-api`) per la pagina autore (§40): aggiunge `authorSlug` a `tj/v1/posts`/`tj/v1/post/:slug`, il filtro `?author=<slug>` su `tj/v1/posts` e il nuovo endpoint `GET tj/v1/author/:slug` (nome, slug, bio, avatar; 404 per utenti senza post pubblicati). Fino al deploy, `/autore/[slug]` risponde 404 e il box "Scritto da" non compare: degrado corretto, non un bug del frontend.
 
 ---
 

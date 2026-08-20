@@ -1,50 +1,31 @@
 import Image from "next/image";
+import TjLink from "@/components/TjLink";
 import { sanitizeRichHtml } from "@/lib/sanitizeRichHtml";
+import type { AuthorProfile } from "@/lib/api";
 
-/*
+/**
+ * Box "Scritto da" (§40).
+ *
  * Server Component: non usa hook né gestori di eventi, e la direttiva
  * `"use client"` che aveva prima trascinava `sanitize-html` — 236 KB — nel
- * bundle del browser. Oggi il componente non è montato da nessuna pagina, quindi
- * il peso non si vede: il giorno in cui finisse sulla pagina articolo
- * annullerebbe la rimozione fatta in `ArticleBody`, che serviva esattamente a
- * togliere quel chunk da lì.
+ * bundle del browser.
+ *
+ * Riceve `AuthorProfile` (`lib/api.ts`), non l'oggetto autore grezzo di
+ * WordPress: fino al deploy del plugin aggiornato `fetchAuthorBySlug`
+ * restituisce sempre `null` (§40, vedi `docs/` o il commento sulla funzione),
+ * e questo componente degrada di conseguenza — nessun link, nessun crash.
  */
+export default function AuthorCard({ author }: { author: AuthorProfile | null }) {
+  if (!author || !author.name.trim()) return null;
 
-export type Author = {
-  name: string;
-  description?: string;
-  avatar_urls: Record<string, string | undefined>;
-};
-
-function isValidAuthor(a: unknown): a is Author {
-  return (
-    a != null &&
-    typeof a === "object" &&
-    "name" in a &&
-    typeof (a as Author).name === "string" &&
-    "avatar_urls" in a &&
-    typeof (a as Author).avatar_urls === "object" &&
-    (a as Author).avatar_urls != null
-  );
-}
-
-function getAvatarUrl(urls: Author["avatar_urls"]): string | null {
-  if (!urls) return null;
-  return urls["96"] ?? urls[96] ?? urls["48"] ?? urls[48] ?? urls["24"] ?? urls[24] ?? null;
-}
-
-export default function AuthorCard({ author }: { author: unknown }) {
-  if (!isValidAuthor(author)) return null;
-
-  const avatarUrl = getAvatarUrl(author.avatar_urls);
-  const safeDescription =
-    typeof author.description === "string" ? sanitizeRichHtml(author.description) : "";
+  const safeBio = author.bio.trim() ? sanitizeRichHtml(author.bio) : "";
+  const authorHref = `/autore/${author.slug}`;
 
   return (
     <div className="flex items-start gap-4">
-      {avatarUrl && (
+      {author.avatarUrl && (
         <Image
-          src={avatarUrl}
+          src={author.avatarUrl}
           alt={author.name}
           width={96}
           height={96}
@@ -54,11 +35,13 @@ export default function AuthorCard({ author }: { author: unknown }) {
       )}
       <div className="min-w-0">
         <p className="text-muted text-sm font-semibold uppercase tracking-wide mb-1">Scritto da</p>
-        <h4 className="text-foreground font-medium">{author.name}</h4>
-        {safeDescription && (
+        <TjLink href={authorHref} className="text-foreground font-medium hover:text-accent hover:underline">
+          {author.name}
+        </TjLink>
+        {safeBio && (
           <div
             className="text-muted text-sm mt-2 leading-relaxed [&_p]:mb-2 last:[&_p]:mb-0"
-            dangerouslySetInnerHTML={{ __html: safeDescription }}
+            dangerouslySetInnerHTML={{ __html: safeBio }}
           />
         )}
       </div>

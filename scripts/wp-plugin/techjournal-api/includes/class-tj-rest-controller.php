@@ -56,6 +56,21 @@ class TJ_REST_Controller extends WP_REST_Controller {
             ],
         ]);
 
+        register_rest_route(self::NAMESPACE, '/author/(?P<slug>[a-zA-Z0-9\-_]+)', [
+            [
+                'methods' => WP_REST_Server::READABLE,
+                'callback' => [$this, 'get_author'],
+                'permission_callback' => '__return_true',
+                'args' => [
+                    'slug' => [
+                        'required' => true,
+                        'type' => 'string',
+                        'sanitize_callback' => 'sanitize_title',
+                    ],
+                ],
+            ],
+        ]);
+
         register_rest_route(self::NAMESPACE, '/megamenu/(?P<slug>[a-zA-Z0-9\-_]+)', [
             [
                 'methods' => WP_REST_Server::READABLE,
@@ -146,6 +161,10 @@ class TJ_REST_Controller extends WP_REST_Controller {
                 'type' => 'string',
                 'sanitize_callback' => 'sanitize_title',
             ],
+            'author' => [
+                'type' => 'string',
+                'sanitize_callback' => 'sanitize_title',
+            ],
         ];
     }
 
@@ -203,6 +222,20 @@ class TJ_REST_Controller extends WP_REST_Controller {
         $after = $request->get_param('after');
         $search = $request->get_param('search');
         $slug = $request->get_param('slug');
+        $author = $request->get_param('author');
+
+        // Uno slug autore che non risolve a nessun utente deve restituire
+        // zero articoli, non "ignora il filtro e mostra tutto": un ID `0` in
+        // WP_Query verrebbe trattato come "nessun filtro autore", il che
+        // sarebbe il comportamento sbagliato qui.
+        if ($author !== null && $author !== '') {
+            $author_user = get_user_by('slug', $author);
+            if (!$author_user) {
+                $response = new WP_REST_Response(['posts' => [], 'totalPages' => 0], 200);
+                $this->add_cache_headers($response, 60);
+                return $response;
+            }
+        }
 
         $args = [
             'post_type' => 'post',
@@ -213,6 +246,10 @@ class TJ_REST_Controller extends WP_REST_Controller {
             'order' => 'DESC',
             'no_found_rows' => false,
         ];
+
+        if (isset($author_user)) {
+            $args['author'] = $author_user->ID;
+        }
 
         if ($category_ids !== null && $category_ids !== '') {
             $ids = array_map('absint', array_filter(explode(',', $category_ids)));
@@ -313,6 +350,21 @@ class TJ_REST_Controller extends WP_REST_Controller {
 
         $response = new WP_REST_Response($data, 200);
         $this->add_cache_headers($response, 60);
+        return $response;
+    }
+
+    /**
+     * GET /tj/v1/author/:slug (§40)
+     */
+    public function get_author(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $slug = $request->get_param('slug');
+        $data = TJ_Post_Mapper::get_author_by_slug($slug);
+        if ($data === null) {
+            return new WP_Error('not_found', 'Autore non trovato', ['status' => 404]);
+        }
+
+        $response = new WP_REST_Response($data, 200);
+        $this->add_cache_headers($response, self::CACHE_TTL);
         return $response;
     }
 

@@ -52,6 +52,8 @@ export interface PostWithMeta {
   imageAlt: string;
   authorName: string;
   authorAvatarUrl: string | null;
+  /** Slug WordPress dell'autore, per `/autore/[slug]` (§40). Assente finché il plugin non è aggiornato, come `modified`. */
+  authorSlug?: string;
   viewCount: number | null;
 }
 
@@ -219,6 +221,7 @@ async function fetchTjPostsDirect(params: {
   categoryIds?: number[];
   after?: string;
   search?: string;
+  authorSlug?: string;
   requestCache?: RequestCache;
 }): Promise<TjPostsResult> {
   const {
@@ -228,6 +231,7 @@ async function fetchTjPostsDirect(params: {
     categoryIds,
     after,
     search,
+    authorSlug,
     requestCache,
   } = params;
   const searchParams = new URLSearchParams({
@@ -241,6 +245,7 @@ async function fetchTjPostsDirect(params: {
   }
   if (after) searchParams.set("after", after);
   if (search) searchParams.set("search", search);
+  if (authorSlug) searchParams.set("author", authorSlug);
 
   const url = `${WP_BASE}/posts?${searchParams.toString()}`;
   logApiUrl(url);
@@ -283,6 +288,7 @@ function fetchTjPostsCacheKey(params: {
   categoryIds?: number[];
   after?: string;
   search?: string;
+  authorSlug?: string;
 }): string[] {
   return [
     "tj-posts",
@@ -292,6 +298,7 @@ function fetchTjPostsCacheKey(params: {
     (params.categoryIds ?? []).join(","),
     params.after ?? "",
     params.search ?? "",
+    params.authorSlug ?? "",
   ];
 }
 
@@ -302,6 +309,7 @@ async function fetchTjPosts(params: {
   categoryIds?: number[];
   after?: string;
   search?: string;
+  authorSlug?: string;
   requestCache?: RequestCache;
 }): Promise<TjPostsResult> {
   const { requestCache, ...cacheParams } = params;
@@ -334,20 +342,22 @@ export async function fetchPosts(params: {
   page?: number;
   categoryId?: number;
   categoryIds?: number[];
+  /** Slug WordPress dell'autore: articoli di `/autore/[slug]` (§40). */
+  authorSlug?: string;
   requestCache?: RequestCache;
 }): Promise<TjPostsResult> {
-  const { perPage = 10, page = 1, categoryId, categoryIds, requestCache } = params;
+  const { perPage = 10, page = 1, categoryId, categoryIds, authorSlug, requestCache } = params;
   const ids = categoryIds ?? (categoryId != null && categoryId > 0 ? [categoryId] : []);
 
   if (ids.length === 0) {
-    return fetchTjPosts({ perPage, page, requestCache });
+    return fetchTjPosts({ perPage, page, authorSlug, requestCache });
   }
 
   if (ids.length === 1) {
-    return fetchTjPosts({ perPage, page, category: ids[0], requestCache });
+    return fetchTjPosts({ perPage, page, category: ids[0], authorSlug, requestCache });
   }
 
-  return fetchTjPosts({ perPage, page, categoryIds: ids, requestCache });
+  return fetchTjPosts({ perPage, page, categoryIds: ids, authorSlug, requestCache });
 }
 
 /**
@@ -677,6 +687,61 @@ export async function fetchPostBySlugDetailed(slug: string): Promise<PostBySlugR
 export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null> {
   const result = await fetchPostBySlugDetailed(slug);
   return result.status === "found" ? result.post : null;
+}
+
+/** Profilo pubblico di un autore che ha effettivamente pubblicato (§40). */
+export interface AuthorProfile {
+  name: string;
+  slug: string;
+  /** Testo `description` del profilo utente WordPress. Stringa vuota se assente. */
+  bio: string;
+  avatarUrl: string | null;
+}
+
+async function fetchAuthorRaw(slug: string): Promise<AuthorProfile | null> {
+  const url = `${WP_BASE}/author/${encodeURIComponent(slug)}`;
+  logApiUrl(url);
+  const res = await fetchWithTimeout(url, {
+    headers: buildWpTjRequestHeaders(),
+    next: { revalidate: TJ_FETCH_REVALIDATE, tags: ["tj-author", `tj-author:${slug}`] },
+  });
+  // 404 è una risposta definitiva (autore inesistente, o senza post pubblicati,
+  // o — finché il plugin non è aggiornato — la route stessa non esiste):
+  // in tutti i casi il profilo non c'è, e va trattato come tale, non come errore.
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`TJ API author HTTP ${res.status}`);
+  const data = (await res.json()) as Partial<AuthorProfile> | null;
+  if (!data || typeof data.name !== "string" || !data.name.trim()) return null;
+  return {
+    name: data.name,
+    slug: typeof data.slug === "string" && data.slug ? data.slug : slug,
+    bio: typeof data.bio === "string" ? data.bio : "",
+    avatarUrl: typeof data.avatarUrl === "string" && data.avatarUrl ? data.avatarUrl : null,
+  };
+}
+
+/**
+ * Profilo autore per `/autore/[slug]` e il box "Scritto da" in coda
+ * all'articolo (§40).
+ *
+ * Richiede `GET tj/v1/author/:slug`, non ancora deployato in produzione al
+ * momento in cui questa funzione è stata scritta (vedi
+ * `scripts/wp-plugin/techjournal-api`): fino al deploy risponde sempre
+ * `null` — un 404 legittimo, non un errore — e i chiamanti (`AuthorCard`,
+ * la pagina autore) degradano di conseguenza invece di rompersi.
+ */
+export async function fetchAuthorBySlug(slug: string): Promise<AuthorProfile | null> {
+  const raw = typeof slug === "string" ? slug.trim() : "";
+  if (!raw) return null;
+  try {
+    return await unstable_cache(() => fetchAuthorRaw(raw), ["tj-author", raw], {
+      revalidate: TJ_FETCH_REVALIDATE,
+      tags: ["tj-author", `tj-author:${raw}`],
+    })();
+  } catch (e) {
+    console.error(`[TJ API] fetchAuthorBySlug fallita (${raw}):`, e);
+    return null;
+  }
 }
 
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {

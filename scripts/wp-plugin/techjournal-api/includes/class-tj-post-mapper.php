@@ -60,6 +60,7 @@ class TJ_Post_Mapper {
             'imageAlt' => $featured_image['alt'] ?? $this->decode_text($post->post_title),
             'authorName' => $author['name'] ?? '',
             'authorAvatarUrl' => $author['avatar_url'] ?? '',
+            'authorSlug' => $author['slug'] ?? '',
             'viewCount' => $this->get_view_count($post->ID),
         ];
     }
@@ -143,7 +144,7 @@ class TJ_Post_Mapper {
     }
 
     /**
-     * Ottiene nome e avatar dell'autore.
+     * Ottiene nome, slug e avatar dell'autore.
      */
     private function get_author_data(int $user_id): array {
         if ($user_id <= 0) {
@@ -161,6 +162,10 @@ class TJ_Post_Mapper {
 
         return [
             'name' => $user->display_name,
+            // `user_nicename` e non `user_login`: è già lo slug che WordPress
+            // usa per gli URL autore nativi, quindi non introduce una seconda
+            // fonte di verità per "come si scrive questo autore nell'URL".
+            'slug' => $user->user_nicename,
             'avatar_url' => $avatar_url ?: '',
         ];
     }
@@ -317,6 +322,41 @@ class TJ_Post_Mapper {
      */
     public static function resolve_category_slug(string $url_slug): string {
         return self::SLUG_MAPPING[$url_slug] ?? $url_slug;
+    }
+
+    /**
+     * Risolve un utente WordPress dal suo `user_nicename` (§40).
+     *
+     * Restituisce `null` anche per un utente esistente ma senza alcun post
+     * pubblicato: un account di servizio (editor, admin) non deve diventare
+     * una pagina autore pubblica solo perché esiste.
+     */
+    public static function get_author_by_slug(string $slug): ?array {
+        $user = get_user_by('slug', $slug);
+        if (!$user) {
+            return null;
+        }
+
+        $has_published_post = count(get_posts([
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'author' => $user->ID,
+            'posts_per_page' => 1,
+            'fields' => 'ids',
+        ])) > 0;
+        if (!$has_published_post) {
+            return null;
+        }
+
+        $avatar_url = get_avatar_url($user->ID, ['size' => 192]);
+        $bio = get_the_author_meta('description', $user->ID);
+
+        return [
+            'name' => $user->display_name,
+            'slug' => $user->user_nicename,
+            'bio' => is_string($bio) ? trim($bio) : '',
+            'avatarUrl' => $avatar_url ?: '',
+        ];
     }
 
     /**
