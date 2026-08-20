@@ -149,6 +149,33 @@ export interface TocEntry {
   level: 2 | 3;
 }
 
+/**
+ * Fonte esterna citata nel corpo dell'articolo (§16-17).
+ *
+ * Estratta dai link `<a href>` già presenti nel testo, non dichiarata a mano
+ * né generata: `url` è l'`href` reale, `name` l'editore riconosciuto o, in
+ * assenza di un editore noto, il dominio stesso. Non esiste un caso in cui
+ * questi campi contengano un'affermazione non verificabile cliccando il link.
+ */
+export interface ArticleSource {
+  name: string;
+  url: string;
+}
+
+/**
+ * Voce FAQ ricavata da un heading già in forma di domanda (§37).
+ *
+ * Non è testo generato: `question` è l'heading dell'articolo così com'è
+ * scritto, `answer` è un estratto del testo che lo segue, troncato per
+ * lunghezza. Un articolo senza heading interrogativi non produce alcuna voce.
+ */
+export interface FaqEntry {
+  /** Ancora della sezione di origine, per "leggi la sezione completa". */
+  id: string;
+  question: string;
+  answer: string;
+}
+
 /** Classificazione ricavabile dai soli campi di lista (titolo, excerpt, categoria). */
 export interface PostClassification {
   contentType: ContentType;
@@ -166,6 +193,10 @@ export interface ArticleEnrichment extends PostClassification {
   /** Parole del corpo, per `wordCount` in JSON-LD. */
   wordCount: number;
   toc: TocEntry[];
+  /** Link esterni citati nel corpo, in ordine di comparsa. Vedi `ArticleSource`. */
+  sources: ArticleSource[];
+  /** FAQ ricavate dagli heading interrogativi già presenti. Vedi `FaqEntry`. */
+  faq: FaqEntry[];
   /**
    * HTML già sanificato **e** con gli `id` degli heading iniettati.
    *

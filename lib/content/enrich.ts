@@ -4,8 +4,10 @@ import {
   classifyReliability,
   readingMinutes,
 } from "@/lib/content/classify";
+import { extractFaq } from "@/lib/content/faq";
 import { injectInternalLinks } from "@/lib/content/internalLinks";
 import { matchTopics, primaryTopics } from "@/lib/content/match";
+import { extractSources } from "@/lib/content/sources";
 import { buildToc } from "@/lib/content/toc";
 import { countWords, htmlToText } from "@/lib/content/text";
 import type { ArticleEnrichment, ContentType, Reliability } from "@/lib/content/types";
@@ -83,6 +85,12 @@ export function enrichArticle(input: EnrichArticleInput): ArticleEnrichment {
     readingMinutes: readingMinutes(wordCount),
     wordCount,
     toc,
+    // Dal contenuto già sanificato ma prima dei link interni: sono link che
+    // l'articolo conteneva già, non vanno confusi con quelli appena iniettati.
+    sources: extractSources(sanitized),
+    // Dal risultato finale: gli `id` degli heading devono coincidere con
+    // quelli effettivamente presenti nell'HTML renderizzato.
+    faq: extractFaq(withLinks, toc),
     safeHtml: withLinks,
   };
 }

@@ -16,7 +16,10 @@ import ArticleStructuredData from "@/components/ArticleStructuredData";
 import { ArticleRelatedPosts, ArticleSidebar } from "@/components/ArticlePageExtras";
 import InlineBannerPlaceholder from "@/components/InlineBannerPlaceholder";
 import ArticleTopics from "@/components/article/ArticleTopics";
+import Faq from "@/components/article/Faq";
+import FaqStructuredData from "@/components/article/FaqStructuredData";
 import ReliabilityBadge from "@/components/article/ReliabilityBadge";
+import SourceList from "@/components/article/SourceList";
 import SaveArticleButton from "@/components/personal/SaveArticleButton";
 import TableOfContents from "@/components/article/TableOfContents";
 import { BLUR_DATA_URL, SITE_URL } from "@/lib/constants";
@@ -233,6 +236,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         wordCount={enrichment.wordCount}
         readingMinutes={enrichment.readingMinutes}
       />
+      <FaqStructuredData entries={enrichment.faq} />
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0 w-full max-w-full bg-content-bg rounded-lg overflow-hidden">
           <header className="w-full max-w-full min-w-0 px-3 pt-6 pb-4 md:p-8 box-border">
@@ -353,6 +357,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 <ArticleTopics topics={enrichment.topics} skipHref={categoryHref} />
               </div>
             )}
+            <SourceList sources={enrichment.sources} />
+            <Faq entries={enrichment.faq} />
             {articleRelated.story && <StoryTimelineSection story={articleRelated.story} />}
 
             <InlineBannerPlaceholder
