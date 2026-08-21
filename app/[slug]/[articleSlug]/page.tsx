@@ -13,6 +13,7 @@ import {
 import ShareButtons from "@/components/ShareButtons";
 import ArticleBody from "@/components/ArticleBody";
 import AuthorCard from "@/components/AuthorCard";
+import Changelog from "@/components/article/Changelog";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ArticleStructuredData from "@/components/ArticleStructuredData";
 import { ArticleRelatedPosts, ArticleSidebar } from "@/components/ArticlePageExtras";
@@ -82,14 +83,6 @@ function formatDate(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   if (diffHours < 24) return `Pubblicato ${diffHours} ore fa`;
   return `Pubblicato il ${d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })}`;
-}
-
-function formatDayMonthYear(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("it-IT", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
@@ -305,18 +298,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <SaveArticleButton id={post.id} path={articleHref} title={post.title} />
             </div>
 
-            {/* §19 — la cronologia completa degli aggiornamenti richiede un
-                modello dati che WordPress oggi non espone; la data, che invece
-                c'è, è già l'informazione che il lettore usa per capire se sta
-                leggendo qualcosa di attuale. */}
-            {updatedIso && (
-              <p className="mt-3 text-sm text-muted">
-                Aggiornato il{" "}
-                <time dateTime={updatedIso} className="text-foreground">
-                  {formatDayMonthYear(updatedIso)}
-                </time>
-              </p>
-            )}
+            <Changelog updatedIso={updatedIso} entries={post.changelog} />
 
             {post.imageUrl && (
               <div className="mt-6 relative w-full max-w-3xl aspect-video rounded-lg overflow-hidden bg-content-bg">

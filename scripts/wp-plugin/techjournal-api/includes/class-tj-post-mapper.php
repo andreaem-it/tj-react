@@ -63,6 +63,7 @@ class TJ_Post_Mapper {
             'authorSlug' => $author['slug'] ?? '',
             'viewCount' => $this->get_view_count($post->ID),
             'review' => $this->get_review_data($post->ID),
+            'changelog' => $this->get_changelog_data($post->ID),
         ];
     }
 
@@ -204,6 +205,52 @@ class TJ_Post_Mapper {
             'methodology' => $methodology !== '' ? $this->decode_text($methodology) : null,
             'verdict' => $verdict !== '' ? $this->decode_text($verdict) : null,
         ];
+    }
+
+    /**
+     * Cronologia aggiornamenti (§19, §35-36), da custom field `tj_changelog`.
+     *
+     * Una riga per voce, formato `AAAA-MM-GG: nota`: è il formato più semplice
+     * che si possa scrivere a mano senza pensare a sintassi. `modified` (già
+     * esposto) resta la fonte per "il contenuto è cambiato"; questo campo
+     * risponde alla domanda che `modified` da solo non può: *cosa* è cambiato.
+     * Un contenuto senza questo campo compilato mostra solo `modified`, come
+     * già faceva prima: niente cronologia inventata per riempire uno spazio.
+     *
+     * Righe malformate (data non valida, separatore assente) vengono scartate
+     * silenziosamente: è più sicuro ignorare una riga scritta male che
+     * bloccare l'intero endpoint per un errore di battitura in un campo
+     * testuale libero.
+     */
+    private function get_changelog_data(int $post_id): array {
+        $raw = get_post_meta($post_id, 'tj_changelog', true);
+        if (!is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+
+        $entries = [];
+        $lines = preg_split('/\r\n|\r|\n/', $raw);
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            $parts = explode(':', $line, 2);
+            if (count($parts) !== 2) {
+                continue;
+            }
+            $date = trim($parts[0]);
+            $note = trim($parts[1]);
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                continue;
+            }
+            $entries[] = ['date' => $date, 'note' => $this->decode_text($note)];
+        }
+
+        // Più recente prima: chi legge vuole sapere cosa è cambiato per
+        // ultimo, non l'ordine in cui è stato scritto nel campo.
+        usort($entries, static fn($a, $b) => strcmp($b['date'], $a['date']));
+        return $entries;
     }
 
     /**

@@ -53,6 +53,21 @@ export interface PostReview {
   verdict: string | null;
 }
 
+/**
+ * Voce di cronologia aggiornamenti (§19, §35-36), da custom field WordPress
+ * `tj_changelog` (una riga `AAAA-MM-GG: nota` per voce).
+ *
+ * `modified` (già su `PostWithMeta`) dice *che* il contenuto è cambiato;
+ * questo dice *cosa* — ma solo se qualcuno lo ha scritto. Un articolo senza
+ * `tj_changelog` compilato non ha changelog: mostra solo `modified`, come
+ * sempre.
+ */
+export interface ChangelogEntry {
+  /** `AAAA-MM-GG`. */
+  date: string;
+  note: string;
+}
+
 export interface PostWithMeta {
   id: number;
   date: string;
@@ -75,6 +90,8 @@ export interface PostWithMeta {
   viewCount: number | null;
   /** Presente solo se il post ha un voto compilato a mano (§47). */
   review?: PostReview | null;
+  /** Vuoto se il post non ha una cronologia compilata a mano (§19). */
+  changelog?: ChangelogEntry[];
 }
 
 /**

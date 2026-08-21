@@ -33,6 +33,10 @@ Stato rispetto al **RESOCONTO-PROGETTO.md** e ai fix operativi.
   - `tj_review_methodology` — nota libera su come è stato condotto il test.
   - `tj_review_verdict` — una riga di conclusione.
 
+- [ ] Pubblicare il plugin **v1.4.0** per la cronologia aggiornamenti (§19, §35-36): aggiunge il campo `changelog` a `tj/v1/posts`/`tj/v1/post/:slug`, letto dal custom field `tj_changelog`. Fino al deploy `changelog` è sempre vuoto e l'articolo mostra solo la data di modifica, come già faceva — degrado corretto.
+
+  **Custom field `tj_changelog`**: una riga per voce, formato `AAAA-MM-GG: nota` (es. `2026-08-20: Aggiunte informazioni sulla Beta 6.`). Righe senza questo formato vengono ignorate silenziosamente, non bloccano le altre.
+
 ---
 
 ## Task operativo pre-esistente (views)
