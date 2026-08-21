@@ -21,9 +21,9 @@ Stato rispetto al **RESOCONTO-PROGETTO.md** e ai fix operativi.
 
 ## Deploy WordPress
 
-- [ ] Pubblicare sul sito WordPress la versione aggiornata del plugin che espone il campo JSON **`modified`** negli endpoint `tj/v1` (lista e singolo post). Fino al deploy, il frontend continua a usare **`date`** come fallback.
-- [ ] Pubblicare il plugin **v1.2.0** (`scripts/wp-plugin/techjournal-api`) per la pagina autore (§40): aggiunge `authorSlug` a `tj/v1/posts`/`tj/v1/post/:slug`, il filtro `?author=<slug>` su `tj/v1/posts` e il nuovo endpoint `GET tj/v1/author/:slug` (nome, slug, bio, avatar; 404 per utenti senza post pubblicati). Fino al deploy, `/autore/[slug]` risponde 404 e il box "Scritto da" non compare: degrado corretto, non un bug del frontend.
-- [ ] Pubblicare il plugin **v1.3.0** per il modello dati recensioni (§47): aggiunge il campo `review` a `tj/v1/posts`/`tj/v1/post/:slug`, letto dai custom field del post (menu **Schermata opzioni → Campi personalizzati**, nell'editor di un articolo). Fino al deploy `review` è sempre assente e `ReviewBox`/lo schema `Review` non compaiono — degrado corretto.
+- [x] Campo JSON **`modified`** negli endpoint `tj/v1` (lista e singolo post). Confermato in produzione (2026-08-21): presente su ogni post.
+- [x] Plugin **v1.2.0** — pagina autore (§40): `authorSlug` su `tj/v1/posts`/`tj/v1/post/:slug`, filtro `?author=<slug>`, endpoint `GET tj/v1/author/:slug`. **Pubblicato e verificato in produzione il 2026-08-21**: il campo è presente e l'endpoint risponde correttamente (404 pulito quando non c'è corrispondenza). Nota: gli articoli recenti hanno `authorName`/`authorSlug` vuoti perché non hanno un utente WordPress valido come autore (contenuti ingeriti automaticamente) — `/autore/[slug]` diventerà utile sul primo articolo attribuito a un utente reale (es. una recensione firmata), che è il caso d'uso per cui esiste.
+- [x] Plugin **v1.3.0** — modello dati recensioni (§47): campo `review` da custom field. **Pubblicato e verificato il 2026-08-21**: `review: null` di default, come atteso finché nessun post ha i custom field compilati.
 
   **Custom field da compilare per una recensione vera** (nessuno è generato, tutti a mano):
   - `tj_review_rating` — **obbligatorio perché compaia qualcosa**: voto numerico da 0 a 10 (es. `8.5`).
@@ -33,7 +33,7 @@ Stato rispetto al **RESOCONTO-PROGETTO.md** e ai fix operativi.
   - `tj_review_methodology` — nota libera su come è stato condotto il test.
   - `tj_review_verdict` — una riga di conclusione.
 
-- [ ] Pubblicare il plugin **v1.4.0** per la cronologia aggiornamenti (§19, §35-36): aggiunge il campo `changelog` a `tj/v1/posts`/`tj/v1/post/:slug`, letto dal custom field `tj_changelog`. Fino al deploy `changelog` è sempre vuoto e l'articolo mostra solo la data di modifica, come già faceva — degrado corretto.
+- [x] Plugin **v1.4.0** — cronologia aggiornamenti (§19, §35-36): campo `changelog` da custom field `tj_changelog`. **Pubblicato e verificato il 2026-08-21**: `changelog: []` di default, come atteso.
 
   **Custom field `tj_changelog`**: una riga per voce, formato `AAAA-MM-GG: nota` (es. `2026-08-20: Aggiunte informazioni sulla Beta 6.`). Righe senza questo formato vengono ignorate silenziosamente, non bloccano le altre.
 
