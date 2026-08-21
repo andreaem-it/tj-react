@@ -261,6 +261,7 @@ async function buildSitemapEntries(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly",
       priority: 0.4,
     },
+    { url: `${base}/correzioni`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     {
       url: `${base}/ai-e-automazione`,
       lastModified: now,

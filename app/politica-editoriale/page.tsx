@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -71,7 +72,11 @@ export default function PoliticaEditorialePage() {
           <p>
             TechJournal punta alla massima trasparenza. L’origine delle informazioni esterne viene
             indicata quando rilevante. Eventuali correzioni o rettifiche sono pubblicate in modo
-            tempestivo e visibile.
+            tempestivo e visibile: il processo è descritto nella pagina{" "}
+            <Link href="/correzioni" className="text-accent hover:underline">
+              Correzioni
+            </Link>
+            .
           </p>
         </section>
 

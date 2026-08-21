@@ -35,6 +35,9 @@ export default function Footer() {
             <Link href="/politica-editoriale" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Politica editoriale
             </Link>
+            <Link href="/correzioni" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+              Correzioni
+            </Link>
             <Link href="/ai-e-automazione" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Automazione e AI
             </Link>
