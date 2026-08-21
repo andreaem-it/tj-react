@@ -37,12 +37,12 @@ Stato rispetto al **RESOCONTO-PROGETTO.md** e ai fix operativi.
 
   **Custom field `tj_changelog`**: una riga per voce, formato `AAAA-MM-GG: nota` (es. `2026-08-20: Aggiunte informazioni sulla Beta 6.`). Righe senza questo formato vengono ignorate silenziosamente, non bloccano le altre.
 
-- [ ] Pubblicare il plugin **v1.5.0** — scrittura autenticata (§47, §19): due nuovi endpoint `PUT tj/v1/post/:id/review` e `PUT tj/v1/post/:id/changelog`, così l'admin (tj-react-admin) può compilare voto/pro/contro e cronologia senza passare dal pannello nativo di WordPress. Fino al deploy questi due endpoint non esistono (404) — tutto il resto del plugin, di sola lettura, continua a funzionare normalmente.
+- [x] Plugin **v1.5.0** — scrittura autenticata (§47, §19): endpoint `PUT tj/v1/post/:id/review` e `PUT tj/v1/post/:id/changelog`. **Pubblicato e verificato il 2026-08-21**: entrambi rispondono `rest_forbidden` (401) a una richiesta senza autenticazione — le rotte esistono e il controllo permessi funziona; non ancora verificata una scrittura autenticata reale (serve il passo seguente).
 
-  **Per attivare la scrittura serve anche**, lato tj-api (non WordPress):
+  **Per attivare la scrittura serve ancora**, lato tj-api (non WordPress — questo passo resta da fare):
   1. Su WordPress: **Utenti → Profilo** (con un utente che possa modificare i post) → **Password per le applicazioni** → crea una nuova password applicativa.
   2. Su tj-api: imposta `WP_APP_USERNAME` (lo username WP) e `WP_APP_PASSWORD` (la password applicativa, non quella normale dell'account).
-  3. Senza queste due variabili, `PUT /api/admin/wp-posts/:wpId/review` e `.../changelog` rispondono 503 — degrado corretto, l'admin resta usabile per il resto.
+  3. Senza queste due variabili, `PUT /api/admin/wp-posts/:wpId/review` e `.../changelog` rispondono 503 — degrado corretto, l'admin resta usabile per il resto. Un buon test una volta impostate: aprire "Recensione" su un articolo qualsiasi in admin e salvare un voto di prova.
 
 ---
 
