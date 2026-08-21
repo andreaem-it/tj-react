@@ -35,6 +35,24 @@ export interface WPCategory {
   parent?: number;
 }
 
+/**
+ * Dati di recensione compilati a mano (§47), da custom field WordPress.
+ *
+ * Nessun campo qui è calcolato: `rating` è il voto che una persona ha dato
+ * dopo un test reale, `pros`/`cons` sono righe scritte a mano. Un post senza
+ * voto non ha `review` (il plugin restituisce `null`): l'assenza è
+ * l'informazione corretta, non un dato mancante da riempire con un default.
+ */
+export interface PostReview {
+  rating: number;
+  ratingScale: number;
+  pros: string[];
+  cons: string[];
+  testDuration: string | null;
+  methodology: string | null;
+  verdict: string | null;
+}
+
 export interface PostWithMeta {
   id: number;
   date: string;
@@ -55,6 +73,8 @@ export interface PostWithMeta {
   /** Slug WordPress dell'autore, per `/autore/[slug]` (§40). Assente finché il plugin non è aggiornato, come `modified`. */
   authorSlug?: string;
   viewCount: number | null;
+  /** Presente solo se il post ha un voto compilato a mano (§47). */
+  review?: PostReview | null;
 }
 
 /**

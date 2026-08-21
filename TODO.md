@@ -23,6 +23,15 @@ Stato rispetto al **RESOCONTO-PROGETTO.md** e ai fix operativi.
 
 - [ ] Pubblicare sul sito WordPress la versione aggiornata del plugin che espone il campo JSON **`modified`** negli endpoint `tj/v1` (lista e singolo post). Fino al deploy, il frontend continua a usare **`date`** come fallback.
 - [ ] Pubblicare il plugin **v1.2.0** (`scripts/wp-plugin/techjournal-api`) per la pagina autore (§40): aggiunge `authorSlug` a `tj/v1/posts`/`tj/v1/post/:slug`, il filtro `?author=<slug>` su `tj/v1/posts` e il nuovo endpoint `GET tj/v1/author/:slug` (nome, slug, bio, avatar; 404 per utenti senza post pubblicati). Fino al deploy, `/autore/[slug]` risponde 404 e il box "Scritto da" non compare: degrado corretto, non un bug del frontend.
+- [ ] Pubblicare il plugin **v1.3.0** per il modello dati recensioni (§47): aggiunge il campo `review` a `tj/v1/posts`/`tj/v1/post/:slug`, letto dai custom field del post (menu **Schermata opzioni → Campi personalizzati**, nell'editor di un articolo). Fino al deploy `review` è sempre assente e `ReviewBox`/lo schema `Review` non compaiono — degrado corretto.
+
+  **Custom field da compilare per una recensione vera** (nessuno è generato, tutti a mano):
+  - `tj_review_rating` — **obbligatorio perché compaia qualcosa**: voto numerico da 0 a 10 (es. `8.5`).
+  - `tj_review_pros` — un pro per riga.
+  - `tj_review_cons` — un contro per riga.
+  - `tj_review_test_duration` — es. "3 settimane di utilizzo quotidiano".
+  - `tj_review_methodology` — nota libera su come è stato condotto il test.
+  - `tj_review_verdict` — una riga di conclusione.
 
 ---
 

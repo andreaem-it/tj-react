@@ -21,6 +21,7 @@ import ArticleTopics from "@/components/article/ArticleTopics";
 import Faq from "@/components/article/Faq";
 import FaqStructuredData from "@/components/article/FaqStructuredData";
 import ReliabilityBadge from "@/components/article/ReliabilityBadge";
+import ReviewBox from "@/components/article/ReviewBox";
 import SourceList from "@/components/article/SourceList";
 import SaveArticleButton from "@/components/personal/SaveArticleButton";
 import TableOfContents from "@/components/article/TableOfContents";
@@ -239,6 +240,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         dateModified={modifiedIso}
         authorName={post.authorName}
         authorSlug={post.authorSlug}
+        review={post.review}
         url={articleHref}
         contentType={enrichment.contentType}
         section={post.categoryName}
@@ -333,6 +335,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </header>
 
           <div className="px-3 py-6 md:p-8">
+            <ReviewBox review={post.review} />
             {shouldRenderToc(enrichment.toc) && <TableOfContents entries={enrichment.toc} />}
             <ArticleBody safeHtml={enrichment.safeHtml} postId={post.id} />
 

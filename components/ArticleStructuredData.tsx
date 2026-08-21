@@ -1,4 +1,6 @@
 import { SITE_URL } from "@/lib/constants";
+import type { PostReview } from "@/lib/api";
+import { hasRealReviewData } from "@/lib/content/review";
 import { topicHref } from "@/lib/content/topics";
 import type { ContentType, Topic } from "@/lib/content/types";
 
@@ -13,11 +15,11 @@ const LOGO_URL = `${BASE}/techjournal-logo.png`;
  * comunicherebbe a Google una freschezza che quei contenuti non hanno (e non
  * devono avere: vivono di traffico evergreen).
  *
- * `Review` non compare in questa tabella deliberatamente. Richiede
- * `reviewRating`, e un rating generato automaticamente sarebbe un dato inventato
- * su un contenuto che nessuno ha provato (§39, §89). Le recensioni vere lo
- * riceveranno quando esisterà il modello dati con voto, metodologia e durata del
- * test compilati da una persona.
+ * `review` mappa comunque su `Article` qui: `Review` compare solo quando
+ * `hasRealReviewData(review)` è vero (vedi sotto), perché richiede
+ * `reviewRating` e un voto generato automaticamente sarebbe un dato inventato
+ * su un contenuto che nessuno ha provato (§39, §89). Un articolo classificato
+ * "review" dal solo titolo, senza un voto compilato a mano, resta `Article`.
  */
 const SCHEMA_TYPE: Record<ContentType, "NewsArticle" | "Article"> = {
   news: "NewsArticle",
@@ -47,6 +49,8 @@ interface ArticleStructuredDataProps {
   wordCount?: number;
   /** Minuti di lettura, resi come durata ISO 8601. */
   readingMinutes?: number;
+  /** Voto e dettagli compilati a mano (§47); `Review` compare solo se valido. */
+  review?: PostReview | null;
 }
 
 export default function ArticleStructuredData({
@@ -63,8 +67,11 @@ export default function ArticleStructuredData({
   topics,
   wordCount,
   readingMinutes,
+  review,
 }: ArticleStructuredDataProps) {
   const fullUrl = url.startsWith("http") ? url : `${BASE}${url.startsWith("/") ? "" : "/"}${url}`;
+  const hasReview = hasRealReviewData(review);
+  const schemaType = hasReview ? "Review" : SCHEMA_TYPE[contentType];
 
   /**
    * `about` solo per gli argomenti che hanno una pagina.
@@ -86,7 +93,7 @@ export default function ArticleStructuredData({
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": SCHEMA_TYPE[contentType],
+    "@type": schemaType,
     headline,
     ...(description && { description }),
     ...(imageUrl && {
@@ -103,6 +110,22 @@ export default function ArticleStructuredData({
     ...(wordCount != null && wordCount > 0 && { wordCount }),
     ...(readingMinutes != null && readingMinutes > 0 && { timeRequired: `PT${readingMinutes}M` }),
     isAccessibleForFree: true,
+    /**
+     * `itemReviewed` derivato dal solo titolo dell'articolo: per una
+     * recensione il titolo nomina già il prodotto ("Recensione iPhone 17
+     * Pro"), e non c'è qui un'entità Prodotto strutturata a cui agganciarsi
+     * (quella vive in Price Radar, per un sottoinsieme diverso di prodotti).
+     * `Product` è il tipo più neutro possibile: non presuppone categoria.
+     */
+    ...(hasReview && {
+      itemReviewed: { "@type": "Product", name: headline },
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: review!.rating,
+        bestRating: review!.ratingScale,
+        worstRating: 0,
+      },
+    }),
     author: {
       "@type": "Person",
       name: authorName,

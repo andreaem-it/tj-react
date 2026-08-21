@@ -62,6 +62,7 @@ class TJ_Post_Mapper {
             'authorAvatarUrl' => $author['avatar_url'] ?? '',
             'authorSlug' => $author['slug'] ?? '',
             'viewCount' => $this->get_view_count($post->ID),
+            'review' => $this->get_review_data($post->ID),
         ];
     }
 
@@ -168,6 +169,55 @@ class TJ_Post_Mapper {
             'slug' => $user->user_nicename,
             'avatar_url' => $avatar_url ?: '',
         ];
+    }
+
+    /**
+     * Dati di recensione (§47), da custom field compilati a mano.
+     *
+     * Nessun campo è obbligatorio tranne `tj_review_rating`: senza un voto non
+     * c'è una recensione da mostrare, solo un articolo che parla di un
+     * prodotto. Gli altri campi (pro, contro, durata del test, metodologia,
+     * verdetto) restano `null`/vuoti se non compilati — il frontend decide se
+     * e cosa mostrare, qui ci si limita a leggere quello che una persona ha
+     * scritto davvero. Nessun valore è calcolato o dedotto.
+     */
+    private function get_review_data(int $post_id): ?array {
+        $rating_raw = get_post_meta($post_id, 'tj_review_rating', true);
+        $rating = is_numeric($rating_raw) ? (float) $rating_raw : null;
+        if ($rating === null || $rating < 0 || $rating > 10) {
+            return null;
+        }
+
+        $test_duration = trim((string) get_post_meta($post_id, 'tj_review_test_duration', true));
+        $methodology = trim((string) get_post_meta($post_id, 'tj_review_methodology', true));
+        $verdict = trim((string) get_post_meta($post_id, 'tj_review_verdict', true));
+
+        return [
+            'rating' => $rating,
+            // Fissa a 10: un campo di configurazione per la scala aggiungerebbe
+            // una decisione in più da prendere a ogni recensione per nessun
+            // beneficio reale.
+            'ratingScale' => 10,
+            'pros' => $this->split_review_lines(get_post_meta($post_id, 'tj_review_pros', true)),
+            'cons' => $this->split_review_lines(get_post_meta($post_id, 'tj_review_cons', true)),
+            'testDuration' => $test_duration !== '' ? $this->decode_text($test_duration) : null,
+            'methodology' => $methodology !== '' ? $this->decode_text($methodology) : null,
+            'verdict' => $verdict !== '' ? $this->decode_text($verdict) : null,
+        ];
+    }
+
+    /**
+     * Un pro/contro per riga. Testo semplice nel campo custom, non HTML: chi
+     * compila non deve pensare a markup, solo scrivere una riga per voce.
+     */
+    private function split_review_lines($raw): array {
+        if (!is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+        $lines = preg_split('/\r\n|\r|\n/', $raw);
+        $lines = array_map('trim', $lines);
+        $lines = array_filter($lines, static fn($line) => $line !== '');
+        return array_values(array_map(fn($line) => $this->decode_text($line), $lines));
     }
 
     /**
