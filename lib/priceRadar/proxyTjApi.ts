@@ -83,8 +83,6 @@ export async function proxyPriceRadarToTjApi(
       cache: "no-store",
       signal: controller.signal,
     });
-    clearTimeout(timeoutId);
-
     const upstreamLenHeader = res.headers.get("content-length");
     const upstreamLen =
       typeof upstreamLenHeader === "string" && upstreamLenHeader.trim() !== ""
@@ -109,7 +107,6 @@ export async function proxyPriceRadarToTjApi(
       headers: outHeaders,
     });
   } catch (err) {
-    clearTimeout(timeoutId);
     const isAbort =
       err instanceof Error &&
       (err.name === "AbortError" || err.message === "This operation was aborted");
@@ -117,5 +114,7 @@ export async function proxyPriceRadarToTjApi(
       { error: isAbort ? "Upstream timeout" : "Upstream error" },
       { status: isAbort ? 504 : 502 },
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
