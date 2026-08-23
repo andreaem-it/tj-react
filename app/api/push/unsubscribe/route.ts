@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { proxyToTjApi } from "@/lib/tjApiProxy";
 
 export const dynamic = "force-dynamic";
+const MAX_UNSUBSCRIBE_PAYLOAD_BYTES = 8 * 1024;
 
 /**
  * Rimuove una sottoscrizione push. Corpo: `PushUnsubscribeBody`
@@ -16,7 +17,11 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   let body: unknown;
   try {
-    body = await request.clone().json();
+    const raw = await request.clone().text();
+    if (Buffer.byteLength(raw, "utf8") > MAX_UNSUBSCRIBE_PAYLOAD_BYTES) {
+      return NextResponse.json({ error: "Payload troppo grande" }, { status: 413 });
+    }
+    body = JSON.parse(raw);
   } catch {
     return NextResponse.json({ error: "Payload JSON non valido" }, { status: 400 });
   }
