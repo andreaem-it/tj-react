@@ -21,6 +21,15 @@ function unauthenticated(): NextResponse {
   );
 }
 
+function unsupportedContentType(request: NextRequest): NextResponse | null {
+  return request.headers.get("content-type")?.toLowerCase().startsWith("application/json")
+    ? null
+    : NextResponse.json(
+        { error: "Content-Type non supportato" },
+        { status: 415, headers: { "Cache-Control": "no-store" } },
+      );
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -38,6 +47,8 @@ export async function PUT(
   if (!(await hasValidId(params))) return invalidId();
   const session = await getSessionFromRequest(request);
   if (!session) return unauthenticated();
+  const contentTypeError = unsupportedContentType(request);
+  if (contentTypeError) return contentTypeError;
   return proxyToTjApi(request);
 }
 
@@ -49,6 +60,8 @@ export async function PATCH(
   if (!(await hasValidId(params))) return invalidId();
   const session = await getSessionFromRequest(request);
   if (!session) return unauthenticated();
+  const contentTypeError = unsupportedContentType(request);
+  if (contentTypeError) return contentTypeError;
   return proxyToTjApi(request, { methodOverride: "PUT" });
 }
 
