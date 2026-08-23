@@ -162,7 +162,7 @@ export default function PushOptIn() {
         type="button"
         onClick={isOn ? unsubscribe : subscribe}
         disabled={busy}
-        className="shrink-0 rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:text-accent disabled:opacity-60"
+        className="min-h-11 shrink-0 rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:text-accent disabled:opacity-60"
       >
         {isOn ? "Disattiva notifiche" : "Attiva notifiche"}
       </button>
