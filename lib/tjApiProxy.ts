@@ -176,6 +176,15 @@ export async function proxyToTjApi(
         typeof reqLenHeader === "string" && reqLenHeader.trim() !== ""
           ? Number(reqLenHeader)
           : Number.NaN;
+      if (
+        reqLenHeader !== null &&
+        (!Number.isSafeInteger(reqLen) || reqLen < 0)
+      ) {
+        return NextResponse.json(
+          { error: "Invalid Content-Length" },
+          { status: 400, headers: NO_STORE },
+        );
+      }
       if (Number.isFinite(reqLen) && reqLen > MAX_REQUEST_BODY_BYTES) {
         return NextResponse.json(
           { error: "Payload too large" },
