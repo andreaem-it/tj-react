@@ -19,6 +19,9 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Payload JSON non valido" }, { status: 400 });
   }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json({ error: "Sottoscrizione push non valida" }, { status: 400 });
+  }
   const value = body as Partial<{
     endpoint: string;
     keys: { p256dh: string; auth: string };
