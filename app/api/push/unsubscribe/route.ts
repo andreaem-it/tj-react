@@ -15,6 +15,9 @@ const MAX_UNSUBSCRIBE_PAYLOAD_BYTES = 8 * 1024;
  * browser può chiamarlo anche se la sottoscrizione lato server non esiste più.
  */
 export async function POST(request: NextRequest) {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return NextResponse.json({ error: "Content-Type non supportato" }, { status: 415 });
+  }
   let body: unknown;
   try {
     const raw = await request.clone().text();
