@@ -191,7 +191,8 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 rounded border border-border px-2 py-1 text-xs text-muted transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded border border-border px-3 text-xs text-muted transition-colors hover:text-foreground"
+            aria-label="Chiudi ricerca"
           >
             Esc
           </button>
@@ -265,7 +266,11 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
 
         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-2 text-xs text-muted">
           <span aria-hidden>↑↓ per scorrere · Invio per aprire</span>
-          <button type="button" onClick={submitFullSearch} className="hover:text-accent">
+          <button
+            type="button"
+            onClick={submitFullSearch}
+            className="inline-flex min-h-11 items-center px-2 hover:text-accent"
+          >
             Vedi tutti i risultati
           </button>
         </div>
