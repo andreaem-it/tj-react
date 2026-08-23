@@ -23,5 +23,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: `Invalid ${key} filter` }, { status: 400 });
     }
   }
+  const discountOnly = params.get("discountOnly");
+  if (discountOnly !== null && discountOnly !== "0" && discountOnly !== "1") {
+    return NextResponse.json({ error: "Invalid discountOnly filter" }, { status: 400 });
+  }
   return proxyPriceRadarToTjApi(request, { admin: false });
 }
