@@ -75,6 +75,7 @@ export default function WatchPriceButton({
   const [target, setTarget] = useState(() =>
     currentPrice != null && currentPrice > 0 ? String(Math.floor(currentPrice * 0.9)) : "",
   );
+  const [targetError, setTargetError] = useState<string | null>(null);
   /** `null` finché non è nota: evita di mostrare per un istante il messaggio sbagliato. */
   const [pushActive, setPushActive] = useState<boolean | null>(null);
 
@@ -150,7 +151,11 @@ export default function WatchPriceButton({
       onSubmit={(event) => {
         event.preventDefault();
         const parsed = Number.parseFloat(target.replace(",", "."));
-        const targetPrice = Number.isFinite(parsed) ? parsed : null;
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+          setTargetError("Inserisci una soglia maggiore di zero.");
+          return;
+        }
+        const targetPrice = parsed;
         update((current) =>
           watchProduct(current, { asin, title, targetPrice }, Date.now()),
         );
@@ -167,8 +172,14 @@ export default function WatchPriceButton({
           type="text"
           inputMode="decimal"
           value={target}
-          onChange={(event) => setTarget(event.target.value)}
+          onChange={(event) => {
+            setTarget(event.target.value);
+            if (targetError) setTargetError(null);
+          }}
           placeholder="es. 45"
+          required
+          aria-invalid={targetError ? "true" : undefined}
+          aria-describedby={targetError ? `${inputId}-error` : undefined}
           className="min-h-11 w-28 rounded-lg border border-border bg-content-bg px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <span className="text-sm text-muted">{currency === "EUR" ? "€" : currency}</span>
@@ -186,6 +197,11 @@ export default function WatchPriceButton({
           Annulla
         </button>
       </div>
+      {targetError && (
+        <p id={`${inputId}-error`} role="alert" className="mt-2 text-xs text-red-500">
+          {targetError}
+        </p>
+      )}
       <p className="mt-2 text-xs text-muted">
         {pushActive
           ? "Notifiche attive su questo browser: ti avviseremo quando il prezzo raggiunge la soglia."
