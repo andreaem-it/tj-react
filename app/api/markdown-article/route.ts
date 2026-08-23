@@ -21,7 +21,12 @@ export async function GET(request: Request) {
     return badRequest("Missing required query parameters.");
   }
 
-  const post = await fetchPostBySlug(slug);
+  let post: Awaited<ReturnType<typeof fetchPostBySlug>>;
+  try {
+    post = await fetchPostBySlug(slug);
+  } catch {
+    return NextResponse.json({ error: "Article source unavailable." }, { status: 502 });
+  }
   if (!post) {
     return new NextResponse("Not Found", {
       status: 404,
@@ -38,12 +43,14 @@ export async function GET(request: Request) {
   }
 
   const canonicalUrl = `${SITE_URL.replace(/\/$/, "")}/${postCategory}/${post.slug}`;
+  const published = new Date(post.date);
+  const hasValidPublishedDate = !Number.isNaN(published.getTime());
   const markdownParts = [
     `# ${post.title}`,
     "",
     `- URL: ${canonicalUrl}`,
     `- Categoria: ${post.categoryName}`,
-    `- Pubblicato: ${new Date(post.date).toISOString()}`,
+    hasValidPublishedDate ? `- Pubblicato: ${published.toISOString()}` : "",
     `- Autore: ${post.authorName}`,
     "",
     post.excerpt?.trim() ? post.excerpt.trim() : "",
@@ -52,15 +59,17 @@ export async function GET(request: Request) {
   ].filter((part) => part.length > 0);
   const markdown = markdownParts.join("\n");
 
+  const headers = new Headers({
+    "content-type": "text/markdown; charset=utf-8",
+    "cache-control": MARKDOWN_CACHE_CONTROL,
+    "x-content-format": "markdown",
+    "x-markdown-tokens": String(estimateMarkdownTokens(markdown)),
+    Link: `</api>; rel="service-desc", </docs>; rel="service-doc", </.well-known/api-catalog>; rel="api-catalog"`,
+  });
+  if (hasValidPublishedDate) headers.set("last-modified", published.toUTCString());
+
   return new NextResponse(markdown, {
     status: 200,
-    headers: {
-      "content-type": "text/markdown; charset=utf-8",
-      "cache-control": MARKDOWN_CACHE_CONTROL,
-      "x-content-format": "markdown",
-      "x-markdown-tokens": String(estimateMarkdownTokens(markdown)),
-      "last-modified": new Date(post.date).toUTCString(),
-      Link: `</api>; rel="service-desc", </docs>; rel="service-doc", </.well-known/api-catalog>; rel="api-catalog"`,
-    },
+    headers,
   });
 }
