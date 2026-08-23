@@ -47,8 +47,9 @@ const MAX_WINDOW_HOURS = 24 * 7;
 const MAX_ITEMS = 12;
 
 function clampInt(raw: string | null, fallback: number, min: number, max: number): number {
-  const parsed = Number.parseInt(raw ?? "", 10);
-  if (!Number.isFinite(parsed)) return fallback;
+  if (raw === null || !/^\d+$/.test(raw)) return fallback;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));
 }
 
