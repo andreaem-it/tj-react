@@ -10,6 +10,7 @@ const IUBENDA_ORIGINS = [
   "https://www.iubenda.com",
   "https://cdn.iubenda.com",
 ];
+const IUBENDA_ATTEMPT_TIMEOUT_MS = 3_000;
 
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("i");
@@ -26,10 +27,13 @@ export async function GET(request: NextRequest) {
   ];
 
   for (const url of candidates) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), IUBENDA_ATTEMPT_TIMEOUT_MS);
     try {
       const res = await fetch(url, {
         headers: { Accept: "application/json" },
         next: { revalidate: 300 },
+        signal: controller.signal,
       });
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -41,6 +45,8 @@ export async function GET(request: NextRequest) {
       }
     } catch {
       continue;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 

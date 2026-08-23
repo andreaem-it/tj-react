@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const IUBENDA_TIMEOUT_MS = 8_000;
+
 /**
  * Proxy per l'API iubenda Direct Text Embedding (Privacy / Cookie policy).
  * Richiede piano Advanced o Ultimate e policy in versione Pro.
@@ -43,11 +45,14 @@ export async function GET(request: NextRequest) {
       ? `privacy-policy/${encodedId}/cookie-policy`
       : `privacy-policy/${encodedId}`;
   const url = `https://www.iubenda.com/api/${path}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), IUBENDA_TIMEOUT_MS);
 
   try {
     const res = await fetch(url, {
       headers: { Accept: "application/json" },
       next: { revalidate: 3600 },
+      signal: controller.signal,
     });
     const data = await res.json().catch(() => ({}));
 
@@ -63,10 +68,13 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
       },
     });
-  } catch {
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "AbortError";
     return NextResponse.json(
-      { success: false, error: "Network error" },
-      { status: 502 }
+      { success: false, error: timedOut ? "Upstream timeout" : "Network error" },
+      { status: timedOut ? 504 : 502 }
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
