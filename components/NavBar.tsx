@@ -265,7 +265,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
             <button
               type="button"
               onClick={closeMobileMenu}
-              className="flex h-11 w-11 items-center justify-center text-foreground hover:text-accent transition-colors rounded-lg hover:bg-surface-overlay"
+              className="flex h-11 w-11 items-center justify-center text-foreground hover:text-accent transition-colors rounded-lg hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="Chiudi menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -284,7 +284,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                   <li key={href}>
                     <TjLink
                       href={href}
-                      className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
+                      className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       onClick={(event) => {
                         if (href === "/") handleHomeLinkClick(event);
                         closeMobileMenu();
@@ -298,7 +298,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
               <li className="border-t border-border mt-2 pt-2">
                 <TjLink
                   href="/search"
-                  className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
+                  className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   onClick={closeMobileMenu}
                 >
                   Cerca
