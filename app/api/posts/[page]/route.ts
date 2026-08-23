@@ -19,7 +19,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ page: string }> },
 ) {
-  await params;
+  const { page } = await params;
+  if (!/^[1-9]\d*$/.test(page)) {
+    return NextResponse.json({ error: "Invalid page" }, { status: 400 });
+  }
   const upstream = await proxyToTjApi(request);
 
   // Solo risposte JSON riuscite vengono alleggerite: errori, redirect e
