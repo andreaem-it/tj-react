@@ -16,7 +16,7 @@ export default function ScrollToTop() {
     <button
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className={`fixed bottom-6 right-6 z-40 w-12 h-12 rounded-lg bg-sidebar-bg text-foreground border border-border flex items-center justify-center shadow-lg hover:bg-content-bg hover:text-accent transition-all duration-200 ${
+      className={`fixed bottom-6 right-6 z-40 w-12 h-12 rounded-lg bg-sidebar-bg text-foreground border border-border flex items-center justify-center shadow-lg hover:bg-content-bg hover:text-accent transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
         visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
       aria-label="Torna su"
