@@ -111,6 +111,12 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//static.techjournal.it" />
       </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased font-sans">
+        <a
+          href="#main-content"
+          className="fixed -top-20 left-4 z-[200] rounded-lg bg-accent px-4 py-3 font-semibold text-gray-900 shadow-lg transition-[top] focus:top-4"
+        >
+          Salta al contenuto
+        </a>
         <IubendaProviderWrapper />
         <SiteStructuredData />
         <GoogleAnalytics />
