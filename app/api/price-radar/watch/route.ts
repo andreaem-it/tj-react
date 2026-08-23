@@ -15,6 +15,9 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
   }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json({ error: "Invalid watch payload" }, { status: 400 });
+  }
   const value = body as Partial<{ endpoint: string; asin: string; targetPrice: number | null }>;
   let endpoint: URL;
   try {
@@ -40,6 +43,9 @@ export async function DELETE(request: NextRequest) {
     body = await request.clone().json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    return NextResponse.json({ error: "Invalid watch payload" }, { status: 400 });
   }
   const value = body as Partial<{ endpoint: string; asin: string }>;
   let endpoint: URL;
