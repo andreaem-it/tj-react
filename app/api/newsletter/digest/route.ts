@@ -59,6 +59,10 @@ export async function GET(request: NextRequest) {
   }
 
   const params = request.nextUrl.searchParams;
+  const kind = params.get("kind");
+  if (kind && kind !== "daily" && kind !== "price-radar-weekly") {
+    return NextResponse.json({ error: "Tipo digest non valido" }, { status: 400 });
+  }
   const options = {
     siteUrl: SITE_URL,
     /**
@@ -69,7 +73,7 @@ export async function GET(request: NextRequest) {
     unsubscribeUrl: `${SITE_URL.replace(/\/$/, "")}/privacy#newsletter`,
   };
 
-  if (params.get("kind") === "price-radar-weekly") {
+  if (kind === "price-radar-weekly") {
     const maxItems = clampInt(params.get("items"), 8, 3, MAX_ITEMS);
     const { digest, examined } = await loadPriceDigest({ maxItems });
 
