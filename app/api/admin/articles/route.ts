@@ -24,5 +24,11 @@ export async function POST(request: NextRequest) {
       { status: 401, headers: { "Cache-Control": "no-store" } },
     );
   }
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return NextResponse.json(
+      { error: "Content-Type non supportato" },
+      { status: 415, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   return proxyToTjApi(request);
 }
