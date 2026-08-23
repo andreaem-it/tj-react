@@ -35,7 +35,13 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Endpoint push non valido" }, { status: 400 });
   }
-  if (endpoint.protocol !== "https:") {
+  const endpointValid =
+    endpoint.protocol === "https:" &&
+    endpoint.href.length <= 4096 &&
+    endpoint.username === "" &&
+    endpoint.password === "" &&
+    endpoint.hash === "";
+  if (!endpointValid) {
     return NextResponse.json({ error: "Endpoint push non valido" }, { status: 400 });
   }
   return proxyToTjApi(request, { timeoutMs: 15_000 });
