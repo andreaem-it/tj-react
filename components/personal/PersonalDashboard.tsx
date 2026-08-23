@@ -176,7 +176,7 @@ export default function PersonalDashboard() {
                       <button
                         type="button"
                         onClick={() => update((c) => unfollowTopic(c, followed.slug))}
-                        className="inline-flex min-h-11 items-center px-2 text-muted hover:text-accent"
+                        className="inline-flex min-h-11 items-center rounded px-2 text-muted hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         Smetti
                       </button>
@@ -205,7 +205,7 @@ export default function PersonalDashboard() {
                       <button
                         type="button"
                         onClick={() => update((c) => markTopicSeen(c, followed.slug, Date.now()))}
-                        className="mt-3 inline-flex min-h-11 items-center px-2 text-sm text-accent hover:underline"
+                        className="mt-3 inline-flex min-h-11 items-center rounded px-2 text-sm text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         Segna come letti
                       </button>
@@ -240,7 +240,7 @@ export default function PersonalDashboard() {
                     <button
                       type="button"
                       onClick={() => update((c) => unwatchProduct(c, product.asin))}
-                      className="inline-flex min-h-11 shrink-0 items-center px-2 text-sm text-muted hover:text-accent"
+                      className="inline-flex min-h-11 shrink-0 items-center rounded px-2 text-sm text-muted hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       Rimuovi
                     </button>
@@ -283,7 +283,7 @@ export default function PersonalDashboard() {
                 <button
                   type="button"
                   onClick={() => update((c) => unsaveArticle(c, article.id))}
-                  className="inline-flex min-h-11 shrink-0 items-center px-2 text-sm text-muted hover:text-accent"
+                  className="inline-flex min-h-11 shrink-0 items-center rounded px-2 text-sm text-muted hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   Rimuovi
                 </button>
