@@ -152,6 +152,7 @@ export default function PriceRadarContent({
   const [category, setCategory] = useState("");
   const [brands, setBrands] = useState<string[]>(initialData.brands);
   const [categories, setCategories] = useState<string[]>(initialData.categories);
+  const loadRequestId = useRef(0);
 
   /**
    * Il primo giro dell'effetto corrisponde ai filtri di default, che il server
@@ -162,6 +163,7 @@ export default function PriceRadarContent({
   const skipInitialLoad = useRef(!initialData.failed);
 
   const loadOffers = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
     setLoading(true);
     setError(null);
     try {
@@ -170,12 +172,14 @@ export default function PriceRadarContent({
         : PRICE_RADAR_ENABLED
           ? await fetchLiveOffers()
           : await fetchBetaOffers();
+      if (requestId !== loadRequestId.current) return;
       setOffers(data);
     } catch (e) {
+      if (requestId !== loadRequestId.current) return;
       setError(e instanceof Error ? e.message : "Errore nel caricamento");
       setOffers([]);
     } finally {
-      setLoading(false);
+      if (requestId === loadRequestId.current) setLoading(false);
     }
   }, [search, sort, brand, category]);
 
@@ -214,6 +218,11 @@ export default function PriceRadarContent({
       return;
     }
     void loadOffers();
+    return () => {
+      // Invalida la risposta in volo quando cambiano i filtri o il componente
+      // viene smontato: solo l'ultima richiesta può aggiornare la UI.
+      loadRequestId.current += 1;
+    };
   }, [loadOffers]);
 
   const filteredAndSorted = useMemo(() => {
