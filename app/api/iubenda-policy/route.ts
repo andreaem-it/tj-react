@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const IUBENDA_TIMEOUT_MS = 8_000;
+const MAX_POLICY_RESPONSE_BYTES = 1024 * 1024;
 
 /**
  * Proxy per l'API iubenda Direct Text Embedding (Privacy / Cookie policy).
@@ -64,12 +65,45 @@ export async function GET(request: NextRequest) {
       next: { revalidate: 3600 },
       signal: controller.signal,
     });
-    const data = await res.json().catch(() => ({}));
+    const declaredLength = Number(res.headers.get("content-length"));
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_POLICY_RESPONSE_BYTES) {
+      return NextResponse.json(
+        { success: false, error: "Upstream payload too large" },
+        { status: 502 },
+      );
+    }
+    const text = await res.text();
+    if (new TextEncoder().encode(text).byteLength > MAX_POLICY_RESPONSE_BYTES) {
+      return NextResponse.json(
+        { success: false, error: "Upstream payload too large" },
+        { status: 502 },
+      );
+    }
+    let data: unknown;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid upstream response" },
+        { status: 502 },
+      );
+    }
 
     if (!res.ok) {
+      const upstreamError =
+        typeof data === "object" && data !== null && "error" in data
+          ? (data as { error?: unknown }).error
+          : undefined;
       return NextResponse.json(
-        { success: false, error: (data as { error?: string }).error ?? "Request failed" },
+        { success: false, error: typeof upstreamError === "string" ? upstreamError : "Request failed" },
         { status: res.status }
+      );
+    }
+
+    if (typeof data !== "object" || data === null || Array.isArray(data)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid upstream response" },
+        { status: 502 },
       );
     }
 
