@@ -17,5 +17,11 @@ export async function GET(request: NextRequest) {
   if (sort && !["discount", "newest", "price"].includes(sort)) {
     return NextResponse.json({ error: "Invalid product sort" }, { status: 400 });
   }
+  for (const key of ["brand", "category"] as const) {
+    const value = params.get(key);
+    if (value !== null && (value.trim().length === 0 || value.trim().length > 80)) {
+      return NextResponse.json({ error: `Invalid ${key} filter` }, { status: 400 });
+    }
+  }
   return proxyPriceRadarToTjApi(request, { admin: false });
 }
