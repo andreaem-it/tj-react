@@ -47,19 +47,27 @@ export default function IubendaPolicyContent({
       return;
     }
     let cancelled = false;
-    fetch(`/api/iubenda-policy?id=${encodeURIComponent(policyId)}&type=${type}`)
-      .then((res) => res.json())
-      .then((json: ApiResponse) => {
+    const controller = new AbortController();
+
+    void (async () => {
+      try {
+        const response = await fetch(
+          `/api/iubenda-policy?id=${encodeURIComponent(policyId)}&type=${type}`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) throw new Error(`Policy iubenda non disponibile: ${response.status}`);
+        const json = (await response.json()) as ApiResponse;
         if (!cancelled) setData(json);
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setData({ success: false });
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
+
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [policyId, type]);
 
