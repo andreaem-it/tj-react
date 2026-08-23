@@ -6,6 +6,9 @@ const MAX_NEWSLETTER_PAYLOAD_BYTES = 8 * 1024;
 
 /** POST body JSON → tj-api (Brevo). */
 export async function POST(request: NextRequest) {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return NextResponse.json({ error: "Content-Type non supportato" }, { status: 415 });
+  }
   let body: unknown;
   try {
     const raw = await request.clone().text();
