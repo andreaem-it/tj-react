@@ -21,6 +21,7 @@ const TJ_API_USER_AGENT = "TechJournal-Frontend/1.0 (+https://www.techjournal.it
 const IS_DEV = process.env.NODE_ENV !== "production";
 const MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024;
 const MAX_RESPONSE_BODY_BYTES = 10 * 1024 * 1024;
+const NO_STORE = { "Cache-Control": "no-store" };
 
 /**
  * Header di risposta upstream da ripassare al client (case-insensitive in fetch).
@@ -78,7 +79,7 @@ export async function proxyToTjApi(
     if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 503);
     return NextResponse.json(
       { error: "TJ_API_BASE_URL non configurato" },
-      { status: 503 },
+      { status: 503, headers: NO_STORE },
     );
   }
 
@@ -87,12 +88,18 @@ export async function proxyToTjApi(
     upstreamOrigin = new URL(base).origin;
   } catch {
     if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 500);
-    return NextResponse.json({ error: "TJ_API_BASE_URL non valido" }, { status: 500 });
+    return NextResponse.json(
+      { error: "TJ_API_BASE_URL non valido" },
+      { status: 500, headers: NO_STORE },
+    );
   }
 
   if (upstreamOrigin === request.nextUrl.origin) {
     if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 500);
-    return NextResponse.json({ error: "Proxy loop detected" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Proxy loop detected" },
+      { status: 500, headers: NO_STORE },
+    );
   }
 
   const path = request.nextUrl.pathname + request.nextUrl.search;
@@ -157,11 +164,17 @@ export async function proxyToTjApi(
           ? Number(reqLenHeader)
           : Number.NaN;
       if (Number.isFinite(reqLen) && reqLen > MAX_REQUEST_BODY_BYTES) {
-        return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+        return NextResponse.json(
+          { error: "Payload too large" },
+          { status: 413, headers: NO_STORE },
+        );
       }
       const buf = await request.arrayBuffer();
       if (buf.byteLength > MAX_REQUEST_BODY_BYTES) {
-        return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+        return NextResponse.json(
+          { error: "Payload too large" },
+          { status: 413, headers: NO_STORE },
+        );
       }
       if (buf.byteLength > 0) {
         body = buf;
@@ -184,12 +197,18 @@ export async function proxyToTjApi(
         ? Number(upstreamLenHeader)
         : Number.NaN;
     if (Number.isFinite(upstreamLen) && upstreamLen > MAX_RESPONSE_BODY_BYTES) {
-      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Upstream payload too large" },
+        { status: 502, headers: NO_STORE },
+      );
     }
 
     const text = await res.text();
     if (Buffer.byteLength(text, "utf8") > MAX_RESPONSE_BODY_BYTES) {
-      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Upstream payload too large" },
+        { status: 502, headers: NO_STORE },
+      );
     }
     const upstreamCt = res.headers.get("content-type");
 
@@ -263,7 +282,7 @@ export async function proxyToTjApi(
     }
     return NextResponse.json(
       { error: isAbort ? "Upstream timeout" : "Upstream error" },
-      { status },
+      { status, headers: NO_STORE },
     );
   } finally {
     clearTimeout(timeoutId);
