@@ -12,6 +12,16 @@ async function parseWatchPayload(request: NextRequest): Promise<unknown> {
   return JSON.parse(raw);
 }
 
+function isValidPushEndpoint(endpoint: URL): boolean {
+  return (
+    endpoint.protocol === "https:" &&
+    endpoint.href.length <= 4096 &&
+    endpoint.username === "" &&
+    endpoint.password === "" &&
+    endpoint.hash === ""
+  );
+}
+
 /**
  * Avviso di prezzo (§24): registra/rimuove `{ endpoint, asin, targetPrice }`
  * lato tj-api, legato a una sottoscrizione push già attiva. Nessun segreto
@@ -43,7 +53,7 @@ export async function POST(request: NextRequest) {
       Number.isFinite(value.targetPrice) &&
       value.targetPrice > 0 &&
       value.targetPrice <= 1_000_000);
-  if (endpoint.protocol !== "https:" || !/^[A-Z0-9]{10}$/.test(value.asin ?? "") || !targetValid) {
+  if (!isValidPushEndpoint(endpoint) || !/^[A-Z0-9]{10}$/.test(value.asin ?? "") || !targetValid) {
     return NextResponse.json({ error: "Invalid watch payload" }, { status: 400 });
   }
   return proxyPriceRadarToTjApi(request, { admin: false });
@@ -69,7 +79,7 @@ export async function DELETE(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid watch payload" }, { status: 400 });
   }
-  if (endpoint.protocol !== "https:" || !/^[A-Z0-9]{10}$/.test(value.asin ?? "")) {
+  if (!isValidPushEndpoint(endpoint) || !/^[A-Z0-9]{10}$/.test(value.asin ?? "")) {
     return NextResponse.json({ error: "Invalid watch payload" }, { status: 400 });
   }
   return proxyPriceRadarToTjApi(request, { admin: false });
