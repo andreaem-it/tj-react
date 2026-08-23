@@ -14,6 +14,9 @@ const MAX_PUSH_PAYLOAD_BYTES = 64 * 1024;
  * notifiche rimanda la stessa sottoscrizione più volte.
  */
 export async function POST(request: NextRequest) {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return NextResponse.json({ error: "Content-Type non supportato" }, { status: 415 });
+  }
   let body: unknown;
   try {
     const raw = await request.clone().text();
