@@ -13,5 +13,9 @@ export async function GET(request: NextRequest) {
   if (status && !["active", "paused", "all"].includes(status)) {
     return NextResponse.json({ error: "Invalid product status" }, { status: 400 });
   }
+  const sort = params.get("sort");
+  if (sort && !["discount", "newest", "price"].includes(sort)) {
+    return NextResponse.json({ error: "Invalid product sort" }, { status: 400 });
+  }
   return proxyPriceRadarToTjApi(request, { admin: false });
 }
