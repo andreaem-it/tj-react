@@ -27,8 +27,8 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  if (!slug || typeof slug !== "string") {
-    return NextResponse.json({ error: "Slug mancante" }, { status: 400 });
+  if (!/^[a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?$/.test(slug)) {
+    return NextResponse.json({ error: "Slug non valido" }, { status: 400 });
   }
 
   const pathname = request.nextUrl.pathname;
