@@ -75,7 +75,10 @@ export async function proxyPriceRadarToTjApi(
     }
   }
 
-  const timeoutMs = options.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
+  const requestedTimeout = options.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
+  const timeoutMs = Number.isFinite(requestedTimeout)
+    ? Math.min(120_000, Math.max(100, requestedTimeout))
+    : DEFAULT_UPSTREAM_TIMEOUT_MS;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
