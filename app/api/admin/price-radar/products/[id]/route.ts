@@ -29,5 +29,11 @@ export async function PATCH(
   if (!isPriceRadarAdminRequest(request)) {
     return unauthorized();
   }
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return NextResponse.json(
+      { error: "Content-Type non supportato" },
+      { status: 415, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   return proxyPriceRadarToTjApi(request, { admin: true });
 }
