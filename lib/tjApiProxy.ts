@@ -156,7 +156,20 @@ export async function proxyToTjApi(
   try {
     let body: BodyInit | undefined;
     if (options?.bodyOverride !== undefined) {
-      body = JSON.stringify(options.bodyOverride);
+      const serialized = JSON.stringify(options.bodyOverride);
+      if (typeof serialized !== "string") {
+        return NextResponse.json(
+          { error: "Invalid JSON payload" },
+          { status: 400, headers: NO_STORE },
+        );
+      }
+      if (Buffer.byteLength(serialized, "utf8") > MAX_REQUEST_BODY_BYTES) {
+        return NextResponse.json(
+          { error: "Payload too large" },
+          { status: 413, headers: NO_STORE },
+        );
+      }
+      body = serialized;
     } else if (method !== "GET" && method !== "HEAD") {
       const reqLenHeader = request.headers.get("content-length");
       const reqLen =
