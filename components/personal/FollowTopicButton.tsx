@@ -42,7 +42,7 @@ export default function FollowTopicButton({
           ? "Salvato in questo browser: le preferenze non seguono su altri dispositivi"
           : `Aggiungi ${name} agli argomenti che segui`
       }
-      className={`inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${
+      className={`inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
         following
           ? "border-accent bg-accent/15 text-foreground"
           : "border-border text-foreground hover:bg-surface-overlay"
