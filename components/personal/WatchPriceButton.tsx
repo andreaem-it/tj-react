@@ -24,26 +24,34 @@ import { getActivePushSubscriptionEndpoint } from "@/lib/push/subscription";
  */
 async function registerServerWatch(asin: string, targetPrice: number | null): Promise<void> {
   if (targetPrice == null || !Number.isFinite(targetPrice) || targetPrice <= 0) return;
-  const endpoint = await getActivePushSubscriptionEndpoint();
-  if (!endpoint) return;
-  await fetch("/api/price-radar/watch", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ endpoint, asin, targetPrice }),
-  }).catch(() => {
+  try {
+    const endpoint = await getActivePushSubscriptionEndpoint();
+    if (!endpoint) return;
+    const response = await fetch("/api/price-radar/watch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ endpoint, asin, targetPrice }),
+    });
+    if (!response.ok) throw new Error(`Registrazione price alert fallita: ${response.status}`);
+  } catch {
     // Resta salvato in locale: al prossimo salvataggio (o al prossimo avvio
     // con notifiche attive) si riprova. Non è un errore da mostrare qui.
-  });
+  }
 }
 
 async function removeServerWatch(asin: string): Promise<void> {
-  const endpoint = await getActivePushSubscriptionEndpoint();
-  if (!endpoint) return;
-  await fetch("/api/price-radar/watch", {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ endpoint, asin }),
-  }).catch(() => {});
+  try {
+    const endpoint = await getActivePushSubscriptionEndpoint();
+    if (!endpoint) return;
+    const response = await fetch("/api/price-radar/watch", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ endpoint, asin }),
+    });
+    if (!response.ok) throw new Error(`Rimozione price alert fallita: ${response.status}`);
+  } catch {
+    // La rimozione locale resta valida anche se il backend non è raggiungibile.
+  }
 }
 
 export default function WatchPriceButton({
@@ -72,9 +80,13 @@ export default function WatchPriceButton({
 
   useEffect(() => {
     let cancelled = false;
-    getActivePushSubscriptionEndpoint().then((endpoint) => {
-      if (!cancelled) setPushActive(Boolean(endpoint));
-    });
+    getActivePushSubscriptionEndpoint()
+      .then((endpoint) => {
+        if (!cancelled) setPushActive(Boolean(endpoint));
+      })
+      .catch(() => {
+        if (!cancelled) setPushActive(false);
+      });
     return () => {
       cancelled = true;
     };
