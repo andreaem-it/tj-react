@@ -194,7 +194,7 @@ export default function PriceHistoryChart({
               // stanno in fila su schermi da 360px, dove un bersaglio più
               // piccolo si sbaglia. È la stessa altezza dei pulsanti di
               // dimensione testo negli articoli.
-              className={`min-h-11 rounded-lg border px-3.5 py-2 text-sm transition-colors ${
+              className={`min-h-11 rounded-lg border px-3.5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 range === key
                   ? "border-accent bg-accent/15 font-semibold text-foreground"
                   : "border-border text-muted hover:bg-surface-overlay"
