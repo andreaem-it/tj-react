@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
 
 type RankingKey = "read" | "week" | "month";
@@ -31,7 +31,28 @@ export default function HomeRankingsSidebar({
   const firstAvailable = (Object.keys(groups) as RankingKey[]).find((key) => groups[key].length > 0);
   const [active, setActive] = useState<RankingKey>(firstAvailable ?? "read");
   const baseId = useId();
+  const tabRefs = useRef<Partial<Record<RankingKey, HTMLButtonElement>>>({});
   const posts = groups[active];
+
+  const selectTab = (key: RankingKey) => {
+    setActive(key);
+    tabRefs.current[key]?.focus();
+  };
+
+  const handleTabKeyDown = (event: React.KeyboardEvent, key: RankingKey) => {
+    const enabled = (Object.keys(groups) as RankingKey[]).filter(
+      (candidate) => groups[candidate].length > 0,
+    );
+    const index = enabled.indexOf(key);
+    let next: RankingKey | undefined;
+    if (event.key === "ArrowRight") next = enabled[(index + 1) % enabled.length];
+    if (event.key === "ArrowLeft") next = enabled[(index - 1 + enabled.length) % enabled.length];
+    if (event.key === "Home") next = enabled[0];
+    if (event.key === "End") next = enabled.at(-1);
+    if (!next) return;
+    event.preventDefault();
+    selectTab(next);
+  };
 
   if (!firstAvailable) return null;
 
@@ -41,14 +62,19 @@ export default function HomeRankingsSidebar({
         {(Object.keys(groups) as RankingKey[]).map((key) => (
           <button
             key={key}
+            ref={(node) => {
+              if (node) tabRefs.current[key] = node;
+            }}
             id={`${baseId}-tab-${key}`}
             type="button"
             role="tab"
             aria-selected={active === key}
             aria-controls={`${baseId}-panel`}
             disabled={groups[key].length === 0}
+            tabIndex={active === key ? 0 : -1}
             onClick={() => setActive(key)}
-            className={`min-h-11 flex-1 px-2 text-xs font-semibold transition-colors border-b-2 -mb-px ${
+            onKeyDown={(event) => handleTabKeyDown(event, key)}
+            className={`min-h-11 flex-1 px-2 text-xs font-semibold transition-colors border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ${
               active === key
                 ? "border-accent text-foreground"
                 : "border-transparent text-muted hover:text-accent disabled:opacity-40"
