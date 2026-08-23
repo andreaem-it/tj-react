@@ -11,6 +11,7 @@ const IUBENDA_ORIGINS = [
   "https://cdn.iubenda.com",
 ];
 const IUBENDA_ATTEMPT_TIMEOUT_MS = 3_000;
+const MAX_EMBED_RESPONSE_BYTES = 512 * 1024;
 const ALLOWED_POLICY_IDS = new Set(
   [
     ...(process.env.IUBENDA_POLICY_IDS ?? "").split(","),
@@ -45,7 +46,19 @@ export async function GET(request: NextRequest) {
         signal: controller.signal,
       });
       if (res.ok) {
-        const data = await res.json().catch(() => ({}));
+        const declaredLength = Number(res.headers.get("content-length"));
+        if (Number.isFinite(declaredLength) && declaredLength > MAX_EMBED_RESPONSE_BYTES) {
+          continue;
+        }
+        const text = await res.text();
+        if (new TextEncoder().encode(text).byteLength > MAX_EMBED_RESPONSE_BYTES) continue;
+        let data: unknown;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          continue;
+        }
+        if (typeof data !== "object" || data === null || Array.isArray(data)) continue;
         return NextResponse.json(data, {
           headers: {
             "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
