@@ -31,11 +31,18 @@ function resolveOrigin(request: Request): string {
   return url.origin;
 }
 
+function isInternalPath(path: string): boolean {
+  const pathname = path.split(/[?#]/, 1)[0].toLowerCase();
+  return pathname === "/api" || pathname.startsWith("/api/") ||
+    pathname === "/_next" || pathname.startsWith("/_next/") ||
+    pathname === "/.well-known" || pathname.startsWith("/.well-known/");
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const path = url.searchParams.get("path");
 
-  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+  if (!path || !path.startsWith("/") || path.startsWith("//") || isInternalPath(path)) {
     return NextResponse.json({ error: "Missing or invalid path parameter." }, { status: 400 });
   }
 
