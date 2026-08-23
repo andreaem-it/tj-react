@@ -35,7 +35,10 @@ export default function AuthorCard({ author }: { author: AuthorProfile | null })
       )}
       <div className="min-w-0">
         <p className="text-muted text-sm font-semibold uppercase tracking-wide mb-1">Scritto da</p>
-        <TjLink href={authorHref} className="text-foreground font-medium hover:text-accent hover:underline">
+        <TjLink
+          href={authorHref}
+          className="inline-flex min-h-11 items-center rounded text-foreground font-medium hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
           {author.name}
         </TjLink>
         {safeBio && (
