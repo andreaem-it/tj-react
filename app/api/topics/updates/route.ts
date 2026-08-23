@@ -24,16 +24,23 @@ const CACHE_CONTROL = "public, s-maxage=300, stale-while-revalidate=1800";
 
 /** Argomenti per richiesta: oltre, la pagina fa più chiamate. */
 const MAX_SLUGS = 12;
+const MAX_SLUGS_PARAM_LENGTH = 1024;
 /** Articoli restituiti per argomento. */
 const ARTICLES_PER_TOPIC = 5;
 
 export async function GET(request: NextRequest) {
   const raw = request.nextUrl.searchParams.get("slugs") ?? "";
+  if (raw.length > MAX_SLUGS_PARAM_LENGTH) {
+    return NextResponse.json(
+      { error: "Parametro slugs troppo lungo" },
+      { status: 400, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   const slugs = [
     ...new Set(
       raw
         .split(",")
-        .map((slug) => slug.trim())
+        .map((slug) => slug.trim().toLowerCase())
         .filter(Boolean),
     ),
   ].slice(0, MAX_SLUGS);
