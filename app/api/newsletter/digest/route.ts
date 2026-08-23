@@ -63,6 +63,10 @@ export async function GET(request: NextRequest) {
   if (kind && kind !== "daily" && kind !== "price-radar-weekly") {
     return NextResponse.json({ error: "Tipo digest non valido" }, { status: 400 });
   }
+  const format = params.get("format");
+  if (format && format !== "json" && format !== "html") {
+    return NextResponse.json({ error: "Formato digest non valido" }, { status: 400 });
+  }
   const options = {
     siteUrl: SITE_URL,
     /**
@@ -88,7 +92,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (params.get("format") === "html") {
+    if (format === "html") {
       return new NextResponse(renderPriceDigestHtml(digest, options), {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
@@ -122,7 +126,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (params.get("format") === "html") {
+  if (format === "html") {
     return new NextResponse(renderDigestHtml(digest, options), {
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
