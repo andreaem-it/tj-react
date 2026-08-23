@@ -137,7 +137,7 @@ export default function WatchPriceButton({
         type="button"
         disabled={!hydrated}
         onClick={() => setOpen(true)}
-        className={`inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-surface-overlay disabled:opacity-50 ${className ?? ""}`}
+        className={`inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-surface-overlay disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${className ?? ""}`}
       >
         <span aria-hidden>◎</span>
         Tieni d&apos;occhio il prezzo
@@ -185,14 +185,14 @@ export default function WatchPriceButton({
         <span className="text-sm text-muted">{currency === "EUR" ? "€" : currency}</span>
         <button
           type="submit"
-          className="min-h-11 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-gray-900 transition-opacity hover:opacity-90"
+          className="min-h-11 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-gray-900 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           Salva
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="min-h-11 px-2 text-sm text-muted hover:text-foreground"
+          className="min-h-11 rounded px-2 text-sm text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           Annulla
         </button>
