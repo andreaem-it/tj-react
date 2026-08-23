@@ -11,6 +11,7 @@ export type ProxyTjApiOptions = {
 const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000;
 const MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024;
 const MAX_RESPONSE_BODY_BYTES = 10 * 1024 * 1024;
+const NO_STORE = { "Cache-Control": "no-store" };
 
 /**
  * Inoltra la richiesta a tj-api mantenendo lo stesso path e query string.
@@ -24,12 +25,15 @@ export async function proxyPriceRadarToTjApi(
   if (!base) {
     return NextResponse.json(
       { error: "TJ_API_BASE_URL non configurato" },
-      { status: 503 },
+      { status: 503, headers: NO_STORE },
     );
   }
 
   if (new URL(base).origin === request.nextUrl.origin) {
-    return NextResponse.json({ error: "Proxy loop detected" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Proxy loop detected" },
+      { status: 500, headers: NO_STORE },
+    );
   }
 
   const path = request.nextUrl.pathname + request.nextUrl.search;
@@ -41,7 +45,7 @@ export async function proxyPriceRadarToTjApi(
     if (!secret) {
       return NextResponse.json(
         { error: "PRICE_RADAR_ADMIN_SECRET non configurato" },
-        { status: 503 },
+        { status: 503, headers: NO_STORE },
       );
     }
     headers.set("Authorization", `Bearer ${secret}`);
@@ -64,11 +68,17 @@ export async function proxyPriceRadarToTjApi(
         ? Number(reqLenHeader)
         : Number.NaN;
     if (Number.isFinite(reqLen) && reqLen > MAX_REQUEST_BODY_BYTES) {
-      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+      return NextResponse.json(
+        { error: "Payload too large" },
+        { status: 413, headers: NO_STORE },
+      );
     }
     const buf = await request.arrayBuffer();
     if (buf.byteLength > MAX_REQUEST_BODY_BYTES) {
-      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+      return NextResponse.json(
+        { error: "Payload too large" },
+        { status: 413, headers: NO_STORE },
+      );
     }
     if (buf.byteLength > 0) {
       body = buf;
@@ -96,12 +106,18 @@ export async function proxyPriceRadarToTjApi(
         ? Number(upstreamLenHeader)
         : Number.NaN;
     if (Number.isFinite(upstreamLen) && upstreamLen > MAX_RESPONSE_BODY_BYTES) {
-      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Upstream payload too large" },
+        { status: 502, headers: NO_STORE },
+      );
     }
 
     const text = await res.text();
     if (Buffer.byteLength(text, "utf8") > MAX_RESPONSE_BODY_BYTES) {
-      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Upstream payload too large" },
+        { status: 502, headers: NO_STORE },
+      );
     }
     const outHeaders = new Headers();
     const upstreamCt = res.headers.get("content-type");
@@ -119,7 +135,7 @@ export async function proxyPriceRadarToTjApi(
       (err.name === "AbortError" || err.message === "This operation was aborted");
     return NextResponse.json(
       { error: isAbort ? "Upstream timeout" : "Upstream error" },
-      { status: isAbort ? 504 : 502 },
+      { status: isAbort ? 504 : 502, headers: NO_STORE },
     );
   } finally {
     clearTimeout(timeoutId);
