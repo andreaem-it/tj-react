@@ -6,6 +6,7 @@ export const revalidate = 300;
 const MARKDOWN_CACHE_CONTROL =
   "public, s-maxage=300, stale-while-revalidate=86400";
 const UPSTREAM_TIMEOUT_MS = 8_000;
+const MAX_UPSTREAM_HTML_BYTES = 2 * 1024 * 1024;
 
 function stripNonContentTags(html: string): string {
   return html
@@ -42,6 +43,7 @@ export async function GET(request: Request) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
   let upstream: Response;
+  let html: string;
   try {
     upstream = await fetch(targetUrl, {
       headers: {
@@ -51,6 +53,23 @@ export async function GET(request: Request) {
       next: { revalidate: 300 },
       signal: controller.signal,
     });
+
+    if (!upstream.ok) {
+      return new NextResponse("Not Found", {
+        status: upstream.status === 404 ? 404 : 502,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+
+    const declaredLength = Number(upstream.headers.get("content-length"));
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_UPSTREAM_HTML_BYTES) {
+      return NextResponse.json({ error: "Upstream page too large" }, { status: 502 });
+    }
+
+    html = await upstream.text();
+    if (new TextEncoder().encode(html).byteLength > MAX_UPSTREAM_HTML_BYTES) {
+      return NextResponse.json({ error: "Upstream page too large" }, { status: 502 });
+    }
   } catch (error) {
     const timedOut = error instanceof Error && error.name === "AbortError";
     return NextResponse.json(
@@ -60,15 +79,6 @@ export async function GET(request: Request) {
   } finally {
     clearTimeout(timeoutId);
   }
-
-  if (!upstream.ok) {
-    return new NextResponse("Not Found", {
-      status: upstream.status === 404 ? 404 : 502,
-      headers: { "content-type": "text/plain; charset=utf-8" },
-    });
-  }
-
-  const html = await upstream.text();
   const title = extractTitle(html);
   const focusedHtml = extractMainHtml(html);
   const cleanedHtml = stripNonContentTags(focusedHtml);
