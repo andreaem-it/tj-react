@@ -9,7 +9,14 @@ function unauthorized(): NextResponse {
   return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
 }
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  if (!/^[1-9]\d*$/.test(id)) {
+    return NextResponse.json({ error: "Invalid product id" }, { status: 400 });
+  }
   if (!isPriceRadarAdminConfigured()) {
     return NextResponse.json(
       { error: "PRICE_RADAR_ADMIN_SECRET non configurato" },
