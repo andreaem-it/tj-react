@@ -24,13 +24,13 @@ export default function Error({
         <button
           type="button"
           onClick={reset}
-          className="inline-flex min-h-11 items-center px-4 py-2 bg-accent text-gray-900 font-medium rounded hover:opacity-90"
+          className="inline-flex min-h-11 items-center px-4 py-2 bg-accent text-gray-900 font-medium rounded hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           Riprova
         </button>
         <Link
           href="/"
-          className="px-4 py-2 border border-border rounded font-medium hover:bg-surface-overlay"
+          className="inline-flex min-h-11 items-center px-4 py-2 border border-border rounded font-medium hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           Torna alla Home
         </Link>
