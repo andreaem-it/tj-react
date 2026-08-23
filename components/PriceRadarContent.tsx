@@ -277,7 +277,7 @@ export default function PriceRadarContent({
           <button
             type="button"
             onClick={loadOffers}
-            className="px-6 py-3 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors"
+            className="min-h-11 px-6 py-3 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Riprova
           </button>
@@ -342,7 +342,7 @@ export default function PriceRadarContent({
           <button
             type="button"
             onClick={() => setSearch(searchInput)}
-            className="px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground hover:bg-sidebar-bg transition-colors sm:self-stretch"
+            className="min-h-11 px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground hover:bg-sidebar-bg transition-colors sm:self-stretch focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             Cerca
           </button>
