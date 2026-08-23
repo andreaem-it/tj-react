@@ -193,7 +193,7 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded border border-border px-3 text-xs text-muted transition-colors hover:text-foreground"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded border border-border px-3 text-xs text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Chiudi ricerca"
           >
             Esc
@@ -271,7 +271,7 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
           <button
             type="button"
             onClick={submitFullSearch}
-            className="inline-flex min-h-11 items-center px-2 hover:text-accent"
+            className="inline-flex min-h-11 items-center rounded px-2 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             Vedi tutti i risultati
           </button>
