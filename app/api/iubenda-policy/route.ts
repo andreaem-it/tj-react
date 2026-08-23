@@ -35,15 +35,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Missing id" }, { status: 400 });
   }
 
-  if (ALLOWED_POLICY_IDS.size > 0 && !ALLOWED_POLICY_IDS.has(id)) {
+  if (type !== "privacy" && type !== "cookie") {
+    return NextResponse.json({ success: false, error: "Invalid type" }, { status: 400 });
+  }
+
+  if (ALLOWED_POLICY_IDS.size === 0) {
+    return NextResponse.json(
+      { success: false, error: "Iubenda policy ids not configured" },
+      { status: 503 },
+    );
+  }
+
+  if (!ALLOWED_POLICY_IDS.has(id)) {
     return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 });
   }
 
   const encodedId = encodeURIComponent(id);
-  const path =
-    type === "cookie"
-      ? `privacy-policy/${encodedId}/cookie-policy`
-      : `privacy-policy/${encodedId}`;
+  const path = type === "cookie"
+    ? `privacy-policy/${encodedId}/cookie-policy`
+    : `privacy-policy/${encodedId}`;
   const url = `https://www.iubenda.com/api/${path}`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), IUBENDA_TIMEOUT_MS);
