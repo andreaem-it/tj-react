@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { proxyToTjApi } from "@/lib/tjApiProxy";
 import { fetchPostBySlug, getCategoryUrlSlugFromWpSlug, type PostWithMeta } from "@/lib/api";
 import { contentPathsFor, purgeCloudflare, revalidateContent } from "@/lib/cacheInvalidation";
@@ -8,6 +8,7 @@ import { classifyArticleTopics } from "@/lib/content/enrich";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
+const MAX_WEBHOOK_BODY_BYTES = 1024 * 1024;
 
 /** Payload inviato dal plugin WP (`class-tj-social-webhook.php`). */
 type WpPublishedPayload = {
@@ -134,9 +135,23 @@ function buildEnrichedPayload(
  * fallire l'intera richiesta.
  */
 export async function POST(request: NextRequest) {
+  const contentLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_WEBHOOK_BODY_BYTES) {
+    return NextResponse.json(
+      { error: "Payload too large" },
+      { status: 413, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   let payload: WpPublishedPayload = {};
   try {
-    payload = (await request.clone().json()) as WpPublishedPayload;
+    const rawPayload = await request.clone().text();
+    if (Buffer.byteLength(rawPayload, "utf8") > MAX_WEBHOOK_BODY_BYTES) {
+      return NextResponse.json(
+        { error: "Payload too large" },
+        { status: 413, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    payload = JSON.parse(rawPayload) as WpPublishedPayload;
   } catch {
     // Payload illeggibile: si prosegue con l'inoltro originale, senza arricchimento.
   }
