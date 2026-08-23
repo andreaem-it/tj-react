@@ -268,7 +268,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
               className="flex h-11 w-11 items-center justify-center text-foreground hover:text-accent transition-colors rounded-lg hover:bg-surface-overlay"
               aria-label="Chiudi menu"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
