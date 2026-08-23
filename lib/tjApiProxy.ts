@@ -173,8 +173,6 @@ export async function proxyToTjApi(
       signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
     if (IS_DEV) console.log("[WP Proxy]", method, pathname, res.status);
 
     const upstreamLenHeader = res.headers.get("content-length");
@@ -253,7 +251,6 @@ export async function proxyToTjApi(
       headers: outHeaders,
     });
   } catch (err) {
-    clearTimeout(timeoutId);
     const isAbort =
       err instanceof Error &&
       (err.name === "AbortError" || err.message === "This operation was aborted");
@@ -265,5 +262,7 @@ export async function proxyToTjApi(
       { error: isAbort ? "Upstream timeout" : "Upstream error" },
       { status },
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
