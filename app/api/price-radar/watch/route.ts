@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { proxyPriceRadarToTjApi } from "@/lib/priceRadar/proxyTjApi";
 
 export const dynamic = "force-dynamic";
+const MAX_WATCH_PAYLOAD_BYTES = 16 * 1024;
+
+async function parseWatchPayload(request: NextRequest): Promise<unknown> {
+  const raw = await request.clone().text();
+  if (Buffer.byteLength(raw, "utf8") > MAX_WATCH_PAYLOAD_BYTES) {
+    throw new RangeError("Payload too large");
+  }
+  return JSON.parse(raw);
+}
 
 /**
  * Avviso di prezzo (§24): registra/rimuove `{ endpoint, asin, targetPrice }`
@@ -11,8 +20,11 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   let body: unknown;
   try {
-    body = await request.clone().json();
-  } catch {
+    body = await parseWatchPayload(request);
+  } catch (error) {
+    if (error instanceof RangeError) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
     return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
   }
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
@@ -40,8 +52,11 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   let body: unknown;
   try {
-    body = await request.clone().json();
-  } catch {
+    body = await parseWatchPayload(request);
+  } catch (error) {
+    if (error instanceof RangeError) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
     return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
   }
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
