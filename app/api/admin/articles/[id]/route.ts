@@ -14,15 +14,20 @@ function invalidId(): NextResponse {
   return NextResponse.json({ error: "ID articolo non valido" }, { status: 400 });
 }
 
+function unauthenticated(): NextResponse {
+  return NextResponse.json(
+    { error: "Non autenticato" },
+    { status: 401, headers: { "Cache-Control": "no-store" } },
+  );
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   if (!(await hasValidId(params))) return invalidId();
   const session = await getSessionFromRequest(request);
-  if (!session) {
-    return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
-  }
+  if (!session) return unauthenticated();
   return proxyToTjApi(request);
 }
 
@@ -32,9 +37,7 @@ export async function PUT(
 ) {
   if (!(await hasValidId(params))) return invalidId();
   const session = await getSessionFromRequest(request);
-  if (!session) {
-    return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
-  }
+  if (!session) return unauthenticated();
   return proxyToTjApi(request);
 }
 
@@ -45,9 +48,7 @@ export async function PATCH(
 ) {
   if (!(await hasValidId(params))) return invalidId();
   const session = await getSessionFromRequest(request);
-  if (!session) {
-    return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
-  }
+  if (!session) return unauthenticated();
   return proxyToTjApi(request, { methodOverride: "PUT" });
 }
 
@@ -57,8 +58,6 @@ export async function DELETE(
 ) {
   if (!(await hasValidId(params))) return invalidId();
   const session = await getSessionFromRequest(request);
-  if (!session) {
-    return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
-  }
+  if (!session) return unauthenticated();
   return proxyToTjApi(request);
 }
