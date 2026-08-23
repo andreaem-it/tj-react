@@ -25,7 +25,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-overlay text-foreground hover:border-accent hover:text-accent transition-colors"
+      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-overlay text-foreground hover:border-accent hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       aria-label={label}
       title={label}
     >
