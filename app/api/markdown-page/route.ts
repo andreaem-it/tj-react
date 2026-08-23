@@ -69,9 +69,9 @@ export async function GET(request: Request) {
   }
 
   const html = await upstream.text();
+  const title = extractTitle(html);
   const focusedHtml = extractMainHtml(html);
   const cleanedHtml = stripNonContentTags(focusedHtml);
-  const title = extractTitle(cleanedHtml);
   const markdownBody = htmlToMarkdown(cleanedHtml);
   const markdown = [`# ${title}`, "", `Source: ${path}`, "", markdownBody].join("\n").trim();
 
