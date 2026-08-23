@@ -19,6 +19,8 @@ const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
 const CACHE_CONTROL =
   "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800";
+const UPSTREAM_TIMEOUT_MS = 8_000;
+const MAX_UPSTREAM_IMAGE_BYTES = 5 * 1024 * 1024;
 
 /** Colori brand: vedi app/globals.css (--background dark / --accent). */
 const BRAND_BACKGROUND = "#1a1a1a";
@@ -82,14 +84,24 @@ function renderFallbackImage(): ImageResponse {
 
 export async function GET() {
   if (UPSTREAM) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     try {
       const res = await fetch(UPSTREAM, {
         headers: { Accept: "image/*", "User-Agent": "TechJournal-OGDefault/1.0" },
         next: { revalidate: 86_400 },
+        signal: controller.signal,
       });
       if (res.ok) {
-        const contentType = res.headers.get("content-type") ?? "image/png";
-        return new NextResponse(res.body, {
+        const contentType = res.headers.get("content-type")?.split(";", 1)[0].trim() ?? "";
+        const declaredLength = Number(res.headers.get("content-length"));
+        if (!contentType.startsWith("image/")) return renderFallbackImage();
+        if (Number.isFinite(declaredLength) && declaredLength > MAX_UPSTREAM_IMAGE_BYTES) {
+          return renderFallbackImage();
+        }
+        const image = await res.arrayBuffer();
+        if (image.byteLength > MAX_UPSTREAM_IMAGE_BYTES) return renderFallbackImage();
+        return new NextResponse(image, {
           status: 200,
           headers: {
             "Content-Type": contentType,
@@ -99,6 +111,8 @@ export async function GET() {
       }
     } catch {
       // Upstream irraggiungibile: si passa al fallback generato.
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
   return renderFallbackImage();
