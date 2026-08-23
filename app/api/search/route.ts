@@ -38,6 +38,7 @@ const CACHE_CONTROL = "public, s-maxage=300, stale-while-revalidate=3600";
 
 /** Query più corta di così non seleziona nulla di utile. */
 const MIN_QUERY_LENGTH = 2;
+const MAX_QUERY_LENGTH = 120;
 
 /** Risultati per gruppo: la tendina deve restare leggibile senza scorrere molto. */
 const LIMIT_PER_KIND = 5;
@@ -52,7 +53,13 @@ function emptyResponse(query: string): NextResponse {
 
 export async function GET(request: NextRequest) {
   const raw = request.nextUrl.searchParams.get("q") ?? "";
-  const query = raw.trim().slice(0, 120);
+  const query = raw.trim();
+  if (query.length > MAX_QUERY_LENGTH) {
+    return NextResponse.json(
+      { error: "Query troppo lunga" },
+      { status: 400, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   if (query.length < MIN_QUERY_LENGTH) return emptyResponse(query);
 
   const tokens = tokenize(query);
