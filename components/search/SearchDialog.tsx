@@ -94,7 +94,9 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
         console.error("[Search] richiesta fallita:", error);
         setResponse({ query: trimmed, groups: [] });
       } finally {
-        setLoading(false);
+        // Una query precedente abortita può terminare dopo che quella nuova è
+        // già partita: non deve spegnere il suo indicatore di caricamento.
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, DEBOUNCE_MS);
 
