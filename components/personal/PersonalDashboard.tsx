@@ -176,7 +176,7 @@ export default function PersonalDashboard() {
                       <button
                         type="button"
                         onClick={() => update((c) => unfollowTopic(c, followed.slug))}
-                        className="text-muted hover:text-accent"
+                        className="inline-flex min-h-11 items-center px-2 text-muted hover:text-accent"
                       >
                         Smetti
                       </button>
@@ -205,7 +205,7 @@ export default function PersonalDashboard() {
                       <button
                         type="button"
                         onClick={() => update((c) => markTopicSeen(c, followed.slug, Date.now()))}
-                        className="mt-3 text-sm text-accent hover:underline"
+                        className="mt-3 inline-flex min-h-11 items-center px-2 text-sm text-accent hover:underline"
                       >
                         Segna come letti
                       </button>
@@ -240,7 +240,7 @@ export default function PersonalDashboard() {
                     <button
                       type="button"
                       onClick={() => update((c) => unwatchProduct(c, product.asin))}
-                      className="shrink-0 text-sm text-muted hover:text-accent"
+                      className="inline-flex min-h-11 shrink-0 items-center px-2 text-sm text-muted hover:text-accent"
                     >
                       Rimuovi
                     </button>
@@ -283,7 +283,7 @@ export default function PersonalDashboard() {
                 <button
                   type="button"
                   onClick={() => update((c) => unsaveArticle(c, article.id))}
-                  className="shrink-0 text-sm text-muted hover:text-accent"
+                  className="inline-flex min-h-11 shrink-0 items-center px-2 text-sm text-muted hover:text-accent"
                 >
                   Rimuovi
                 </button>

@@ -42,7 +42,7 @@ export default function SaveArticleButton({
           ? "Salvato in questo browser: lo trovi in Area personale"
           : "Salva questo articolo per rileggerlo dopo"
       }
-      className={`inline-flex items-center gap-1.5 text-sm transition-colors disabled:opacity-50 ${
+      className={`inline-flex min-h-11 items-center gap-1.5 px-2 text-sm transition-colors disabled:opacity-50 ${
         saved ? "text-accent" : "text-muted hover:text-accent"
       } ${className ?? ""}`}
     >
