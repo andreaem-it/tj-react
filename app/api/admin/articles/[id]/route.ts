@@ -11,7 +11,10 @@ async function hasValidId(params: Promise<{ id: string }>): Promise<boolean> {
 }
 
 function invalidId(): NextResponse {
-  return NextResponse.json({ error: "ID articolo non valido" }, { status: 400 });
+  return NextResponse.json(
+    { error: "ID articolo non valido" },
+    { status: 400, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 function unauthenticated(): NextResponse {
