@@ -11,10 +11,19 @@ const IUBENDA_ORIGINS = [
   "https://cdn.iubenda.com",
 ];
 const IUBENDA_ATTEMPT_TIMEOUT_MS = 3_000;
+const ALLOWED_POLICY_IDS = new Set(
+  [
+    ...(process.env.IUBENDA_POLICY_IDS ?? "").split(","),
+    process.env.NEXT_PUBLIC_IUBENDA_SITE_ID,
+    process.env.NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID,
+  ]
+    .map((value) => value?.trim() ?? "")
+    .filter(Boolean),
+);
 
 export async function GET(request: NextRequest) {
-  const id = request.nextUrl.searchParams.get("i");
-  if (!id) {
+  const id = request.nextUrl.searchParams.get("i")?.trim() ?? "";
+  if (!id || ALLOWED_POLICY_IDS.size === 0 || !ALLOWED_POLICY_IDS.has(id)) {
     return NextResponse.json({}, { status: 200 });
   }
   const encodedId = encodeURIComponent(id);
