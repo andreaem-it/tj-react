@@ -107,7 +107,7 @@ export default function IubendaPolicyContent({
             <button
               type="button"
               onClick={() => iubenda.showCookiePolicy()}
-              className="text-accent hover:underline bg-transparent border-none cursor-pointer p-0 font-inherit"
+              className="cursor-pointer rounded-sm border-none bg-transparent p-1 font-inherit text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               Visualizza cookie policy
             </button>
@@ -115,7 +115,7 @@ export default function IubendaPolicyContent({
             <button
               type="button"
               onClick={() => iubenda.openPreferences()}
-              className="text-accent hover:underline bg-transparent border-none cursor-pointer p-0 font-inherit"
+              className="cursor-pointer rounded-sm border-none bg-transparent p-1 font-inherit text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               Modifica preferenze
             </button>
