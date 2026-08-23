@@ -32,7 +32,7 @@ export default function RelatedArticlesSlider({ posts, heading }: RelatedArticle
             type="button"
             onClick={() => setCurrentSlide((s) => Math.max(0, s - 1))}
             disabled={!canPrev}
-            className="w-9 h-9 rounded-lg border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            className="w-11 h-11 rounded-lg border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label="Articoli precedenti"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,7 +46,7 @@ export default function RelatedArticlesSlider({ posts, heading }: RelatedArticle
             type="button"
             onClick={() => setCurrentSlide((s) => Math.min(totalSlides - 1, s + 1))}
             disabled={!canNext}
-            className="w-9 h-9 rounded-lg border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            className="w-11 h-11 rounded-lg border border-border bg-surface-overlay text-foreground hover:bg-surface-overlay-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-label="Articoli successivi"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,18 +61,25 @@ export default function RelatedArticlesSlider({ posts, heading }: RelatedArticle
         ))}
       </div>
       {totalSlides > 1 && (
-        <div className="flex justify-center gap-1.5 mt-4">
+        <div className="flex justify-center mt-4">
           {Array.from({ length: totalSlides }, (_, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setCurrentSlide(i)}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                i === currentSlide ? "bg-accent" : "bg-surface-overlay hover:bg-surface-overlay-strong"
-              }`}
+              className="w-11 h-11 rounded-full flex items-center justify-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               aria-label={`Vai al gruppo ${i + 1}`}
               aria-current={i === currentSlide ? "true" : undefined}
-            />
+            >
+              <span
+                aria-hidden="true"
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  i === currentSlide
+                    ? "bg-accent"
+                    : "bg-surface-overlay group-hover:bg-surface-overlay-strong"
+                }`}
+              />
+            </button>
           ))}
         </div>
       )}
