@@ -28,6 +28,10 @@ export async function proxyPriceRadarToTjApi(
     );
   }
 
+  if (new URL(base).origin === request.nextUrl.origin) {
+    return NextResponse.json({ error: "Proxy loop detected" }, { status: 500 });
+  }
+
   const path = request.nextUrl.pathname + request.nextUrl.search;
   const url = `${base}${path}`;
 
