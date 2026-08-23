@@ -91,7 +91,7 @@ function DevicePicker({
         <select
           name="a"
           defaultValue={a}
-          className="w-full rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground focus:border-accent focus:outline-none"
+          className="min-h-11 w-full rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground focus:border-accent focus:outline-none"
         >
           {options}
         </select>
@@ -101,7 +101,7 @@ function DevicePicker({
         <select
           name="b"
           defaultValue={b}
-          className="w-full rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground focus:border-accent focus:outline-none"
+          className="min-h-11 w-full rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground focus:border-accent focus:outline-none"
         >
           {options}
         </select>
