@@ -35,5 +35,21 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  let body: unknown;
+  try {
+    body = await request.clone().json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
+  const value = body as Partial<{ endpoint: string; asin: string }>;
+  let endpoint: URL;
+  try {
+    endpoint = new URL(value.endpoint ?? "");
+  } catch {
+    return NextResponse.json({ error: "Invalid watch payload" }, { status: 400 });
+  }
+  if (endpoint.protocol !== "https:" || !/^[A-Z0-9]{10}$/.test(value.asin ?? "")) {
+    return NextResponse.json({ error: "Invalid watch payload" }, { status: 400 });
+  }
   return proxyPriceRadarToTjApi(request, { admin: false });
 }
