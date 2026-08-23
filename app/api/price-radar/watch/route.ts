@@ -22,12 +22,19 @@ function isValidPushEndpoint(endpoint: URL): boolean {
   );
 }
 
+function hasJsonContentType(request: NextRequest): boolean {
+  return request.headers.get("content-type")?.toLowerCase().startsWith("application/json") ?? false;
+}
+
 /**
  * Avviso di prezzo (§24): registra/rimuove `{ endpoint, asin, targetPrice }`
  * lato tj-api, legato a una sottoscrizione push già attiva. Nessun segreto
  * qui: chi chiama è il browser del lettore, come `/api/push/subscribe`.
  */
 export async function POST(request: NextRequest) {
+  if (!hasJsonContentType(request)) {
+    return NextResponse.json({ error: "Unsupported Content-Type" }, { status: 415 });
+  }
   let body: unknown;
   try {
     body = await parseWatchPayload(request);
@@ -60,6 +67,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!hasJsonContentType(request)) {
+    return NextResponse.json({ error: "Unsupported Content-Type" }, { status: 415 });
+  }
   let body: unknown;
   try {
     body = await parseWatchPayload(request);
