@@ -82,7 +82,7 @@ function DesktopNavFallback() {
       </Link>
       <Link
         href="/search"
-        className="ml-auto inline-flex h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent"
+        className="ml-auto inline-flex h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         aria-label="Cerca"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -119,7 +119,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center text-foreground transition-colors hover:text-accent md:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center text-foreground transition-colors hover:text-accent md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Apri menu"
             aria-expanded={mobileMenuOpen}
           >
@@ -127,7 +127,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="TechJournal">
+          <Link href="/" className="flex items-center shrink-0 min-w-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="TechJournal">
             <TechJournalLogo />
           </Link>
           <div className="flex items-center gap-3 shrink-0">
@@ -135,7 +135,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               href="https://www.facebook.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent md:inline-flex"
+              className="hidden h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent md:inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="Facebook"
             >
               <span className="text-lg font-semibold">f</span>
@@ -144,7 +144,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               href="https://www.instagram.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent md:inline-flex"
+              className="hidden h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent md:inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="Instagram"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
