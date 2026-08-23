@@ -93,7 +93,7 @@ export default function NewsletterModal() {
         <button
           type="button"
           onClick={close}
-          className="absolute right-3 top-3 z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-overlay border border-border text-foreground hover:bg-content-bg hover:text-accent transition-colors shadow-sm"
+          className="absolute right-3 top-3 z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-overlay border border-border text-foreground hover:bg-content-bg hover:text-accent transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           aria-label="Chiudi newsletter"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
@@ -131,7 +131,7 @@ export default function NewsletterModal() {
             <button
               type="submit"
               disabled={submitting || status === "success"}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-accent text-gray-900 text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity whitespace-nowrap min-h-11"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-accent text-gray-900 text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity whitespace-nowrap min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               {submitting ? "Invio..." : status === "success" ? "Iscritto!" : "Iscriviti"}
             </button>
