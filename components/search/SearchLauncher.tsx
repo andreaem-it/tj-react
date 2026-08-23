@@ -53,7 +53,7 @@ export default function SearchLauncher({ className }: { className?: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={className}
+        className={`inline-flex h-11 w-11 shrink-0 items-center justify-center ${className ?? ""}`}
         aria-label="Cerca su TechJournal"
         aria-keyshortcuts="Meta+K Control+K"
       >
