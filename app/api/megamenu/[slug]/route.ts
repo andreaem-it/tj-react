@@ -66,7 +66,13 @@ export async function GET(
   if (cached) {
     // Upstream in errore ma cache (anche scaduta) disponibile: stale-if-error.
     console.log("[WP Proxy]", "GET", pathname, 200);
-    return NextResponse.json(cached.data, { status: 200 });
+    return NextResponse.json(cached.data, {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store",
+        Warning: '110 - "Response is stale"',
+      },
+    });
   }
 
   // Errore upstream senza cache: non mascherare come 200 + [] (outage invisibile).
