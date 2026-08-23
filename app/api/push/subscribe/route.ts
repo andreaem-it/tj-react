@@ -52,7 +52,13 @@ export async function POST(request: NextRequest) {
       value.topics.every(
         (topic) => typeof topic === "string" && /^[a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?$/.test(topic),
       ));
-  if (endpoint.protocol !== "https:" || !keysValid || !topicsValid) {
+  const endpointValid =
+    endpoint.protocol === "https:" &&
+    endpoint.href.length <= 4096 &&
+    endpoint.username === "" &&
+    endpoint.password === "" &&
+    endpoint.hash === "";
+  if (!endpointValid || !keysValid || !topicsValid) {
     return NextResponse.json({ error: "Sottoscrizione push non valida" }, { status: 400 });
   }
   return proxyToTjApi(request, { timeoutMs: 15_000 });
