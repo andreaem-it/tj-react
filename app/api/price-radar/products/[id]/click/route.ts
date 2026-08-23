@@ -9,7 +9,10 @@ export async function POST(
 ) {
   const { id } = await params;
   if (!/^[1-9]\d*$/.test(id)) {
-    return NextResponse.json({ error: "Invalid product id" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid product id" },
+      { status: 400, headers: { "Cache-Control": "no-store" } },
+    );
   }
   return proxyPriceRadarToTjApi(request, { admin: false });
 }
