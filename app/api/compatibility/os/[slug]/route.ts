@@ -9,5 +9,9 @@ export async function GET(
   if (!/^[a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?$/.test(slug)) {
     return NextResponse.json({ error: "Invalid OS slug" }, { status: 400 });
   }
+  const status = request.nextUrl.searchParams.get("status");
+  if (status && !["supported", "unsupported", "partial", "community"].includes(status)) {
+    return NextResponse.json({ error: "Invalid compatibility status" }, { status: 400 });
+  }
   return proxyToTjApi(request);
 }
