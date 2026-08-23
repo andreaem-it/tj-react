@@ -15,6 +15,7 @@ export async function GET() {
   return NextResponse.json(descriptor, {
     headers: {
       "content-type": "application/json; charset=utf-8",
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
       Link: `</api/openapi.json>; rel="service-desc", </docs>; rel="service-doc"`,
     },
   });
