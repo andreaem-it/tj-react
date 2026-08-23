@@ -133,7 +133,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
           <Link
             href={`/price-radar/${offer.asin}`}
             prefetch={false}
-            className="relative z-20 mb-2 flex items-center justify-center gap-1 text-sm text-muted transition-colors hover:text-accent"
+            className="relative z-20 mb-2 flex min-h-11 items-center justify-center gap-1 rounded text-sm text-muted transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             Storico prezzi e valutazione
           </Link>
@@ -143,7 +143,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
           href={offer.url}
           target="_blank"
           rel="nofollow sponsored noopener noreferrer"
-          className="relative z-20 mt-auto flex items-center justify-center gap-2 w-full py-3 px-4 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors"
+          className="relative z-20 mt-auto flex min-h-11 items-center justify-center gap-2 w-full py-3 px-4 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           onClick={(e) => {
             e.stopPropagation();
             if (offer.productId != null) {
