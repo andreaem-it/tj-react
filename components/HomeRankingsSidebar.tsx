@@ -99,7 +99,7 @@ export default function HomeRankingsSidebar({
               <Link
                 href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
                 prefetch={false}
-                className="group block"
+                className="group block rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <span className="text-muted text-xs font-semibold uppercase tracking-wide">
                   {post.categoryName}
