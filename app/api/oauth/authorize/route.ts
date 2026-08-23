@@ -7,7 +7,7 @@ function notEnabled() {
       error_description:
         "OAuth authorization endpoint is published for discovery but not enabled in this environment.",
     },
-    { status: 503 }
+    { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "3600" } }
   );
 }
 
