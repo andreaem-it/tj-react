@@ -85,7 +85,7 @@ export default function ProductPriceCard({
             rel="nofollow sponsored noopener noreferrer"
             className="text-accent hover:underline"
           >
-            Vedi l&apos;offerta ↗
+            Vedi l&apos;offerta affiliata ↗
           </a>
         </div>
       </div>

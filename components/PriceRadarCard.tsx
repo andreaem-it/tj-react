@@ -142,7 +142,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
         <a
           href={offer.url}
           target="_blank"
-          rel="noopener noreferrer sponsored"
+          rel="nofollow sponsored noopener noreferrer"
           className="relative z-20 mt-auto flex items-center justify-center gap-2 w-full py-3 px-4 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors"
           onClick={(e) => {
             e.stopPropagation();
@@ -151,7 +151,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
             }
           }}
         >
-          Scopri su Amazon
+          Scopri su Amazon (link affiliato)
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>
