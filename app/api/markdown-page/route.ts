@@ -5,6 +5,7 @@ export const revalidate = 300;
 
 const MARKDOWN_CACHE_CONTROL =
   "public, s-maxage=300, stale-while-revalidate=86400";
+const UPSTREAM_TIMEOUT_MS = 8_000;
 
 function stripNonContentTags(html: string): string {
   return html
@@ -26,31 +27,39 @@ function extractTitle(html: string): string {
 
 function resolveOrigin(request: Request): string {
   const url = new URL(request.url);
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  if (forwardedHost) {
-    const proto = forwardedProto || "https";
-    return `${proto}://${forwardedHost}`;
-  }
-  return `${url.protocol}//${url.host}`;
+  return url.origin;
 }
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const path = url.searchParams.get("path");
 
-  if (!path || !path.startsWith("/")) {
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
     return NextResponse.json({ error: "Missing or invalid path parameter." }, { status: 400 });
   }
 
   const targetUrl = `${resolveOrigin(request)}${path}`;
-  const upstream = await fetch(targetUrl, {
-    headers: {
-      Accept: "text/html",
-      "x-skip-markdown-rewrite": "1",
-    },
-    next: { revalidate: 300 },
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+  let upstream: Response;
+  try {
+    upstream = await fetch(targetUrl, {
+      headers: {
+        Accept: "text/html",
+        "x-skip-markdown-rewrite": "1",
+      },
+      next: { revalidate: 300 },
+      signal: controller.signal,
+    });
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "AbortError";
+    return NextResponse.json(
+      { error: timedOut ? "Upstream timeout" : "Upstream unavailable" },
+      { status: timedOut ? 504 : 502 },
+    );
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!upstream.ok) {
     return new NextResponse("Not Found", {
