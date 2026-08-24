@@ -234,7 +234,7 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
 
       <TjLink
         href={`/compatibility/confronta?a=${encodeURIComponent(device.slug)}`}
-        className="mb-8 inline-flex items-center gap-1 text-sm text-accent hover:underline"
+        className="mb-8 inline-flex min-h-11 items-center gap-1 rounded text-sm text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         Confronta {device.name} con un altro dispositivo →
       </TjLink>
