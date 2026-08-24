@@ -52,7 +52,7 @@ export default function Changelog({
       </p>
       {previous.length > 0 && (
         <details className="mt-1">
-          <summary className="cursor-pointer text-accent hover:underline">
+          <summary className="flex min-h-11 cursor-pointer items-center rounded text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
             Cronologia aggiornamenti
           </summary>
           <ul className="mt-2 space-y-2">
