@@ -39,7 +39,7 @@ export default function ArticleTopics({
           <li key={topic.slug}>
             <TjLink
               href={href}
-              className="inline-flex items-center rounded-full border border-border bg-surface-overlay px-3 py-1 text-xs font-medium text-foreground transition-colors hover:border-accent hover:text-accent"
+              className="inline-flex min-h-11 items-center rounded-full border border-border bg-surface-overlay px-3 py-1 text-xs font-medium text-foreground transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               {topic.name}
             </TjLink>
