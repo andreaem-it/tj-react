@@ -128,7 +128,8 @@ export default async function OsCompatibilityPage({ params, searchParams }: Prop
             <Link
               key={o.value || "all"}
               href={href}
-              className={`rounded-lg border px-2.5 py-1 text-xs transition border-[var(--border)] ${
+              aria-current={active ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center rounded-lg border px-2.5 py-1 text-xs transition border-[var(--border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                 active
                   ? "bg-[var(--accent)]/20 border-[var(--accent)]"
                   : "hover:bg-[var(--surface-overlay)]"
