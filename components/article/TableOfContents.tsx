@@ -32,7 +32,7 @@ export default function TableOfContents({ entries }: { entries: readonly TocEntr
           <li key={entry.id} className={entry.level === 3 ? "pl-4" : undefined}>
             <a
               href={`#${entry.id}`}
-              className="text-foreground hover:text-accent hover:underline wrap-anywhere"
+              className="inline-flex min-h-11 items-center rounded text-foreground hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent wrap-anywhere"
             >
               {entry.text}
             </a>
