@@ -26,7 +26,7 @@ export default function SourceList({ sources }: { sources: readonly ArticleSourc
               href={source.url}
               target="_blank"
               rel="noopener"
-              className="text-foreground hover:text-accent hover:underline wrap-anywhere"
+              className="inline-flex min-h-11 items-center rounded text-foreground hover:text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent wrap-anywhere"
             >
               {source.name}
             </a>
