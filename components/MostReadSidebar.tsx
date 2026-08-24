@@ -22,7 +22,7 @@ export default function MostReadSidebar({ posts, title = "Più letti" }: MostRea
               <Link
                 href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
                 prefetch={false}
-                className="group block"
+                className="group flex min-h-11 flex-col justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <p className="text-muted text-xs font-semibold uppercase tracking-wide">
                   {post.categoryName}
@@ -43,4 +43,3 @@ export default function MostReadSidebar({ posts, title = "Più letti" }: MostRea
     </aside>
   );
 }
-
