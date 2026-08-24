@@ -90,7 +90,7 @@ export default async function CompatibilityIndexPage({
       </p>
       <Link
         href="/compatibility/confronta"
-        className="mb-6 inline-flex items-center gap-1 text-sm text-[var(--accent)] hover:underline"
+        className="mb-6 inline-flex min-h-11 items-center gap-1 rounded text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         Confronta due dispositivi →
       </Link>
@@ -112,7 +112,7 @@ export default async function CompatibilityIndexPage({
                       <li key={d.id}>
                         <Link
                           href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                          className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
+                          className="flex min-h-11 items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                         >
                           {d.imageUrl ? (
                             <Image
@@ -150,7 +150,7 @@ export default async function CompatibilityIndexPage({
                     <li key={d.id}>
                       <Link
                         href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                        className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
+                        className="flex min-h-11 items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         {d.imageUrl ? (
                           <Image
