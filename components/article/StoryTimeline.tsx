@@ -29,7 +29,10 @@ function formatDay(dateStr: string): string {
 function Entry({ post }: { post: PostListItem }) {
   return (
     <li>
-      <TjLink href={href(post)} className="group block">
+      <TjLink
+        href={href(post)}
+        className="group flex min-h-11 flex-col justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
         <time className="block text-xs uppercase tracking-wide text-muted" dateTime={post.date}>
           {formatDay(post.date)}
         </time>
@@ -53,7 +56,10 @@ export default function StoryTimelineSection({ story }: { story: Story }) {
         <h2 id="tj-story" className="text-sm font-semibold uppercase tracking-wide text-muted">
           Gli sviluppi su {story.topic.name}
         </h2>
-        <TjLink href={`/topic/${story.topic.slug}`} className="text-sm text-accent hover:underline">
+        <TjLink
+          href={`/topic/${story.topic.slug}`}
+          className="inline-flex min-h-11 items-center rounded text-sm text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
           {story.total} articoli →
         </TjLink>
       </div>
