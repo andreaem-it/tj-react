@@ -26,7 +26,10 @@ export default function Faq({ entries }: { entries: readonly FaqEntry[] }) {
             <dt className="text-foreground font-medium">{entry.question}</dt>
             <dd className="mt-1 text-sm text-muted">
               {entry.answer}{" "}
-              <a href={`#${entry.id}`} className="text-accent hover:underline">
+              <a
+                href={`#${entry.id}`}
+                className="inline-flex min-h-11 items-center rounded text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
                 Leggi la sezione completa
               </a>
             </dd>
