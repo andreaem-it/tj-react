@@ -91,7 +91,7 @@ function DevicePicker({
         <select
           name="a"
           defaultValue={a}
-          className="min-h-11 w-full rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground focus:border-accent focus:outline-none"
+          className="min-h-11 w-full rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
         >
           {options}
         </select>
@@ -101,14 +101,14 @@ function DevicePicker({
         <select
           name="b"
           defaultValue={b}
-          className="min-h-11 w-full rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground focus:border-accent focus:outline-none"
+          className="min-h-11 w-full rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
         >
           {options}
         </select>
       </label>
       <button
         type="submit"
-        className="shrink-0 rounded-lg bg-accent px-5 py-2.5 font-medium text-gray-900 transition-opacity hover:opacity-90"
+        className="min-h-11 shrink-0 rounded-lg bg-accent px-5 py-2.5 font-medium text-gray-900 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         Confronta
       </button>
