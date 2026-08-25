@@ -21,4 +21,6 @@ test("legge il nome env dichiarato nel registro", () => {
   assert.equal(isFeatureEnabled("priceRadar", { FEATURE_PRICE_RADAR: "off" }), false);
   assert.equal(isFeatureEnabled("priceRadar", { FEATURE_PRICE_RADAR: "on" }), true);
   assert.equal(isFeatureEnabled("topicHubs", {}), true);
+  assert.equal(isFeatureEnabled("articleAudio", {}), false);
+  assert.equal(isFeatureEnabled("articleAudio", { FEATURE_ARTICLE_AUDIO: "on" }), true);
 });

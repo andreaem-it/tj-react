@@ -38,6 +38,8 @@ import { loadArticleProducts } from "@/lib/priceRadar/articleProducts";
 import StoryTimelineSection from "@/components/article/StoryTimeline";
 import { loadArticleRelated } from "@/lib/content/articleRelated";
 import type { Metadata } from "next";
+import ArticleAudioPlayer from "@/components/article/ArticleAudioPlayer";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 /**
  * Volutamente più basso di home e categorie (3600s).
@@ -300,6 +302,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
 
             <Changelog updatedIso={updatedIso} entries={post.changelog} />
+
+            {isFeatureEnabled("articleAudio") ? <ArticleAudioPlayer postId={post.id} /> : null}
 
             {post.imageUrl && (
               <div className="mt-6 relative w-full max-w-3xl aspect-video rounded-lg overflow-hidden bg-content-bg">

@@ -10,6 +10,7 @@ export const FEATURE_FLAGS = {
   priceRadar: { env: "FEATURE_PRICE_RADAR", defaultEnabled: true },
   compatibility: { env: "FEATURE_COMPATIBILITY", defaultEnabled: true },
   webPush: { env: "FEATURE_WEB_PUSH", defaultEnabled: true },
+  articleAudio: { env: "FEATURE_ARTICLE_AUDIO", defaultEnabled: false },
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

@@ -145,6 +145,10 @@ export async function proxyToTjApi(
   if (bypassToken) {
     headers.set("X-TJ-API-Token", bypassToken);
   }
+  const protectionBypassSecret = process.env.TJ_API_PROTECTION_BYPASS_SECRET?.trim();
+  if (protectionBypassSecret) {
+    headers.set("x-vercel-protection-bypass", protectionBypassSecret);
+  }
 
   const requestedTimeout = options?.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
   const timeoutMs = Number.isFinite(requestedTimeout)
