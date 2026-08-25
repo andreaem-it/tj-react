@@ -30,6 +30,7 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
   const startTrackedRef = useRef(false);
   const completionTrackedRef = useRef(false);
   const restoredRef = useRef(false);
+  const lastPersistedPositionRef = useRef(0);
   const storageKey = `techjournal:article-audio:${postId}`;
 
   useEffect(() => {
@@ -188,13 +189,15 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
 
   function changeRate(value: number) {
     setRate(value);
-    persistPlayback(elapsedTime, value);
+    persistPlayback(elapsedTime, value, true);
     track("article_audio_rate", { postId, rate: value });
   }
 
-  function persistPlayback(position: number, playbackRate: number) {
+  function persistPlayback(position: number, playbackRate: number, force = false) {
+    if (!force && Math.abs(position - lastPersistedPositionRef.current) < 5) return;
     try {
       window.localStorage.setItem(storageKey, serializeAudioPlaybackState({ position, rate: playbackRate }));
+      lastPersistedPositionRef.current = position;
     } catch {
       // Playback remains functional when browser storage is unavailable.
     }
@@ -206,9 +209,15 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
     persistPlayback(position, rate);
   }
 
+  function handlePause() {
+    setPlaying(false);
+    const player = audioRef.current;
+    if (player) persistPlayback(audioElapsedTime(durations, segment, player.currentTime), rate, true);
+  }
+
   return (
     <section className="mt-5 max-w-3xl rounded-xl border border-border bg-surface-overlay/45 p-3 sm:p-4" aria-label="Ascolta questo articolo">
-      <audio ref={audioRef} src={segments[segment]} preload="metadata" onLoadedMetadata={loaded} onTimeUpdate={(event) => updateCurrentTime(event.currentTarget.currentTime)} onPlay={handlePlay} onPause={() => setPlaying(false)} onEnded={nextSegment} />
+      <audio ref={audioRef} src={segments[segment]} preload="metadata" onLoadedMetadata={loaded} onTimeUpdate={(event) => updateCurrentTime(event.currentTarget.currentTime)} onPlay={handlePlay} onPause={handlePause} onEnded={nextSegment} />
       <div className="flex items-center gap-3">
         <button type="button" onClick={() => skip(-15)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-xs font-bold text-foreground hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Indietro di 15 secondi">−15</button>
         <button type="button" onClick={togglePlay} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-black hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2" aria-label={playing ? "Metti in pausa" : "Ascolta l’articolo"}>
