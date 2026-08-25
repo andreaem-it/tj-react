@@ -1,6 +1,12 @@
 import https from "node:https";
 import { unstable_cache } from "next/cache";
 import { buildWpTjRequestHeaders, WP_BASE, logApiUrl } from "@/lib/constants";
+import { resolveCategoryByUrlSlug } from "@/lib/categorySlugs";
+export {
+  getCategoryUrlSlug,
+  getCategoryUrlSlugFromWpSlug,
+  resolveCategoryByUrlSlug,
+} from "@/lib/categorySlugs";
 
 /**
  * TTL Data Cache / ISR. Alzato da 300s da quando il webhook di pubblicazione
@@ -844,41 +850,12 @@ export async function fetchCategories(): Promise<WPCategory[]> {
   }
 }
 
-/** Mapping slug URL → slug WordPress. */
-const URL_SLUG_TO_WP_SLUG: Record<string, string> = {
-  apps: "applicazioni",
-  gaming: "games",
-  tech: "tecnologia",
-  ia: "intelligenza-artificiale",
-};
-
-const WP_SLUG_TO_URL_SLUG: Record<string, string> = Object.fromEntries(
-  Object.entries(URL_SLUG_TO_WP_SLUG).map(([url, wp]) => [wp, url])
-);
-
-export function getCategoryUrlSlug(cat: WPCategory): string {
-  return WP_SLUG_TO_URL_SLUG[cat.slug] ?? cat.slug;
-}
-
-export function getCategoryUrlSlugFromWpSlug(wpSlug: string): string {
-  return WP_SLUG_TO_URL_SLUG[wpSlug] ?? wpSlug;
-}
-
-export function resolveCategoryByUrlSlug(
-  categories: WPCategory[],
-  urlSlug: string
-): WPCategory | undefined {
-  const wpSlug = URL_SLUG_TO_WP_SLUG[urlSlug] ?? urlSlug;
-  return categories.find((c) => c.slug === wpSlug);
-}
-
 export async function fetchPostsByCategorySlug(
   slug: string,
   perPage = 5
 ): Promise<PostListItem[]> {
   const categories = await fetchCategories();
-  const wpSlug = URL_SLUG_TO_WP_SLUG[slug] ?? slug;
-  const cat = categories.find((c) => c.slug === wpSlug);
+  const cat = resolveCategoryByUrlSlug(categories, slug);
   if (!cat) return [];
   const categoryIds = getCategoryIdsIncludingChildren(categories, cat.id);
   const { posts } = await fetchPosts({ perPage, categoryIds });

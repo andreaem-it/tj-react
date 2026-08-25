@@ -3,7 +3,8 @@
 import Image from "next/image";
 import TjLink from "@/components/TjLink";
 import { useState } from "react";
-import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
+import type { PostListItem } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug } from "@/lib/categorySlugs";
 import { BLUR_DATA_URL } from "@/lib/constants";
 
 interface ArticleCardProps {

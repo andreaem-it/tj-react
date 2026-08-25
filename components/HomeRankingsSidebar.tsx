@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
-import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
+import type { PostListItem } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug } from "@/lib/categorySlugs";
 
 type RankingKey = "read" | "week" | "month";
 
