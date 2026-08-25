@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { audioElapsedTime, audioPositionAtTime, audioTotalDuration } from "@/lib/audioTimeline";
+import { track } from "@vercel/analytics";
 
 interface ArticleAudioResponse {
   segmentUrls: string[];
@@ -25,6 +26,8 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const pendingSeekRef = useRef(0);
   const resumeAfterLoadRef = useRef(false);
+  const startTrackedRef = useRef(false);
+  const completionTrackedRef = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -114,6 +117,10 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
       resumeAfterLoadRef.current = true;
       setSegment((value) => value + 1);
     } else {
+      if (!completionTrackedRef.current) {
+        completionTrackedRef.current = true;
+        track("article_audio_complete", { postId, rate, segments: segments.length });
+      }
       setPlaying(false);
       setSegment(0);
     }
@@ -140,9 +147,22 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
   const totalDuration = audioTotalDuration(durations);
   const elapsedTime = audioElapsedTime(durations, segment, currentTime);
 
+  function handlePlay() {
+    setPlaying(true);
+    if (!startTrackedRef.current) {
+      startTrackedRef.current = true;
+      track("article_audio_start", { postId, segments: segments.length });
+    }
+  }
+
+  function changeRate(value: number) {
+    setRate(value);
+    track("article_audio_rate", { postId, rate: value });
+  }
+
   return (
     <section className="mt-5 max-w-3xl rounded-xl border border-border bg-surface-overlay/45 p-3 sm:p-4" aria-label="Ascolta questo articolo">
-      <audio ref={audioRef} src={segments[segment]} preload="metadata" onLoadedMetadata={loaded} onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={nextSegment} />
+      <audio ref={audioRef} src={segments[segment]} preload="metadata" onLoadedMetadata={loaded} onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} onPlay={handlePlay} onPause={() => setPlaying(false)} onEnded={nextSegment} />
       <div className="flex items-center gap-3">
         <button type="button" onClick={() => skip(-15)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-xs font-bold text-foreground hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Indietro di 15 secondi">−15</button>
         <button type="button" onClick={togglePlay} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-black hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2" aria-label={playing ? "Metti in pausa" : "Ascolta l’articolo"}>
@@ -157,7 +177,7 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
           <input type="range" min={0} max={totalDuration || 0} step={0.1} value={Math.min(elapsedTime, totalDuration || 0)} disabled={totalDuration === 0} onChange={(event) => moveToGlobalTime(Number(event.target.value), playing)} className="mt-2 h-11 w-full cursor-pointer accent-accent disabled:cursor-wait disabled:opacity-50" aria-label="Posizione nell’audio completo dell’articolo" />
         </div>
         <label className="sr-only" htmlFor={`audio-rate-${postId}`}>Velocità di riproduzione</label>
-        <select id={`audio-rate-${postId}`} value={rate} onChange={(event) => setRate(Number(event.target.value))} className="min-h-11 rounded-lg border border-border bg-content-bg px-2 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Velocità di riproduzione">
+        <select id={`audio-rate-${postId}`} value={rate} onChange={(event) => changeRate(Number(event.target.value))} className="min-h-11 rounded-lg border border-border bg-content-bg px-2 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Velocità di riproduzione">
           {[0.75, 1, 1.25, 1.5, 2].map((value) => <option key={value} value={value}>{value}×</option>)}
         </select>
       </div>
