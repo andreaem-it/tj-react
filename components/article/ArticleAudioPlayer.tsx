@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { audioElapsedTime, audioPositionAtTime, audioTotalDuration } from "@/lib/audioTimeline";
+import { parseAudioPlaybackState, serializeAudioPlaybackState } from "@/lib/audioPlayback";
 import { track } from "@vercel/analytics";
 
 interface ArticleAudioResponse {
@@ -28,6 +29,8 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
   const resumeAfterLoadRef = useRef(false);
   const startTrackedRef = useRef(false);
   const completionTrackedRef = useRef(false);
+  const restoredRef = useRef(false);
+  const storageKey = `techjournal:article-audio:${postId}`;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -82,6 +85,29 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
     if (audioRef.current) audioRef.current.playbackRate = rate;
   }, [rate, segment]);
 
+  useEffect(() => {
+    if (restoredRef.current || durations.length === 0 || durations.some((duration) => duration <= 0)) return;
+    restoredRef.current = true;
+    let stored = null;
+    try {
+      stored = parseAudioPlaybackState(window.localStorage.getItem(storageKey));
+    } catch {
+      return;
+    }
+    if (!stored) return;
+    const target = audioPositionAtTime(durations, Math.min(stored.position, audioTotalDuration(durations)));
+    queueMicrotask(() => {
+      setRate(stored.rate);
+      if (target.segment === segment && audioRef.current) {
+        audioRef.current.currentTime = target.localTime;
+        setCurrentTime(target.localTime);
+      } else {
+        pendingSeekRef.current = target.localTime;
+        setSegment(target.segment);
+      }
+    });
+  }, [durations, segment, storageKey]);
+
   if (unavailable || segments.length === 0) return null;
 
   async function togglePlay() {
@@ -123,6 +149,11 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
       }
       setPlaying(false);
       setSegment(0);
+      try {
+        window.localStorage.removeItem(storageKey);
+      } catch {
+        // Playback remains functional when browser storage is unavailable.
+      }
     }
   }
 
@@ -157,12 +188,27 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
 
   function changeRate(value: number) {
     setRate(value);
+    persistPlayback(elapsedTime, value);
     track("article_audio_rate", { postId, rate: value });
+  }
+
+  function persistPlayback(position: number, playbackRate: number) {
+    try {
+      window.localStorage.setItem(storageKey, serializeAudioPlaybackState({ position, rate: playbackRate }));
+    } catch {
+      // Playback remains functional when browser storage is unavailable.
+    }
+  }
+
+  function updateCurrentTime(localTime: number) {
+    setCurrentTime(localTime);
+    const position = audioElapsedTime(durations, segment, localTime);
+    persistPlayback(position, rate);
   }
 
   return (
     <section className="mt-5 max-w-3xl rounded-xl border border-border bg-surface-overlay/45 p-3 sm:p-4" aria-label="Ascolta questo articolo">
-      <audio ref={audioRef} src={segments[segment]} preload="metadata" onLoadedMetadata={loaded} onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} onPlay={handlePlay} onPause={() => setPlaying(false)} onEnded={nextSegment} />
+      <audio ref={audioRef} src={segments[segment]} preload="metadata" onLoadedMetadata={loaded} onTimeUpdate={(event) => updateCurrentTime(event.currentTarget.currentTime)} onPlay={handlePlay} onPause={() => setPlaying(false)} onEnded={nextSegment} />
       <div className="flex items-center gap-3">
         <button type="button" onClick={() => skip(-15)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-xs font-bold text-foreground hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Indietro di 15 secondi">−15</button>
         <button type="button" onClick={togglePlay} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-black hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2" aria-label={playing ? "Metti in pausa" : "Ascolta l’articolo"}>
