@@ -18,6 +18,7 @@ import {
 } from "@/lib/priceRadar/offers";
 import PriceRadarCard from "./PriceRadarCard";
 import { getBetaOffers } from "@/lib/priceRadarBetaData";
+import ProductSuggestionForm from "@/components/priceRadar/ProductSuggestionForm";
 
 const TECHRADAR_OFFERS_URL = `${TECHRADAR_API_BASE}/offers.php`;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minuti
@@ -311,6 +312,10 @@ export default function PriceRadarContent({
           Offerte selezionate di prodotti tech su Amazon, aggiornate periodicamente.
         </p>
       </header>
+
+      <div className="mb-10">
+        <ProductSuggestionForm />
+      </div>
 
       {headerSlot && <div className="mb-10">{headerSlot}</div>}
 
