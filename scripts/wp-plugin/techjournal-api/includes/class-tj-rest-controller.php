@@ -99,6 +99,40 @@ class TJ_REST_Controller extends WP_REST_Controller {
             ],
         ]);
 
+        register_rest_route(self::NAMESPACE, '/post/(?P<id>\d+)/tldr', [
+            [
+                'methods' => WP_REST_Server::EDITABLE,
+                'callback' => [$this, 'update_tldr'],
+                'permission_callback' => [$this, 'can_edit_post'],
+                'args' => [
+                    'id' => [
+                        'required' => true,
+                        'type' => 'integer',
+                        'validate_callback' => function ($param) {
+                            return absint($param) > 0;
+                        },
+                    ],
+                ],
+            ],
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/post/(?P<id>\d+)/breaking', [
+            [
+                'methods' => WP_REST_Server::EDITABLE,
+                'callback' => [$this, 'update_breaking'],
+                'permission_callback' => [$this, 'can_edit_post'],
+                'args' => [
+                    'id' => [
+                        'required' => true,
+                        'type' => 'integer',
+                        'validate_callback' => function ($param) {
+                            return absint($param) > 0;
+                        },
+                    ],
+                ],
+            ],
+        ]);
+
         register_rest_route(self::NAMESPACE, '/author/(?P<slug>[a-zA-Z0-9\-_]+)', [
             [
                 'methods' => WP_REST_Server::READABLE,
@@ -514,6 +548,75 @@ class TJ_REST_Controller extends WP_REST_Controller {
 
         $data = $this->mapper->map_post_to_list_item($post);
         return new WP_REST_Response(['changelog' => $data['changelog']], 200);
+    }
+
+    /**
+     * PUT /tj/v1/post/:id/tldr (§14) — scrittura autenticata.
+     *
+     * Sovrascrive interamente `tj_tldr` con l'array ricevuto (max 5 righe,
+     * un punto per voce): usato dall'autoposter per persistere il TL;DR
+     * generato una sola volta, non ricalcolato a ogni richiesta. Riusa lo
+     * stesso helper riga-per-riga di pro/contro recensione — stesso formato,
+     * stesse regole di sanificazione.
+     */
+    public function update_tldr(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = absint($request->get_param('id'));
+        $post = get_post($id);
+        if (!$post || $post->post_type !== 'post') {
+            return new WP_Error('not_found', 'Post non trovato', ['status' => 404]);
+        }
+
+        $body = $request->get_json_params() ?? [];
+        $points = is_array($body['points'] ?? null) ? array_slice($body['points'], 0, 5) : [];
+
+        $this->save_lines_meta($id, 'tj_tldr', $points);
+
+        $data = $this->mapper->map_post_to_list_item($post);
+        return new WP_REST_Response(['tldr' => $data['tldr']], 200);
+    }
+
+    /**
+     * PUT /tj/v1/post/:id/breaking (§12) — scrittura autenticata.
+     *
+     * `kind` vuoto/assente disattiva il breaking (rimuove i meta). `kind`
+     * valorizzato richiede `expiresAt` — coerente con `get_breaking_data()`,
+     * che tratta un breaking senza scadenza come non attivo.
+     */
+    public function update_breaking(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = absint($request->get_param('id'));
+        $post = get_post($id);
+        if (!$post || $post->post_type !== 'post') {
+            return new WP_Error('not_found', 'Post non trovato', ['status' => 404]);
+        }
+
+        $body = $request->get_json_params() ?? [];
+        $kind = trim((string) ($body['kind'] ?? ''));
+
+        if ($kind === '') {
+            delete_post_meta($id, 'tj_breaking_kind');
+            delete_post_meta($id, 'tj_breaking_expires_at');
+            delete_post_meta($id, 'tj_breaking_priority');
+        } else {
+            if ($kind !== 'breaking' && $kind !== 'live') {
+                return new WP_Error('invalid_kind', 'kind deve essere "breaking", "live" o vuoto', ['status' => 400]);
+            }
+            $expires_at = trim((string) ($body['expiresAt'] ?? ''));
+            if ($expires_at === '' || strtotime($expires_at) === false) {
+                return new WP_Error('invalid_expires_at', 'expiresAt deve essere una data valida', ['status' => 400]);
+            }
+            update_post_meta($id, 'tj_breaking_kind', $kind);
+            update_post_meta($id, 'tj_breaking_expires_at', $expires_at);
+
+            $priority_raw = $body['priority'] ?? null;
+            if ($priority_raw === null || $priority_raw === '') {
+                delete_post_meta($id, 'tj_breaking_priority');
+            } else {
+                update_post_meta($id, 'tj_breaking_priority', (string) (int) $priority_raw);
+            }
+        }
+
+        $data = $this->mapper->map_post_to_list_item($post);
+        return new WP_REST_Response(['breaking' => $data['breaking']], 200);
     }
 
     /**

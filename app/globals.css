@@ -253,6 +253,97 @@ body {
   font-weight: 600;
 }
 
+/*
+ * Blocchi editoriali (§58): markup fisso che un editor (o l'autoposter, in
+ * futuro) può inserire dentro il corpo articolo per segnalare un'informazione
+ * fuori dal flusso normale del testo. Non un componente React: il contenuto
+ * arriva come HTML già pronto (WordPress/autoposter), sanificato da
+ * `lib/sanitizeRichHtml.ts` — che già permette `div`+`class`, nessuna modifica
+ * al sanitizzatore necessaria per questo.
+ *
+ * Markup atteso:
+ *   <div class="tj-callout tj-callout--update">
+ *     <p class="tj-callout__label">Aggiornamento</p>
+ *     <p>...testo...</p>
+ *   </div>
+ *
+ * Varianti: tj-callout--update (Aggiornamento), tj-callout--info (Da sapere),
+ * tj-callout--tip (TechJournal consiglia), tj-callout--fact (Dato),
+ * tj-callout--warning (Attenzione), tj-callout--rumor (Rumor),
+ * tj-callout--confirmed (Confermato). Senza variante riconosciuta, ricade sui
+ * colori neutri di --info: un blocco con classe sbagliata resta leggibile,
+ * non sparisce e non rompe il layout.
+ */
+.article-body-wrapper .article-content .tj-callout {
+  margin: 1.5em 0;
+  padding: 0.9em 1.1em;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 0.375rem;
+  background: var(--surface-overlay);
+}
+
+.article-body-wrapper .article-content .tj-callout > :first-child {
+  margin-top: 0;
+}
+
+.article-body-wrapper .article-content .tj-callout > :last-child {
+  margin-bottom: 0;
+}
+
+.article-body-wrapper .article-content .tj-callout__label {
+  margin: 0 0 0.3em;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* Aggiornamento / Da sapere / TechJournal consiglia: stesso accento di brand, tre sfumature editoriali diverse. */
+.article-body-wrapper .article-content .tj-callout--update,
+.article-body-wrapper .article-content .tj-callout--info,
+.article-body-wrapper .article-content .tj-callout--tip {
+  border-left-color: var(--accent);
+}
+.article-body-wrapper .article-content .tj-callout--update .tj-callout__label,
+.article-body-wrapper .article-content .tj-callout--info .tj-callout__label,
+.article-body-wrapper .article-content .tj-callout--tip .tj-callout__label {
+  color: var(--accent-text);
+}
+
+/* Confermato: stesso verde di ReliabilityBadge "official" — coerenza fra i due segnali di affidabilità. */
+.article-body-wrapper .article-content .tj-callout--confirmed {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+.article-body-wrapper .article-content .tj-callout--confirmed .tj-callout__label {
+  color: #059669;
+}
+:root.dark .article-body-wrapper .article-content .tj-callout--confirmed .tj-callout__label {
+  color: #34d399;
+}
+
+/* Attenzione / Rumor: stesso ambra di ReliabilityBadge "rumor" — un rumor non è un errore, è cautela. */
+.article-body-wrapper .article-content .tj-callout--warning,
+.article-body-wrapper .article-content .tj-callout--rumor {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+.article-body-wrapper .article-content .tj-callout--warning .tj-callout__label,
+.article-body-wrapper .article-content .tj-callout--rumor .tj-callout__label {
+  color: #b45309;
+}
+:root.dark .article-body-wrapper .article-content .tj-callout--warning .tj-callout__label,
+:root.dark .article-body-wrapper .article-content .tj-callout--rumor .tj-callout__label {
+  color: #fbbf24;
+}
+
+/* Dato: neutro, per un numero/statistica che non richiede né urgenza né cautela. */
+.article-body-wrapper .article-content .tj-callout--fact {
+  border-left-color: var(--muted);
+}
+
 .article-body-wrapper .article-content tbody tr:nth-child(even) td {
   background: var(--surface-overlay);
 }

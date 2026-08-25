@@ -137,3 +137,23 @@ export function sectionById(
 ): HomeSectionConfig | undefined {
   return sections.find((section) => section.id === id && section.enabled);
 }
+
+/**
+ * Sottoinsieme di ID sezione, filtrato sulle attive e ordinato per `priority`
+ * (§10, §56) — usato dove il JSX non può iterare `HOME_SECTIONS` per intero
+ * (perché ogni sezione ha una firma diversa: dati diversi, Suspense diverso),
+ * ma l'ordine relativo fra un gruppo di sezioni deve comunque seguire la
+ * configurazione, non l'ordine in cui capita di scriverle nel componente.
+ *
+ * Un ID assente da `candidateIds` o disabilitato semplicemente non compare
+ * nel risultato: chi chiama itera solo ciò che deve mostrare.
+ */
+export function orderedSectionIds(
+  candidateIds: readonly string[],
+  sections: readonly HomeSectionConfig[] = HOME_SECTIONS,
+): string[] {
+  const candidates = new Set(candidateIds);
+  return enabledSections(sections)
+    .filter((section) => candidates.has(section.id))
+    .map((section) => section.id);
+}

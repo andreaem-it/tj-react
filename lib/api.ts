@@ -92,6 +92,19 @@ export interface PostWithMeta {
   review?: PostReview | null;
   /** Vuoto se il post non ha una cronologia compilata a mano (§19). */
   changelog?: ChangelogEntry[];
+  /**
+   * TL;DR (§14): 3-5 punti chiave, da custom field WordPress `tj_tldr`.
+   * Generato una sola volta dall'autoposter e persistito — non ricalcolato a
+   * ogni richiesta. Vuoto per articoli senza TL;DR compilato.
+   */
+  tldr?: string[];
+  /**
+   * Breaking news (§12), da custom field WordPress `tj_breaking_*`.
+   * `null`/assente per la stragrande maggioranza degli articoli — è lo stato
+   * normale, non un dato mancante. Vedi `lib/home/overrides.ts` per come si
+   * trasforma in una voce di `BreakingEntry` e come si sceglie quale mostrare.
+   */
+  breaking?: { kind: "breaking" | "live"; expiresAt: string; priority: number | null } | null;
 }
 
 /**

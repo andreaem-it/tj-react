@@ -64,6 +64,8 @@ class TJ_Post_Mapper {
             'viewCount' => $this->get_view_count($post->ID),
             'review' => $this->get_review_data($post->ID),
             'changelog' => $this->get_changelog_data($post->ID),
+            'tldr' => $this->get_tldr_data($post->ID),
+            'breaking' => $this->get_breaking_data($post->ID),
         ];
     }
 
@@ -251,6 +253,54 @@ class TJ_Post_Mapper {
         // ultimo, non l'ordine in cui è stato scritto nel campo.
         usort($entries, static fn($a, $b) => strcmp($b['date'], $a['date']));
         return $entries;
+    }
+
+    /**
+     * TL;DR (§14): 3-5 punti chiave, da custom field `tj_tldr`, un punto per
+     * riga. Generato dall'autoposter per i nuovi articoli sufficientemente
+     * lunghi (persistito una sola volta, non ricalcolato a ogni richiesta) o
+     * scritto a mano dalla redazione — qui ci si limita a leggere quello che
+     * è già salvato, nessun calcolo. Nessun campo obbligatorio: un articolo
+     * senza `tj_tldr` compilato restituisce semplicemente un array vuoto, il
+     * frontend decide se e come mostrare il blocco.
+     */
+    private function get_tldr_data(int $post_id): array {
+        $raw = get_post_meta($post_id, 'tj_tldr', true);
+        return $this->split_review_lines($raw);
+    }
+
+    /**
+     * Breaking news (§12): stato attivo/scaduto letto da custom field
+     * WordPress, non più da un array hardcoded nel frontend.
+     *
+     * `tj_breaking_kind` vuoto o assente = non è breaking, `null` restituito
+     * — è la lettura corretta più comune, non un caso da gestire a parte.
+     * Nessuna scadenza calcolata qui: `tj_breaking_expires_at` è quello che
+     * la redazione ha scritto, il frontend decide se è già passata (stessa
+     * logica pura già testata in `activeBreaking()`).
+     */
+    private function get_breaking_data(int $post_id): ?array {
+        $kind = trim((string) get_post_meta($post_id, 'tj_breaking_kind', true));
+        if ($kind !== 'breaking' && $kind !== 'live') {
+            return null;
+        }
+
+        $expires_at = trim((string) get_post_meta($post_id, 'tj_breaking_expires_at', true));
+        if ($expires_at === '') {
+            // Un breaking senza scadenza dichiarata equivale a non attivo
+            // (§12): meglio non accendere la barra che lasciarla accesa per
+            // sempre perché nessuno ha compilato il campo.
+            return null;
+        }
+
+        $priority_raw = get_post_meta($post_id, 'tj_breaking_priority', true);
+        $priority = is_numeric($priority_raw) ? (int) $priority_raw : null;
+
+        return [
+            'kind' => $kind,
+            'expiresAt' => $expires_at,
+            'priority' => $priority,
+        ];
     }
 
     /**

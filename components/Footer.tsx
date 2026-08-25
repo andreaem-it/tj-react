@@ -38,6 +38,9 @@ export default function Footer() {
             <Link href="/correzioni" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Correzioni
             </Link>
+            <Link href="/fonti" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+              Fonti
+            </Link>
             <Link href="/ai-e-automazione" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Automazione e AI
             </Link>

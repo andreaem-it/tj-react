@@ -21,7 +21,12 @@ import {
 } from "@/lib/compatibility/serverApi";
 import { isEvergreen } from "@/lib/content/classify";
 import { getTopic } from "@/lib/content/topics";
-import { activeBreaking, HOME_RANKING_OVERRIDES } from "@/lib/home/overrides";
+import {
+  activeBreaking,
+  breakingEntryFromPost,
+  BREAKING_ENTRIES,
+  HOME_RANKING_OVERRIDES,
+} from "@/lib/home/overrides";
 import {
   hasUsableTrafficSignal,
   hotTopics,
@@ -30,7 +35,7 @@ import {
   rankHomeItems,
   type RankableItem,
 } from "@/lib/home/ranking";
-import { sectionById } from "@/lib/home/sections";
+import { orderedSectionIds, sectionById } from "@/lib/home/sections";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -320,6 +325,18 @@ export default async function HomePage() {
         .map((item) => item.post)
     : [];
 
+  /**
+   * Fonte del breaking (§12): i post reali che arrivano già in questo
+   * render, non un secondo fetch dedicato. `signalPool` è il pool più ampio
+   * disponibile gratis (già scaricato per il calore degli argomenti), quindi
+   * copre anche un breaking che non è tra i più recenti in assoluto.
+   */
+  const breakingCandidates = [
+    ...initialPosts.map(breakingEntryFromPost),
+    ...signalPool.map(breakingEntryFromPost),
+    ...BREAKING_ENTRIES,
+  ].filter((entry): entry is NonNullable<typeof entry> => entry != null);
+
   const trafficUsable = hasUsableTrafficSignal(
     [...initialPosts, ...mostReadPosts, ...signalPool],
     { now },
@@ -346,6 +363,9 @@ export default async function HomePage() {
     ...spotlightIds,
   ]);
 
+  /** Ordine reale delle sezioni sotto la griglia principale, da configurazione (§10, §56). */
+  const afterGridSectionIds = orderedSectionIds(["evergreen", "price-radar", "compatibility"]);
+
   return (
     <>
       <HomeContent
@@ -357,7 +377,7 @@ export default async function HomePage() {
         mostReadPosts={mostReadPosts}
         weekTrendingPosts={weekTrendingPosts}
         monthTrendingPosts={monthTrendingPosts}
-        breakingSlot={<BreakingBar entry={activeBreaking(now)} />}
+        breakingSlot={<BreakingBar entry={activeBreaking(now, breakingCandidates)} />}
         beforeGridSlot={
           spotlightTopic && spotlightPosts.length > 0 ? (
             <TopicSpotlight topic={spotlightTopic} posts={spotlightPosts} />
@@ -370,27 +390,44 @@ export default async function HomePage() {
          * sarebbe un'informazione falsa.
          */
         rankingsSlot={topics.length > 0 ? <HotTopicsSidebar topics={topics} /> : undefined}
+        /*
+         * Ogni sezione qui sotto carica dati e sta in `Suspense`: senza,
+         * la home attenderebbe la più lenta prima di mandare al browser
+         * anche solo l'apertura, che è ciò che determina l'LCP.
+         *
+         * L'ordine segue `priority` in `lib/home/sections.ts` (§10, §56),
+         * non l'ordine in cui i case sono scritti qui sotto: cambiare la
+         * `priority` di una sezione la sposta davvero, senza toccare
+         * questo file.
+         */
         afterGridSlot={
           <>
-            {/*
-              Ogni sezione che carica dati sta in `Suspense`: senza, la home
-              attenderebbe la più lenta prima di mandare al browser anche solo
-              l'apertura, che è ciò che determina l'LCP.
-            */}
-            <Suspense fallback={null}>
-              <EvergreenSection pool={displayItems} excludeIds={shownIds} />
-            </Suspense>
-            {/*
-              In `Suspense` perché verifica lo storico di una rosa di prodotti:
-              è la sezione più lenta della pagina e non deve trattenere
-              l'apertura, che è ciò che determina l'LCP.
-            */}
-            <Suspense fallback={null}>
-              <PriceRadarSection />
-            </Suspense>
-            <Suspense fallback={null}>
-              <CompatibilitySection />
-            </Suspense>
+            {afterGridSectionIds.map((id) => {
+              switch (id) {
+                case "evergreen":
+                  return (
+                    <Suspense key={id} fallback={null}>
+                      <EvergreenSection pool={displayItems} excludeIds={shownIds} />
+                    </Suspense>
+                  );
+                case "price-radar":
+                  // La sezione più lenta della pagina (verifica lo storico di
+                  // una rosa di prodotti): in Suspense per lo stesso motivo.
+                  return (
+                    <Suspense key={id} fallback={null}>
+                      <PriceRadarSection />
+                    </Suspense>
+                  );
+                case "compatibility":
+                  return (
+                    <Suspense key={id} fallback={null}>
+                      <CompatibilitySection />
+                    </Suspense>
+                  );
+                default:
+                  return null;
+              }
+            })}
           </>
         }
       />

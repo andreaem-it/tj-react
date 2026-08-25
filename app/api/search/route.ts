@@ -8,6 +8,7 @@ import {
   type SearchResponse,
   type SearchResult,
 } from "@/lib/search/types";
+import { getTjApiBaseUrl } from "@/lib/config/tjApi";
 
 /**
  * Ricerca globale (§28).
@@ -44,6 +45,23 @@ const MAX_QUERY_LENGTH = 120;
 const LIMIT_PER_KIND = 5;
 /** Articoli richiesti a monte: il matcher ne scarta una parte. */
 const ARTICLE_FETCH_LIMIT = 12;
+
+/**
+ * Log della query verso tj-api (§54), fire-and-forget: la ricerca deve
+ * rispondere al lettore anche se tj-api è irraggiungibile o il log fallisce.
+ * Nessun `await` nel percorso principale — l'errore, se c'è, va solo in log.
+ */
+function logSearchQueryBestEffort(query: string, resultsCount: number): void {
+  const base = getTjApiBaseUrl();
+  if (!base) return;
+  fetch(`${base}/api/analytics/search-query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, resultsCount }),
+  }).catch((e) => {
+    console.error("[search] log query non riuscito (non bloccante):", e);
+  });
+}
 
 function emptyResponse(query: string): NextResponse {
   return NextResponse.json({ query, groups: [] } satisfies SearchResponse, {
@@ -120,6 +138,9 @@ export async function GET(request: NextRequest) {
     groups,
     ...(articles.unavailable ? { articlesUnavailable: true } : {}),
   };
+
+  const resultsCount = groups.reduce((sum, g) => sum + g.results.length, 0);
+  logSearchQueryBestEffort(query, resultsCount);
 
   return NextResponse.json(body, { headers: { "Cache-Control": CACHE_CONTROL } });
 }

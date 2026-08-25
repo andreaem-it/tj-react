@@ -5,23 +5,31 @@
  * è il punto in cui si interviene: nessuna delle due leve è necessaria al
  * funzionamento della home, che si compone da sola.
  *
- * ## Perché nel repository e non nel CMS
+ * ## Perché il pinning resta nel repository
  *
- * Per la stessa ragione del registry degli argomenti: WordPress non espone i
- * campi che servirebbero (`isBreaking`, `pinned`, `boost`) e aggiungerli
- * richiede un intervento sul plugin e un deploy del backend. Un file versionato
- * dà subito la funzionalità, lascia traccia di chi ha deciso cosa e non può
- * andare fuori sincrono con il codice che lo legge.
+ * WordPress non espone i campi che servirebbero per il pinning (`pinned`,
+ * `boost`) e aggiungerli richiede un intervento sul plugin e un deploy del
+ * backend. Un file versionato dà subito la funzionalità, lascia traccia di
+ * chi ha deciso cosa e non può andare fuori sincrono con il codice che lo
+ * legge. Il limite è che modificare questo file richiede un deploy del
+ * frontend — accettabile per il pinning, che è una decisione ponderata, non
+ * una reazione a caldo.
  *
- * **Il limite va detto chiaramente**: modificare questo file richiede un deploy
- * del frontend. Per il fissaggio di un articolo è accettabile — è una decisione
- * ponderata, non una reazione a caldo. Per il breaking lo è molto meno, ed è il
- * motivo per cui la sorgente definitiva dovrà essere un campo su WordPress
- * (`isBreaking`, `breakingExpiresAt`) letto da `tj/v1`. Quando esisterà,
- * `activeBreaking()` cambierà sorgente senza che cambi nulla a valle.
+ * ## Breaking: non più qui
+ *
+ * Il breaking news *era* qui (array `BREAKING_ENTRIES` scritto a mano), ma
+ * per un evento in sviluppo un deploy per accendere/spegnere la barra è
+ * esattamente il ritardo che il §12 vuole evitare. La sorgente ora è
+ * `tj_breaking_kind`/`tj_breaking_expires_at` su WordPress (editabile
+ * dall'admin in `/articoli/wp/:id/breaking`, nessun deploy) —
+ * `breakingEntryFromPost()` converte un post con quei campi in una
+ * `BreakingEntry`, `BREAKING_ENTRIES` resta come fallback manuale per un
+ * caso limite che non passa da un articolo pubblicato (es. un avviso che non
+ * corrisponde a nessun post).
  */
 
 import type { RankingOverrides } from "@/lib/home/ranking";
+import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
 
 /**
  * Fissaggi e correzioni al punteggio della home.
@@ -63,12 +71,33 @@ export interface BreakingEntry {
 }
 
 /**
- * Notizie in evidenza dichiarate a mano.
- *
- * Normalmente vuoto. La barra compare solo quando c'è davvero qualcosa, e
- * sparisce da sola alla scadenza senza che nessuno debba ricordarsene.
+ * Notizie in evidenza dichiarate a mano — fallback per un avviso che non
+ * corrisponde a nessun articolo pubblicato. Normalmente vuoto: la fonte
+ * primaria del breaking sono i post WordPress con `tj_breaking_kind`
+ * compilato (vedi `breakingEntryFromPost`), non questo array.
  */
 export const BREAKING_ENTRIES: readonly BreakingEntry[] = [];
+
+/**
+ * Converte un post con `breaking` compilato in una `BreakingEntry`.
+ *
+ * `null` se il post non ha `breaking` — è la lettura corretta per la
+ * stragrande maggioranza degli articoli, non un caso d'errore. Non valuta la
+ * scadenza qui: quello è compito di `activeBreaking`, che deve poter
+ * scegliere tra più candidati con la stessa logica indipendentemente da dove
+ * vengono.
+ */
+export function breakingEntryFromPost(post: PostListItem): BreakingEntry | null {
+  if (!post.breaking) return null;
+  return {
+    slug: post.slug,
+    href: `/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`,
+    label: post.title,
+    kind: post.breaking.kind,
+    expiresAt: post.breaking.expiresAt,
+    priority: post.breaking.priority ?? undefined,
+  };
+}
 
 /**
  * La voce di breaking attiva in questo istante, se esiste.

@@ -14,6 +14,7 @@ import ShareButtons from "@/components/ShareButtons";
 import ArticleBody from "@/components/ArticleBody";
 import AuthorCard from "@/components/AuthorCard";
 import Changelog from "@/components/article/Changelog";
+import TLDR from "@/components/article/TLDR";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ArticleStructuredData from "@/components/ArticleStructuredData";
 import { ArticleRelatedPosts, ArticleSidebar } from "@/components/ArticlePageExtras";
@@ -318,6 +319,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           <div className="px-3 py-6 md:p-8">
             <ReviewBox review={post.review} />
+            <TLDR points={post.tldr} />
             {shouldRenderToc(enrichment.toc) && <TableOfContents entries={enrichment.toc} />}
             <ArticleBody safeHtml={enrichment.safeHtml} postId={post.id} />
 
