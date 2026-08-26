@@ -14,37 +14,37 @@ export default function Footer() {
             © {new Date().getFullYear()} TechJournal. Tutti i diritti riservati.
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6" aria-label="Link utili">
-            <Link href="/chi-siamo" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/chi-siamo" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Chi siamo
             </Link>
-            <Link href="/contatti" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/contatti" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Contatti
             </Link>
-            <Link href="/topic" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/topic" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Argomenti
             </Link>
-            <Link href="/personale" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/personale" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Area personale
             </Link>
-            <Link href="/compatibility" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/compatibility" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Compatibilità Apple
             </Link>
-            <Link href="/lavora-con-noi" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/lavora-con-noi" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Lavora con noi
             </Link>
-            <Link href="/politica-editoriale" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/politica-editoriale" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Politica editoriale
             </Link>
-            <Link href="/correzioni" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/correzioni" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Correzioni
             </Link>
-            <Link href="/fonti" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/fonti" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Fonti
             </Link>
-            <Link href="/ai-e-automazione" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/ai-e-automazione" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Automazione e AI
             </Link>
-            <Link href="/privacy" className="text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
+            <Link href="/privacy" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Privacy e Cookie policy
             </Link>
           </nav>
