@@ -111,3 +111,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Accessibilità editor recensioni: caricamento ed esiti asincroni annunciati, campi compatti e salvataggio portati a 44 px (`20c3bd4`). ESLint, TypeScript e build Next.js verdi.
 - Accessibilità editor breaking/live: feedback asincrono annunciato, intera riga del checkbox cliccabile e campi/azione primaria portati a 44 px (`e973e9b`). ESLint, TypeScript e build Next.js verdi.
 - Accessibilità Price Radar admin: azioni mobile e desktop per pausa/ripresa, check, modifica, dettagli e creazione portate a 44 px (`bcfd163`). ESLint, TypeScript e build Next.js verdi.
+- Accessibilità Compatibility admin: editor/import delle specifiche dispositivo e relativo checkbox portati a target di 44 px (`0c36ce1`). ESLint, TypeScript e build Next.js verdi.
