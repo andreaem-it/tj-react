@@ -106,7 +106,7 @@ async function CompatibilitySection() {
             <li key={device.slug}>
               <TjLink
                 href={`/compatibility/device/${device.slug}`}
-                className="inline-flex items-center rounded-full border border-border bg-surface-overlay px-3 py-1.5 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+                className="inline-flex min-h-11 items-center rounded-full border border-border bg-surface-overlay px-3 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
               >
                 {device.name}
               </TjLink>
