@@ -72,7 +72,7 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - [ ] Verificare immagini responsive, font, CLS pubblicitario e bundle client.
 - [ ] Verificare fallback e timeout con WordPress, `tj-api`, TTS, R2, OpenAI e Brevo indisponibili.
 - [ ] Eseguire controllo runtime log/errori Vercel e definire soglie di allarme.
-- [ ] Verificare rate limiting e protezione degli endpoint pubblici mutanti.
+- [x] Verificare rate limiting e protezione degli endpoint pubblici mutanti. Audit completato il 2026-08-26 su `tj-api`: limiter dedicati applicati a login, newsletter, views, metriche Price Radar, proposta prodotto, price watch, Web Push e logging delle ricerche.
 
 ## P1 — Preparazione editoriale keynote
 
