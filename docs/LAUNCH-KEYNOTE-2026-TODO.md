@@ -105,3 +105,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 
 - Resilienza API: aggiunti timeout espliciti per OpenAI (`8c83d2b`), Google TTS (`0f69382`, test deterministico `b874d32`), Brevo (`34f85f0`), Search Console (`a1ca046`), AdSense (`0f4e905`), GA4 realtime (`9583d6a`), client WordPress (`31d6476`) e recupero digest newsletter (`e16b77b`). Suite API finale: 165/165 test e build TypeScript verdi.
 - Accessibilità admin: libreria media navigabile da tastiera, target da 44 px e dettaglio responsive (`223088b`); controlli della revisione guide portati a 44 px (`9c3766e`). Per entrambi: ESLint, TypeScript e build Next.js verdi.
+- Accessibilità admin analytics: selettore e paginazione portati a 44 px, con nomi accessibili espliciti sui pulsanti icon-only (`67d4b74`). ESLint, TypeScript e build Next.js verdi.
