@@ -65,19 +65,19 @@ function TechJournalLogo() {
 function DesktopNavFallback() {
   return (
     <nav className="hidden md:flex items-center gap-6 py-3 border-t border-border flex-wrap">
-      <Link href="/" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Ultime Notizie
       </Link>
-      <Link href="/apple" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/apple" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Apple
       </Link>
-      <Link href="/apps" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/apps" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Apps
       </Link>
-      <Link href="/tech" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/tech" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Tech
       </Link>
-      <Link href="/gaming" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/gaming" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Gaming
       </Link>
       <Link

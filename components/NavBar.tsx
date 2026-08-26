@@ -197,7 +197,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                 <TjLink
                   key={slug}
                   href={categoryHref}
-                  className="text-foreground hover:text-accent transition-colors text-base font-medium flex items-center gap-0.5 py-1"
+                  className="text-foreground hover:text-accent transition-colors text-base font-medium flex min-h-11 items-center gap-0.5 py-2"
                   onMouseEnter={() => slug != null && handleEnter(slug)}
                   onFocus={() => slug != null && handleEnter(slug)}
                   aria-expanded={activeSlug === slug}
@@ -219,7 +219,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
               <TjLink
                 key={item.href}
                 href={item.href}
-                className="text-foreground hover:text-accent transition-colors text-base font-medium py-1"
+                className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2"
                 onClick={item.href === "/" ? handleHomeLinkClick : undefined}
               >
                 {item.label}
