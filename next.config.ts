@@ -6,7 +6,7 @@ import type { NextConfig } from "next";
  *
  * Set NEXT_IMAGE_PASSTHROUGH=0 to explicitly re-enable Next/Vercel optimizer.
  */
-const usePassthroughImageLoader = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
+const usePassthroughImages = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@mep-agency/next-iubenda"],
@@ -92,12 +92,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    ...(usePassthroughImageLoader
-      ? {
-          loader: "custom" as const,
-          loaderFile: "./lib/passthrough-image-loader.ts",
-        }
-      : {}),
+    unoptimized: usePassthroughImages,
     remotePatterns: [
       { protocol: "https", hostname: "www.techjournal.it", pathname: "/**" },
       { protocol: "https", hostname: "api.techjournal.it", pathname: "/**" },
