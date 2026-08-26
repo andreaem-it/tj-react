@@ -18,8 +18,8 @@ function TechJournalLogo() {
   if (useRasterBrand) {
     return (
       <>
-        <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-9 w-auto object-contain dark:hidden" priority aria-hidden />
-        <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-9 w-auto object-contain dark:block" priority aria-hidden />
+        <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-9 w-auto object-contain max-[359px]:h-7 dark:hidden" priority aria-hidden />
+        <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-9 w-auto object-contain max-[359px]:h-7 dark:block" priority aria-hidden />
       </>
     );
   }
@@ -28,7 +28,7 @@ function TechJournalLogo() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 2048 408"
-      className="techjournal-logo h-9 w-auto object-contain"
+      className="techjournal-logo h-9 w-auto object-contain max-[359px]:h-7"
       role="img"
       aria-label="TechJournal"
     >
