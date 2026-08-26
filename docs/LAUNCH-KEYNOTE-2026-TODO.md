@@ -118,3 +118,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Accessibilità pagina articoli: azioni principali “Da rivedere” e “Nuovo articolo” portate a 44 px (`85f9d3a`). ESLint, TypeScript e build Next.js verdi.
 - Accessibilità homepage: collegamenti rapidi ai dispositivi Compatibility portati a un target minimo di 44 px (`1fe6c93`). ESLint, TypeScript, 335 test e build Next.js Webpack verdi.
 - Accessibilità navigazione frontend: link delle barre desktop, incluso il fallback senza dati megamenu, portati a un’altezza minima di 44 px (`98f016b`). Verifica React best practices, ESLint, TypeScript, 335 test e build Next.js Webpack verdi.
+- Accessibilità footer: tutti i collegamenti istituzionali e di navigazione portati a un target verticale minimo di 44 px (`cc5f187`). ESLint, TypeScript, 335 test e build Next.js Webpack verdi.
