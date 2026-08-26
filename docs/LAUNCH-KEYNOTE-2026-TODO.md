@@ -89,7 +89,7 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - [ ] Aggiungere finestre trending 1h/6h/24h quando esiste un segnale temporale affidabile.
 - [ ] Decidere se introdurre account server-side; mantenere local-first finché non c’è un caso d’uso prioritario.
 - [ ] Completare token spacing/radius/shadow del design system.
-- [ ] Aggiungere test isolato della deduplicazione semantica.
+- [x] Aggiungere test isolato della deduplicazione semantica. Già coperto in `tj-api` da `semanticDedup.test.ts` con casi limite, duplicati Neon/WordPress, soglia tematica e contenuto pubblicabile.
 - [ ] Valutare CSP report-only e pinning di `next-iubenda` dopo il lancio.
 
 ## Gate finale produzione
