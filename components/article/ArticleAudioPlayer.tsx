@@ -24,6 +24,7 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
   const [durations, setDurations] = useState<number[]>([]);
   const [rate, setRate] = useState(1);
   const [unavailable, setUnavailable] = useState(false);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const pendingSeekRef = useRef(0);
   const resumeAfterLoadRef = useRef(false);
@@ -111,10 +112,20 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
 
   if (unavailable || segments.length === 0) return null;
 
-  async function togglePlay() {
+  async function playSafely(player: HTMLAudioElement) {
+    try {
+      await player.play();
+      setPlaybackError(null);
+    } catch {
+      setPlaying(false);
+      setPlaybackError("La riproduzione non è partita. Riprova tra qualche istante.");
+    }
+  }
+
+  function togglePlay() {
     const player = audioRef.current;
     if (!player) return;
-    if (player.paused) await player.play();
+    if (player.paused) void playSafely(player);
     else player.pause();
   }
 
@@ -124,7 +135,7 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
     const target = audioPositionAtTime(durations, seconds);
     if (target.segment === segment) {
       player.currentTime = target.localTime;
-      if (resume) void player.play();
+      if (resume) void playSafely(player);
     } else {
       pendingSeekRef.current = target.localTime;
       resumeAfterLoadRef.current = resume;
@@ -172,7 +183,7 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
     pendingSeekRef.current = 0;
     if (resumeAfterLoadRef.current) {
       resumeAfterLoadRef.current = false;
-      void player.play();
+      void playSafely(player);
     }
   }
 
@@ -217,7 +228,7 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
 
   return (
     <section className="mt-5 max-w-3xl rounded-xl border border-border bg-surface-overlay/45 p-3 sm:p-4" aria-label="Ascolta questo articolo">
-      <audio ref={audioRef} src={segments[segment]} preload="metadata" onLoadedMetadata={loaded} onTimeUpdate={(event) => updateCurrentTime(event.currentTarget.currentTime)} onPlay={handlePlay} onPause={handlePause} onEnded={nextSegment} />
+      <audio ref={audioRef} src={segments[segment]} preload="metadata" onLoadedMetadata={loaded} onTimeUpdate={(event) => updateCurrentTime(event.currentTarget.currentTime)} onPlay={handlePlay} onPause={handlePause} onEnded={nextSegment} onError={() => setPlaybackError("Audio momentaneamente non disponibile.")} />
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <button type="button" onClick={() => skip(-15)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-xs font-bold text-foreground hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="Indietro di 15 secondi">−15</button>
         <button type="button" onClick={togglePlay} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-black hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2" aria-label={playing ? "Metti in pausa" : "Ascolta l’articolo"}>
@@ -233,9 +244,10 @@ export default function ArticleAudioPlayer({ postId }: { postId: number }) {
             <strong className="truncate text-foreground">Ascolta l’articolo</strong>
             <span>{clock(elapsedTime)} / {clock(totalDuration)}</span>
           </div>
-          <input type="range" min={0} max={totalDuration || 0} step={0.1} value={Math.min(elapsedTime, totalDuration || 0)} disabled={totalDuration === 0} onChange={(event) => moveToGlobalTime(Number(event.target.value), playing)} className="mt-2 h-11 w-full cursor-pointer accent-accent disabled:cursor-wait disabled:opacity-50" aria-label="Posizione nell’audio completo dell’articolo" />
+          <input type="range" min={0} max={totalDuration || 0} step={0.1} value={Math.min(elapsedTime, totalDuration || 0)} disabled={totalDuration === 0} onChange={(event) => moveToGlobalTime(Number(event.target.value), playing)} className="mt-2 h-11 w-full cursor-pointer accent-accent disabled:cursor-wait disabled:opacity-50" aria-label="Posizione nell’audio completo dell’articolo" aria-valuetext={`${clock(elapsedTime)} di ${clock(totalDuration)}`} />
         </div>
       </div>
+      {playbackError ? <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">{playbackError}</p> : null}
       {segments.length > 1 ? <p className="mt-1 text-right text-[11px] text-muted">Parte {segment + 1} di {segments.length}</p> : null}
     </section>
   );
