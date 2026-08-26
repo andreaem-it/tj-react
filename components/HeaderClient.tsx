@@ -127,7 +127,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Link href="/" className="flex items-center shrink-0 min-w-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="TechJournal">
+          <Link href="/" className="flex h-11 items-center shrink-0 min-w-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="TechJournal">
             <TechJournalLogo />
           </Link>
           <div className="flex items-center gap-3 shrink-0">

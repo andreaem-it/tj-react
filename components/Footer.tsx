@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="relative z-10 bg-header-bg border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-[10px] sm:px-4 xl:px-12 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/" className="flex items-center shrink-0" aria-label="TechJournal">
+          <Link href="/" className="flex min-h-11 items-center shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="TechJournal">
             <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-7 w-auto object-contain dark:hidden" aria-hidden />
             <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-7 w-auto object-contain dark:block" aria-hidden />
           </Link>
