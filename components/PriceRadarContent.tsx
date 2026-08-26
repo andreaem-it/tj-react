@@ -99,7 +99,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 function PriceRadarComingSoon() {
   return (
-    <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-0 py-10 md:px-4">
       <header className="mb-10">
         <h1 className="text-foreground text-3xl md:text-4xl font-bold mb-2">Price Radar</h1>
         <p className="text-muted text-lg mb-8">
@@ -249,10 +249,10 @@ export default function PriceRadarContent({
 
   if (loading && offers.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-0 py-10 md:px-4">
         <div className="mb-8 animate-pulse">
           <div className="h-10 w-64 bg-content-bg rounded mb-2" />
-          <div className="h-5 w-96 bg-content-bg/60 rounded" />
+          <div className="h-5 w-full max-w-96 bg-content-bg/60 rounded" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -272,7 +272,7 @@ export default function PriceRadarContent({
 
   if (error && offers.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-0 py-10 md:px-4">
         <div className="text-center py-16">
           <p className="text-muted text-lg mb-4">{error}</p>
           <button
@@ -288,9 +288,9 @@ export default function PriceRadarContent({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-0 py-10 md:px-4">
       <header className="mb-10">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="mb-2 flex flex-wrap items-center gap-3">
           <h1 className="text-foreground text-3xl md:text-4xl font-bold">Price Radar</h1>
           {PRICE_RADAR_SQLITE_ENABLED && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/35">
