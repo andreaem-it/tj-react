@@ -37,7 +37,7 @@ const DEVICE_LIST_THUMB_STYLE: CSSProperties = {
 
 function TypeFilter({ active }: { active?: DeviceType }) {
   const base =
-    "rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm transition hover:bg-[var(--surface-overlay)]";
+    "inline-flex min-h-11 items-center rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm transition hover:bg-[var(--surface-overlay)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
   const activeCls = "bg-[var(--accent)]/20 border-[var(--accent)] text-[var(--foreground)]";
   return (
     <div className="flex flex-wrap gap-2">
@@ -204,7 +204,7 @@ export default async function CompatibilityIndexPage({
               <li key={os.id}>
                 <Link
                   href={`/compatibility/os/${encodeURIComponent(os.slug)}`}
-                  className="inline-block rounded border border-[var(--border)] px-2 py-1 text-xs hover:bg-[var(--surface-overlay)]"
+                  className="inline-flex min-h-11 items-center rounded border border-[var(--border)] px-2 py-1 text-xs hover:bg-[var(--surface-overlay)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   {os.name}
                 </Link>
