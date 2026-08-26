@@ -115,3 +115,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Accessibilità editor articoli: selettore blocco, toolbar di formattazione e form collegamento portati a target di 44 px (`dc83ee6`). ESLint, TypeScript e build Next.js verdi.
 - Accessibilità form articolo: toggle editor/anteprima con stato annunciato, azioni immagine/revisioni e controlli della libreria media portati a 44 px; errori e caricamento media annunciati (`d69a77e`). Verifica React best practices, ESLint, TypeScript e build Next.js verdi.
 - Accessibilità categorie admin: collegamento mobile “Apri sul sito” portato a un target minimo di 44 px (`ceaf46d`). ESLint, TypeScript e build Next.js verdi.
+- Accessibilità pagina articoli: azioni principali “Da rivedere” e “Nuovo articolo” portate a 44 px (`85f9d3a`). ESLint, TypeScript e build Next.js verdi.
