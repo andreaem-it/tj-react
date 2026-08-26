@@ -97,9 +97,9 @@ Vincolo di design, nessuna verifica di codice applicabile.
 
 ## 29-32. AI layer astratto, job queue, structured output, confidence score
 
-- [~] Layer AI centralizzato ma non astratto multi-provider: tutte le chiamate OpenAI passano da `tj-api/src/modules/ingestor/services/openaiIngest.ts` (unico punto), ma è hardcoded su OpenAI, nessuna interfaccia `AIProvider` intercambiabile.
+- [~] **Layer AI astratto** — in lavorazione da un'altra sessione (codex), non da questa: verificato il 2026-08-26 che esiste già un'infrastruttura solida in `tj-api/src/modules/ingestor/services/` — `aiProvider.ts` (`AiProvider`, `AiProviderRegistry`, `AiProviderChain` con fallback multi-provider, `configuredAiProviderId` via env `AI_PROVIDER`/`AI_PROVIDER_CHAIN`), più decoratori componibili `circuitBreakerAiProvider.ts`, `retryingAiProvider.ts`, `validatedAiProvider.ts`. **Non ancora agganciata al percorso live**: nessuna implementazione OpenAI di `AiProvider` esiste ancora, e `openaiIngest.ts` (usato davvero da `autoposter.ts`/`makeArticlePlan`) non referenzia questo sistema — gira ancora sul fetch diretto hardcoded. Infrastruttura pronta, wiring finale in corso altrove.
 - [x] Job "queue" via cron esterni autenticati (`CRON_SECRET`) su `/api/cron/*`: ingest-feeds, autopost-fill-day, guide-review-digest, newsletter-daily/weekly — schedulazione slot-based in `scheduler.ts`. Non è una vera queue (no BullMQ/Cloudflare Queues) ma il pattern "AI fuori dal render pagina" è rispettato.
-- [~] Structured output: `response_format: json_object` usato, ma senza JSON Schema tipizzato/Zod — validazione manuale post-hoc (troncamenti, clamp).
+- [x] **Structured output** — verificato il 2026-08-26: `aiOutputSchemas.ts` (stessa infrastruttura di cui sopra) definisce JSON Schema stretto per tutti i job reali (`article_plan`, `ingest_triage`, `guide_update_suggestion`, `guide_update_patch`, `translate_titles`), validato da `aiOutputValidation.ts`/`ValidatedAiProvider`. Stesso stato del punto sopra: pronto, non ancora nel percorso live finché `openaiIngest.ts` non lo adotta.
 - [x] Confidence score con fallback — triage produce `confidence 0-1`, item a bassa confidence restano `status: pending` per rivalutazione.
 
 ---
@@ -205,7 +205,7 @@ Criteri editoriali applicati nella logica esistente (dedup, story cluster, relia
 
 - [x] Struttura entity→topic→news/guide già presente (vedi §8-9).
 - [x] URL leggibili e stabili (`/topic/`, `/compatibility/`, `/price-radar/`, `/autore/`).
-- [~] Sitemap unica (`app/sitemap.xml/route.ts`, paginata 100/pagina) — non segmentata per articles/news/topics/devices/authors come suggerito dal piano; da valutare se serve davvero al volume attuale.
+- [x] **Sitemap segmentata** (§72, 2026-08-26) — `app/sitemap.xml/route.ts` è ora un sitemap index; 5 sitemap segmentate: `sitemap-articles.xml`, `sitemap-topics.xml`, `sitemap-compatibility.xml`, `sitemap-price-radar.xml`, `sitemap-pages.xml` (home, categorie, istituzionali). Logica di costruzione estratta in `lib/sitemapEntries.ts` (una funzione per tipo, stessi criteri di inclusione di prima — nessuna regressione), rendering XML condiviso in `lib/sitemapXml.ts`. `robots.txt` non ha richiesto modifiche (punta già a `/sitemap.xml`, ora l'indice). Vantaggio reale oltre alla richiesta del piano: un errore upstream o una lentezza su un tipo di contenuto non svuota più l'intera sitemap, solo il segmento coinvolto. Trovato e corretto un buco preesistente durante l'estrazione: `/fonti` (creata in una sessione precedente) non era mai stata aggiunta alla sitemap. Verificato con build Next.js completa + dev server live contro il backend reale (sitemap index e sitemap-pages.xml entrambe 200 con XML corretto). Typecheck, lint, test (328/328) e build tutti verdi.
 - [x] OG image per-articolo — verificato: `generateMetadata` in `app/[slug]/[articleSlug]/page.tsx` usa `post.imageUrl` (la foto reale dell'articolo) con fallback a `/og-default.png` solo quando manca. Usare la foto reale dell'articolo è corretto per una testata (meglio di un template testo-su-sfondo generato); il fallback dinamico brandizzato copre il caso senza immagine.
 
 ---
