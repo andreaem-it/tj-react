@@ -107,3 +107,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Accessibilità admin: libreria media navigabile da tastiera, target da 44 px e dettaglio responsive (`223088b`); controlli della revisione guide portati a 44 px (`9c3766e`). Per entrambi: ESLint, TypeScript e build Next.js verdi.
 - Accessibilità admin analytics: selettore e paginazione portati a 44 px, con nomi accessibili espliciti sui pulsanti icon-only (`67d4b74`). ESLint, TypeScript e build Next.js verdi.
 - Accessibilità lista articoli: controlli di paginazione desktop portati a un target minimo di 44 px (`f52a8f3`). ESLint, TypeScript e build Next.js verdi.
+- Accessibilità editor TL;DR: esiti di errore/salvataggio annunciati alle tecnologie assistive e azione primaria portata a 44 px (`ca3056e`). ESLint, TypeScript e build Next.js verdi.
