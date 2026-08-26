@@ -16,8 +16,10 @@ export function useDialogFocus<T extends HTMLElement>(
     if (!open) return;
     previousFocusRef.current = document.activeElement as HTMLElement | null;
     const dialog = dialogRef.current;
-    const focusable = dialog?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-    focusable?.[0]?.focus();
+    const getFocusable = () => dialog?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    getFocusable()?.[0]?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -25,7 +27,9 @@ export function useDialogFocus<T extends HTMLElement>(
         onClose();
         return;
       }
-      if (event.key !== "Tab" || !focusable?.length) return;
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable?.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       if (event.shiftKey && document.activeElement === first) {
@@ -40,6 +44,7 @@ export function useDialogFocus<T extends HTMLElement>(
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
       previousFocusRef.current?.focus();
     };
   }, [open, onClose]);

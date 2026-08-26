@@ -200,7 +200,8 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto" aria-live="polite" aria-busy={loading}>
+          {loading && <p className="sr-only">Ricerca in corso.</p>}
           {trimmed.length < MIN_QUERY_LENGTH && (
             <p className="px-4 py-8 text-center text-sm text-muted">
               Cerca fra articoli, argomenti, schede di compatibilità e prezzi monitorati.
@@ -271,7 +272,8 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
           <button
             type="button"
             onClick={submitFullSearch}
-            className="inline-flex min-h-11 items-center rounded px-2 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            disabled={!trimmed}
+            className="inline-flex min-h-11 items-center rounded px-2 hover:text-accent disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             Vedi tutti i risultati
           </button>
