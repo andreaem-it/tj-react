@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 import ShareButtons from "@/components/ShareButtons";
 import ArticleBody from "@/components/ArticleBody";
+import ArticleReadingTracker from "@/components/article/ArticleReadingTracker";
 import AuthorCard from "@/components/AuthorCard";
 import Changelog from "@/components/article/Changelog";
 import TLDR from "@/components/article/TLDR";
@@ -325,7 +326,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <ReviewBox review={post.review} />
             <TLDR points={post.tldr} />
             {shouldRenderToc(enrichment.toc) && <TableOfContents entries={enrichment.toc} />}
-            <ArticleBody safeHtml={enrichment.safeHtml} postId={post.id} />
+            <div id={`article-reading-${post.id}`}>
+              <ArticleBody safeHtml={enrichment.safeHtml} postId={post.id} />
+            </div>
+            <ArticleReadingTracker postId={post.id} targetId={`article-reading-${post.id}`} />
 
             {/* Price Radar dentro l'articolo: il prezzo di cui si parla, con la
                 media registrata e la valutazione, invece del solo "è in
