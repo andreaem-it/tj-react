@@ -88,7 +88,7 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - [x] Aggiungere scroll depth e reading completion testuale. Tracker client a checkpoint deduplicati, tempo attivo, invio `sendBeacon`/keepalive e persistenza aggregabile in `tj-api` (`80914de`, `c1ac494`).
 - [x] Aggiungere finestre trending 1h/6h/24h quando esiste un segnale temporale affidabile.
 - [ ] Decidere se introdurre account server-side; mantenere local-first finché non c’è un caso d’uso prioritario.
-- [ ] Completare token spacing/radius/shadow del design system.
+- [x] Completare token spacing/radius/shadow del design system.
 - [x] Aggiungere test isolato della deduplicazione semantica. Già coperto in `tj-api` da `semanticDedup.test.ts` con casi limite, duplicati Neon/WordPress, soglia tematica e contenuto pubblicabile.
 - [ ] Valutare CSP report-only e pinning di `next-iubenda` dopo il lancio.
 
@@ -127,3 +127,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Trending temporale, backend: conteggi visualizzazioni aggregati per ora e endpoint batch per finestre reali 1h/6h/24h, senza derivarli dal totale storico (`f26193c`). Suite API 171/171 e build TypeScript verdi.
 - Trending temporale, frontend: la homepage usa il segnale orario reale e mostra classifiche separate a 1h, 6h e 24h, con fallback alle classifiche storiche finché i bucket non contengono dati (`33cb68e`). TypeScript, ESLint, 339 test e build Webpack verdi.
 - Moderazione ingestor completata: oltre al mismatch titolo/contenuto, gli URL generati vengono verificati nel flusso manuale e nell’autoposter; link non sicuri bloccano e link irraggiungibili/timeout alimentano il quality score (`93256da`). Suite API 173/173 e build TypeScript verdi.
+- Design system: aggiunti token semantici condivisi per spacing, raggi e ombre, con varianti light/dark; migrate sidebar homepage, card Price Radar e dialog newsletter (`fb27833`). TypeScript, ESLint, 339 test e build Webpack verdi.
