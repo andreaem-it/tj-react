@@ -84,7 +84,7 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 
 ## P2 — Migliorie post-lancio non bloccanti
 
-- [ ] Collegare il layer astratto `AiProvider` al percorso OpenAI live.
+- [x] Collegare il layer astratto `AiProvider` al percorso OpenAI live. Completato in `tj-api` con adapter OpenAI, registry runtime, validazione strict, retry, circuit breaker e fallback chain (`60ae5f3`).
 - [ ] Aggiungere scroll depth e reading completion testuale.
 - [ ] Aggiungere finestre trending 1h/6h/24h quando esiste un segnale temporale affidabile.
 - [ ] Decidere se introdurre account server-side; mantenere local-first finché non c’è un caso d’uso prioritario.
@@ -121,3 +121,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Accessibilità footer: tutti i collegamenti istituzionali e di navigazione portati a un target verticale minimo di 44 px (`cc5f187`). ESLint, TypeScript, 335 test e build Next.js Webpack verdi.
 - Accessibilità login admin: errore annunciato come alert e campi, invio e collegamento al sito pubblico portati a 44 px (`800a0ef`). ESLint, TypeScript e build Next.js verdi.
 - AI provider, prerequisito wiring live: schema strict del triage riallineato al payload realmente prodotto (`accept|skip|defer` e relativi campi), eliminando una futura incompatibilità del validatore (`50027b1`). Suite API 165/165 e build TypeScript verdi.
+- AI provider live: `openaiIngest` usa ora realmente `AiProvider`, con adapter OpenAI e composizione registry → validazione schema/embedding → retry → circuit breaker → catena di fallback (`60ae5f3`). Suite API ampliata a 168/168 test e build TypeScript verde.
