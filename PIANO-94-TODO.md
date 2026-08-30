@@ -153,7 +153,7 @@ Vincolo di design, nessuna verifica di codice applicabile.
 
 ## 46. Account
 
-- [ ] Nessun vero sistema account. `app/personale/page.tsx` è esplicitamente "nessun account" — topic seguiti/salvati/price alert vivono in `localStorage`. Coerente con la priorità bassa del piano (§46, §78), ma è il prerequisito per Price Alert reale via email/push.
+- [x] Decisione account per il lancio: mantenere local-first fino al keynote. `app/personale/page.tsx` conserva topic e articoli nel browser; i Price Alert reali usano già la sottoscrizione esplicita via API senza richiedere un account completo. Autenticazione, consenso, recupero credenziali e migrazione dei dati locali allargherebbero inutilmente il rischio P0; rivalutazione post-lancio solo con un caso d’uso prioritario.
 
 ---
 
