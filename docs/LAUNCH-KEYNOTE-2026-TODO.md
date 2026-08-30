@@ -90,7 +90,7 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - [x] Decidere se introdurre account server-side; decisione lancio: mantenere local-first, con Price Alert sottoscritto direttamente via API e rivalutazione post-keynote solo in presenza di un caso d’uso prioritario.
 - [x] Completare token spacing/radius/shadow del design system.
 - [x] Aggiungere test isolato della deduplicazione semantica. Già coperto in `tj-api` da `semanticDedup.test.ts` con casi limite, duplicati Neon/WordPress, soglia tematica e contenuto pubblicabile.
-- [ ] Valutare CSP report-only e pinning di `next-iubenda` dopo il lancio.
+- [x] Valutare CSP report-only e pinning di `next-iubenda`: prerelease fissata esattamente a `1.0.0-alpha5`; CSP completa in report-only rinviata al post-lancio, dopo endpoint di raccolta e baseline staging (resta attivo `frame-ancestors 'none'`).
 
 ## Gate finale produzione
 
@@ -129,3 +129,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Moderazione ingestor completata: oltre al mismatch titolo/contenuto, gli URL generati vengono verificati nel flusso manuale e nell’autoposter; link non sicuri bloccano e link irraggiungibili/timeout alimentano il quality score (`93256da`). Suite API 173/173 e build TypeScript verdi.
 - Design system: aggiunti token semantici condivisi per spacing, raggi e ombre, con varianti light/dark; migrate sidebar homepage, card Price Radar e dialog newsletter (`fb27833`). TypeScript, ESLint, 339 test e build Webpack verdi.
 - Account pubblico: chiusa la decisione architetturale per il lancio mantenendo il profilo local-first; non si introduce a ridosso del keynote un sistema identità con nuova superficie privacy e migrazione dati. I Price Alert restano server-side tramite sottoscrizione esplicita.
+- Dipendenze/CSP: eliminato l’aggiornamento implicito della prerelease `next-iubenda` fissandola a `1.0.0-alpha5` (`a4b6e08`). Una policy CSP completa report-only richiede prima un collector e una baseline staging per evitare rumore o regressioni dei servizi terzi; attività deliberatamente post-lancio. TypeScript, ESLint e 339 test verdi.
