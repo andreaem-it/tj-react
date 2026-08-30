@@ -85,7 +85,7 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 ## P2 — Migliorie post-lancio non bloccanti
 
 - [x] Collegare il layer astratto `AiProvider` al percorso OpenAI live. Completato in `tj-api` con adapter OpenAI, registry runtime, validazione strict, retry, circuit breaker e fallback chain (`60ae5f3`).
-- [ ] Aggiungere scroll depth e reading completion testuale.
+- [x] Aggiungere scroll depth e reading completion testuale. Tracker client a checkpoint deduplicati, tempo attivo, invio `sendBeacon`/keepalive e persistenza aggregabile in `tj-api` (`80914de`, `c1ac494`).
 - [ ] Aggiungere finestre trending 1h/6h/24h quando esiste un segnale temporale affidabile.
 - [ ] Decidere se introdurre account server-side; mantenere local-first finché non c’è un caso d’uso prioritario.
 - [ ] Completare token spacing/radius/shadow del design system.
@@ -123,3 +123,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - AI provider, prerequisito wiring live: schema strict del triage riallineato al payload realmente prodotto (`accept|skip|defer` e relativi campi), eliminando una futura incompatibilità del validatore (`50027b1`). Suite API 165/165 e build TypeScript verdi.
 - AI provider live: `openaiIngest` usa ora realmente `AiProvider`, con adapter OpenAI e composizione registry → validazione schema/embedding → retry → circuit breaker → catena di fallback (`60ae5f3`). Suite API ampliata a 168/168 test e build TypeScript verde.
 - Analytics lettura, backend: endpoint pubblico rate-limited, upsert privacy-first per sessione/post e riepilogo admin per profondità, completamento e tempo attivo (`80914de`). Suite API ampliata a 171/171 test e build TypeScript verde.
+- Analytics lettura, frontend: tracker senza UI sul corpo dell’articolo con profondità 25/50/75/90%, completamento, tempo attivo e invio best-effort tramite proxy same-origin (`c1ac494`). Verifica React best practices, ESLint, TypeScript, 337 test e build Next.js Webpack verdi.
