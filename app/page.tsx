@@ -36,6 +36,7 @@ import {
   type RankableItem,
 } from "@/lib/home/ranking";
 import { orderedSectionIds, sectionById } from "@/lib/home/sections";
+import { fetchTrendingVelocity } from "@/lib/home/trendingVelocity";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -206,6 +207,9 @@ export default async function HomePage() {
   let mostReadPosts = emptyPosts;
   let weekTrendingPosts = emptyPosts;
   let monthTrendingPosts = emptyPosts;
+  let hour1TrendingPosts = emptyPosts;
+  let hour6TrendingPosts = emptyPosts;
+  let hour24TrendingPosts = emptyPosts;
   /**
    * Insieme più ampio dei soli articoli mostrati, usato per misurare il calore
    * degli argomenti.
@@ -295,6 +299,13 @@ export default async function HomePage() {
    * dentro lo stesso render.
    */
   const now = Date.now();
+  const velocity = await fetchTrendingVelocity(
+    [...initialPosts, ...signalPool, ...mostReadPosts],
+    5,
+  ).catch(() => ({ hour1: emptyPosts, hour6: emptyPosts, hour24: emptyPosts }));
+  hour1TrendingPosts = velocity.hour1;
+  hour6TrendingPosts = velocity.hour6;
+  hour24TrendingPosts = velocity.hour24;
   const displayItems = prepareItems(initialPosts);
   const ranked = rankHomeItems(displayItems, { now, overrides: HOME_RANKING_OVERRIDES });
   const rankedPosts = ranked.map((item) => item.post);
@@ -377,6 +388,9 @@ export default async function HomePage() {
         mostReadPosts={mostReadPosts}
         weekTrendingPosts={weekTrendingPosts}
         monthTrendingPosts={monthTrendingPosts}
+        hour1TrendingPosts={hour1TrendingPosts}
+        hour6TrendingPosts={hour6TrendingPosts}
+        hour24TrendingPosts={hour24TrendingPosts}
         breakingSlot={<BreakingBar entry={activeBreaking(now, breakingCandidates)} />}
         beforeGridSlot={
           spotlightTopic && spotlightPosts.length > 0 ? (

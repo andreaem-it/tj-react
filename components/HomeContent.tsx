@@ -29,6 +29,9 @@ interface HomeContentProps {
   mostReadPosts: PostListItem[];
   weekTrendingPosts: PostListItem[];
   monthTrendingPosts: PostListItem[];
+  hour1TrendingPosts?: PostListItem[];
+  hour6TrendingPosts?: PostListItem[];
+  hour24TrendingPosts?: PostListItem[];
   categoryId?: number;
   /**
    * Testo dell'H1. Le pagine categoria devono passare il proprio: senza,
@@ -72,6 +75,9 @@ export default function HomeContent({
   mostReadPosts,
   weekTrendingPosts,
   monthTrendingPosts,
+  hour1TrendingPosts = [],
+  hour6TrendingPosts = [],
+  hour24TrendingPosts = [],
   categoryId,
   heading = DEFAULT_HEADING,
   breakingSlot,
@@ -122,6 +128,9 @@ export default function HomeContent({
               mostReadPosts={mostReadPosts}
               weekPosts={weekTrendingPosts}
               monthPosts={monthTrendingPosts}
+              hour1Posts={hour1TrendingPosts}
+              hour6Posts={hour6TrendingPosts}
+              hour24Posts={hour24TrendingPosts}
             />
           )}
         </div>
