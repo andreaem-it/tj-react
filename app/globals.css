@@ -15,6 +15,15 @@
   --border: rgba(0, 0, 0, 0.12);
   --surface-overlay: rgba(0, 0, 0, 0.06);
   --surface-overlay-strong: rgba(0, 0, 0, 0.1);
+  /* Token geometrici semantici: evitano che card equivalenti divergano. */
+  --space-panel: 1.5rem;
+  --space-section: 2rem;
+  --radius-surface: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-dialog: 1rem;
+  --shadow-card: 0 4px 12px rgba(17, 24, 39, 0.08);
+  --shadow-card-raised: 0 12px 28px rgba(17, 24, 39, 0.14);
+  --shadow-overlay: 0 20px 50px rgba(17, 24, 39, 0.22);
 }
 
 :root.dark {
@@ -32,6 +41,9 @@
   --border: rgba(255, 255, 255, 0.1);
   --surface-overlay: rgba(255, 255, 255, 0.05);
   --surface-overlay-strong: rgba(255, 255, 255, 0.1);
+  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --shadow-card-raised: 0 14px 32px rgba(0, 0, 0, 0.38);
+  --shadow-overlay: 0 24px 60px rgba(0, 0, 0, 0.5);
 }
 
 @theme inline {
@@ -46,6 +58,14 @@
   --color-border: var(--border);
   --color-surface-overlay: var(--surface-overlay);
   --color-surface-overlay-strong: var(--surface-overlay-strong);
+  --spacing-panel: var(--space-panel);
+  --spacing-section: var(--space-section);
+  --radius-surface: var(--radius-surface);
+  --radius-card: var(--radius-card);
+  --radius-dialog: var(--radius-dialog);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-raised: var(--shadow-card-raised);
+  --shadow-overlay: var(--shadow-overlay);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 

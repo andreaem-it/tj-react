@@ -66,7 +66,7 @@ export default function HomeRankingsSidebar({
   if (!firstAvailable) return null;
 
   return (
-    <aside className="bg-sidebar-bg rounded-lg p-6 w-full lg:w-[320px] shrink-0" aria-label="Classifiche articoli">
+    <aside className="w-full shrink-0 rounded-surface bg-sidebar-bg p-panel lg:w-[320px]" aria-label="Classifiche articoli">
       <div className="flex border-b border-border mb-4" role="tablist" aria-label="Periodo classifica">
         {(Object.keys(groups) as RankingKey[]).map((key) => (
           <button

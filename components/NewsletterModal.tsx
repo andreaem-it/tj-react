@@ -89,7 +89,7 @@ export default function NewsletterModal() {
       aria-modal="true"
       aria-labelledby="newsletter-title"
     >
-      <div className="pointer-events-auto relative max-w-xl w-full rounded-2xl bg-sidebar-bg border border-border shadow-xl p-4 pt-12 sm:p-6 sm:pt-6">
+      <div className="pointer-events-auto relative w-full max-w-xl rounded-dialog border border-border bg-sidebar-bg p-4 pt-12 shadow-overlay sm:p-panel sm:pt-6">
         <button
           type="button"
           onClick={close}

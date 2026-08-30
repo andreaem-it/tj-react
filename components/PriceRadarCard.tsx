@@ -62,7 +62,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
   const lastPriceUpdate = formatLastPriceUpdate(offer.created_at);
 
   return (
-    <article className="group relative flex flex-col h-full bg-content-bg rounded-xl overflow-hidden border border-border shadow-md md:hover:shadow-xl md:hover:border-accent/40 transition-all duration-300">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-card border border-border bg-content-bg shadow-card transition-all duration-300 md:hover:border-accent/40 md:hover:shadow-card-raised">
       <div className="relative aspect-square bg-sidebar-bg overflow-hidden">
         {imageUrl ? (
           useNextImage ? (

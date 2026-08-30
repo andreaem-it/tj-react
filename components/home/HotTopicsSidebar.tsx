@@ -25,7 +25,7 @@ export default function HotTopicsSidebar({ topics }: { topics: readonly HotTopic
 
   return (
     <aside
-      className="w-full shrink-0 rounded-lg bg-sidebar-bg p-6 lg:w-[320px]"
+      className="w-full shrink-0 rounded-surface bg-sidebar-bg p-panel lg:w-[320px]"
       aria-labelledby="tj-hot-topics"
     >
       <h2

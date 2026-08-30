@@ -12,7 +12,7 @@ export default function TrendingSidebar({ posts, currentSlug }: TrendingSidebarP
   const list = relatedPosts.slice(0, 8);
 
   return (
-    <aside className="bg-sidebar-bg rounded-lg p-6 w-full lg:w-[320px] shrink-0 lg:sticky lg:top-[150px] self-start w-full">
+    <aside className="w-full shrink-0 self-start rounded-surface bg-sidebar-bg p-panel lg:sticky lg:top-[150px] lg:w-[320px]">
       <ul className="divide-y divide-border">
         {list.map((post) => (
           <li key={post.id} className="py-3 first:pt-0">

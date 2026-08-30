@@ -10,7 +10,7 @@ export default function MostReadSidebar({ posts, title = "Più letti" }: MostRea
   if (!posts.length) return null;
 
   return (
-    <aside className="bg-sidebar-bg rounded-lg p-6 w-full lg:w-[320px] shrink-0">
+    <aside className="w-full shrink-0 rounded-surface bg-sidebar-bg p-panel lg:w-[320px]">
       <h2 className="text-foreground font-bold text-lg mb-4">{title}</h2>
       <ol className="space-y-3">
         {posts.map((post, index) => (
