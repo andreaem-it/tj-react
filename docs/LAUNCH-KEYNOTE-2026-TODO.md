@@ -1,6 +1,6 @@
 # TechJournal — checklist lancio keynote 2026
 
-Ultimo aggiornamento: 2026-08-26. Finestra obiettivo: 8–9 settembre 2026 (data Apple da confermare).
+Ultimo aggiornamento: 2026-08-30. Keynote confermato da Apple: 9 settembre 2026, ore 19:00 CEST.
 
 Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogni blocco va chiuso con stato Git controllato, file propri aggiunti esplicitamente, test/typecheck/lint/build proporzionati, commit autonomo e push su `origin/dev`.
 
@@ -76,10 +76,10 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 
 ## P1 — Preparazione editoriale keynote
 
-- [ ] Preparare Topic Hub Apple/iPhone e contenuti evergreen collegati.
-- [ ] Preparare procedura breaking/live con responsabile, priorità e scadenza.
-- [ ] Preparare immagini, categorie, fonti ufficiali e template newsletter.
-- [ ] Definire piano di copertura prima/durante/dopo l’evento e fallback manuale dell’autoposter.
+- [x] Preparare Topic Hub Apple/iPhone e piano dei contenuti evergreen collegati. Hub già presenti nel registry; verifica editoriale e contenuti assegnati nel runbook.
+- [x] Preparare procedura breaking/live con responsabile, priorità e scadenza. Vedi `docs/KEYNOTE-2026-EDITORIAL-RUNBOOK.md`.
+- [x] Preparare immagini, categorie, fonti ufficiali e template newsletter. Requisiti e fallback definiti nel runbook; gli asset finali vanno selezionati dalla redazione.
+- [x] Definire piano di copertura prima/durante/dopo l’evento e fallback manuale dell’autoposter. Vedi runbook editoriale.
 - [ ] Verificare che Price Radar e Compatibility contengano i prodotti/dispositivi rilevanti.
 
 ## P2 — Migliorie post-lancio non bloccanti
@@ -130,3 +130,4 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Design system: aggiunti token semantici condivisi per spacing, raggi e ombre, con varianti light/dark; migrate sidebar homepage, card Price Radar e dialog newsletter (`fb27833`). TypeScript, ESLint, 339 test e build Webpack verdi.
 - Account pubblico: chiusa la decisione architetturale per il lancio mantenendo il profilo local-first; non si introduce a ridosso del keynote un sistema identità con nuova superficie privacy e migrazione dati. I Price Alert restano server-side tramite sottoscrizione esplicita.
 - Dipendenze/CSP: eliminato l’aggiornamento implicito della prerelease `next-iubenda` fissandola a `1.0.0-alpha5` (`a4b6e08`). Una policy CSP completa report-only richiede prima un collector e una baseline staging per evitare rumore o regressioni dei servizi terzi; attività deliberatamente post-lancio. TypeScript, ESLint e 339 test verdi.
+- Preparazione keynote: data ufficiale aggiornata al 9 settembre, responsabilità, sequenza prima/durante/dopo, fonti primarie, asset, newsletter e fallback manuali raccolti in `docs/KEYNOTE-2026-EDITORIAL-RUNBOOK.md`.
