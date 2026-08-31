@@ -132,3 +132,8 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 - Dipendenze/CSP: eliminato l’aggiornamento implicito della prerelease `next-iubenda` fissandola a `1.0.0-alpha5` (`a4b6e08`). Una policy CSP completa report-only richiede prima un collector e una baseline staging per evitare rumore o regressioni dei servizi terzi; attività deliberatamente post-lancio. TypeScript, ESLint e 339 test verdi.
 - Preparazione keynote: data ufficiale aggiornata al 9 settembre, responsabilità, sequenza prima/durante/dopo, fonti primarie, asset, newsletter e fallback manuali raccolti in `docs/KEYNOTE-2026-EDITORIAL-RUNBOOK.md`.
 - Scheduler: endpoint, frequenze, timeout, autenticazione, criteri di successo, alert e collaudo raccolti in `docs/SCHEDULER-RUNBOOK.md`. Le caselle P0 restano aperte finché non vengono registrati gli ultimi successi reali del provider/VPS.
+
+## Registro evidenze 2026-08-31
+
+- Smoke test browser in sola lettura: homepage, Topic Hub, pagine istituzionali, articolo, admin articoli, analitiche e Compatibility risultano raggiungibili e popolati sul deployment dev. Restano bloccanti la Libreria media admin ferma in caricamento, l'assenza di audio pronti/player visibili, Price Radar senza database e il VPS scraper senza heartbeat.
+- Accessibilità homepage: il form tecnico WebMCP conservava la classe `sr-only`, ma nel CSS del deployment i suoi controlli risultavano visibili e alti 24 px. Aggiunta una definizione CSS robusta della utility assistiva senza rimuovere il form dall'albero del documento. ESLint e 339 test verdi; typecheck bloccato da `.next/types/validator.ts` generato contro il `next.config.ts` non committato e di proprietà Claude.

@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Keep assistive-only content hidden even when the generated utility sheet is
+   trimmed by the deployment build. WebMCP forms still need to remain in the
+   document, so `display: none` is intentionally avoided. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 :root {
   /* Tema chiaro (default) */
   --background: #f9fafb;
