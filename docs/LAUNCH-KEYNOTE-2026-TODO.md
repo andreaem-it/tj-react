@@ -135,5 +135,6 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 
 ## Registro evidenze 2026-08-31
 
-- Smoke test browser in sola lettura: homepage, Topic Hub, pagine istituzionali, articolo, admin articoli, analitiche e Compatibility risultano raggiungibili e popolati sul deployment dev. Restano bloccanti la Libreria media admin ferma in caricamento, l'assenza di audio pronti/player visibili, Price Radar senza database e il VPS scraper senza heartbeat.
+- Smoke test browser in sola lettura: homepage, Topic Hub, pagine istituzionali, articolo, admin articoli, analitiche e Compatibility risultano raggiungibili e popolati sul deployment dev. La Libreria media risponde ma impiega circa 17 secondi e risulta vuota. Restano bloccanti l'assenza di audio pronti/player visibili, Price Radar senza database e il VPS scraper senza heartbeat.
 - Accessibilità homepage: il form tecnico WebMCP conservava la classe `sr-only`, ma nel CSS del deployment i suoi controlli risultavano visibili e alti 24 px. Aggiunta una definizione CSS robusta della utility assistiva senza rimuovere il form dall'albero del documento. ESLint e 339 test verdi; typecheck bloccato da `.next/types/validator.ts` generato contro il `next.config.ts` non committato e di proprietà Claude.
+- Trasparenza AI: la pagina pubblica descrive ora anche l'uso dei modelli nella fase redazionale (traduzione, triage e preparazione bozze), i controlli automatici e la coda di revisione, distinguendolo chiaramente dal rendering deterministico del sito.

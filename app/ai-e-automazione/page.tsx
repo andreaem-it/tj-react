@@ -15,12 +15,8 @@ import { SITE_URL } from "@/lib/constants";
  * pagina viene servita" smette di essere vera nel momento in cui compare un
  * provider AI fra le dipendenze.
  *
- * ## Cosa questa pagina non copre, e perché
- *
- * Non descrive **come vengono scritti gli articoli**: quella parte del sistema
- * vive in un altro repository e non è verificabile da qui. Scriverne senza poter
- * controllare sarebbe esattamente il tipo di affermazione non verificata che la
- * pagina esiste per evitare. Il perimetro dichiarato è il sito pubblicato.
+ * La pipeline redazionale vive nel backend `tj-api`: se cambia, questa pagina
+ * deve essere riallineata insieme al relativo flusso di ingestione.
  */
 export const dynamic = "force-static";
 
@@ -88,6 +84,24 @@ export default function AiEAutomazionePage() {
           Per questo tutto ciò che segue è <strong className="text-foreground">deterministico</strong>:
           date le stesse informazioni in ingresso produce sempre lo stesso risultato, e quel risultato
           si può controllare.
+        </p>
+      </Section>
+
+      <Section id="supporto-redazionale" title="AI a supporto della redazione">
+        <p>
+          Prima della pubblicazione, la pipeline redazionale può usare modelli linguistici per
+          tradurre titoli, classificare gli elementi raccolti dai feed e preparare una bozza di
+          articolo. Il modello e le istruzioni di sistema sono configurati dalla redazione.
+        </p>
+        <p>
+          L&apos;output non viene considerato una fonte: passa attraverso controlli automatici di
+          struttura, qualità, duplicazione e collegamenti. Gli elementi che non superano le soglie
+          previste vengono fermati o inviati alla coda di revisione. La responsabilità del contenuto
+          pubblicato resta editoriale.
+        </p>
+        <p>
+          Questa fase è separata dal sito che stai leggendo: aprire una pagina non avvia una nuova
+          generazione e non cambia il testo in base al lettore.
         </p>
       </Section>
 
