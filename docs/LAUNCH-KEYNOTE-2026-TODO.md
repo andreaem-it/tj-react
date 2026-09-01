@@ -68,6 +68,7 @@ Collaudo Production 1 settembre 2026: tre job completati al primo tentativo con 
 - [ ] Verificare navigazione completa da tastiera, ordine focus, dialog e sidepanel.
 - [ ] Verificare contrasto, zoom 200%, reduced motion e testi lunghi.
 - [ ] Controllare in particolare homepage, articolo/player, ricerca, Price Radar, Compatibility e admin Ingestor.
+- [x] Aggiungere nella dashboard articoli lo stato audio con progress bar indeterminata e l’azione di rigenerazione per i job falliti.
 
 ## P1 — Performance e resilienza
 
