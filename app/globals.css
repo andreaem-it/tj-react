@@ -140,7 +140,7 @@ html.glass body::before {
     linear-gradient(145deg, #301442 0%, #281641 37%, #141836 68%, #101326 100%);
   background-attachment: fixed;
   transform-origin: 50% 48%;
-  animation: glass-wallpaper-pan 100s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+  animation: glass-wallpaper-pan 56s ease-in-out infinite alternate;
 }
 
 html.glass body::after {
@@ -150,17 +150,19 @@ html.glass body::after {
     radial-gradient(circle at 25% 28%, rgba(255, 255, 255, 0.12), transparent 24%),
     radial-gradient(circle at 78% 68%, rgba(135, 214, 255, 0.14), transparent 28%);
   filter: blur(24px) saturate(130%);
-  animation: glass-wallpaper-drift 70s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+  animation: glass-wallpaper-drift 38s ease-in-out infinite alternate;
 }
 
 @keyframes glass-wallpaper-pan {
-  from { transform: scale(1.02) translate3d(-1.1%, -0.7%, 0); }
-  to { transform: scale(1.07) translate3d(1.2%, 0.8%, 0); }
+  0% { transform: scale(1.035) translate3d(-2.8%, -1.7%, 0) rotate(-0.35deg); }
+  50% { transform: scale(1.085) translate3d(0.8%, 1.4%, 0) rotate(0.2deg); }
+  100% { transform: scale(1.055) translate3d(2.7%, -0.6%, 0) rotate(0.45deg); }
 }
 
 @keyframes glass-wallpaper-drift {
-  from { transform: scale(1.025) translate3d(-0.8%, -0.5%, 0); }
-  to { transform: scale(1.065) translate3d(0.9%, 0.65%, 0); }
+  0% { transform: scale(1.04) translate3d(-2.2%, 1.2%, 0); }
+  50% { transform: scale(1.1) translate3d(1.8%, -1.7%, 0); }
+  100% { transform: scale(1.06) translate3d(2.6%, 1%, 0); }
 }
 
 html.glass .bg-header-bg,
