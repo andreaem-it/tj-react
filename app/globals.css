@@ -132,12 +132,15 @@ html.glass body::after {
 
 html.glass body::before {
   z-index: -2;
+  inset: -7%;
   background:
     radial-gradient(ellipse 82% 68% at 15% 7%, rgba(242, 66, 148, 0.96) 0%, rgba(183, 46, 159, 0.58) 28%, transparent 61%),
     radial-gradient(ellipse 72% 72% at 88% 18%, rgba(79, 102, 238, 0.92) 0%, rgba(70, 52, 185, 0.56) 34%, transparent 68%),
     radial-gradient(ellipse 86% 76% at 72% 94%, rgba(247, 137, 69, 0.92) 0%, rgba(181, 75, 117, 0.46) 36%, transparent 67%),
     linear-gradient(145deg, #301442 0%, #281641 37%, #141836 68%, #101326 100%);
   background-attachment: fixed;
+  transform-origin: 50% 48%;
+  animation: glass-wallpaper-pan 100s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
 
 html.glass body::after {
@@ -147,12 +150,17 @@ html.glass body::after {
     radial-gradient(circle at 25% 28%, rgba(255, 255, 255, 0.12), transparent 24%),
     radial-gradient(circle at 78% 68%, rgba(135, 214, 255, 0.14), transparent 28%);
   filter: blur(24px) saturate(130%);
-  animation: glass-wallpaper-drift 18s ease-in-out infinite alternate;
+  animation: glass-wallpaper-drift 70s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+@keyframes glass-wallpaper-pan {
+  from { transform: scale(1.02) translate3d(-1.1%, -0.7%, 0); }
+  to { transform: scale(1.07) translate3d(1.2%, 0.8%, 0); }
 }
 
 @keyframes glass-wallpaper-drift {
-  from { transform: scale(1.03) translate3d(-1.2%, -0.8%, 0); }
-  to { transform: scale(1.09) translate3d(1.4%, 1%, 0); }
+  from { transform: scale(1.025) translate3d(-0.8%, -0.5%, 0); }
+  to { transform: scale(1.065) translate3d(0.9%, 0.65%, 0); }
 }
 
 html.glass .bg-header-bg,
@@ -195,6 +203,7 @@ html.glass .glass-theme-button[aria-pressed="true"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html.glass body::before,
   html.glass body::after {
     animation: none;
   }

@@ -62,7 +62,7 @@ Collaudo Production 1 settembre 2026: tre job completati al primo tentativo con 
 
 ## P1 — UI, accessibilità e responsive
 
-- [x] Aggiungere tema opzionale Liquid Glass con selettore dedicato, wallpaper fisso, rifrazione SVG, fallback e reduced motion.
+- [x] Aggiungere tema opzionale Liquid Glass con selettore dedicato, wallpaper fisso, movimento ambientale lento su due piani, rifrazione SVG, fallback e reduced motion.
 - [ ] Audit visuale sistematico su 320, 375, 390, 430, 768, 1024, 1440 e 1920 px.
 - [ ] Correggere overflow, wrapping, altezze, spaziature e target inferiori a 44×44 px.
 - [ ] Verificare navigazione completa da tastiera, ordine focus, dialog e sidepanel.
