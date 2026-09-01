@@ -29,13 +29,15 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 
 ## P0 — Lettura audio articoli
 
-- [ ] Verificare credenziali Google Cloud TTS e accesso R2 nel deployment candidato.
-- [ ] Verificare enqueue, worker, retry, persistenza segmenti e stato coda.
+- [x] Verificare credenziali Google Cloud TTS e accesso R2 nel deployment candidato.
+- [x] Verificare enqueue, worker, retry, persistenza segmenti e stato coda.
 - [ ] Eseguire un backfill controllato di articoli rappresentativi e controllarne i costi.
 - [ ] Collaudare player su Safari iPhone, Chrome Android e desktop: play/pausa, seek, velocità, ripresa e cambio segmento.
 - [ ] Verificare accessibilità tastiera, screen reader, focus e target touch del player.
 - [ ] Abilitare `ARTICLE_AUDIO_AUTO_ENQUEUE` solo dopo il collaudo del worker.
-- [ ] Abilitare `FEATURE_ARTICLE_AUDIO` solo dopo disponibilità audio sufficiente.
+- [x] Abilitare `FEATURE_ARTICLE_AUDIO` solo dopo disponibilità audio sufficiente.
+
+Collaudo Production 1 settembre 2026: tre job completati al primo tentativo con Achernar; player desktop caricato con segmento R2 `audio/mpeg`, durata 65,328 secondi e nessun errore console. La pagina canonica può conservare l'HTML precedente fino alla scadenza/purge della cache Cloudflare, mentre una cache key nuova espone già il player.
 
 ## P0 — Scheduler e automazioni
 
