@@ -111,6 +111,24 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//static.techjournal.it" />
       </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased font-sans">
+        <svg className="liquid-glass-filter" width="0" height="0" aria-hidden="true" focusable="false">
+          <filter id="liquid-glass" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.008 0.015"
+              numOctaves="2"
+              seed="4"
+              result="noise"
+            />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale="24"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </svg>
         <a
           href="#main-content"
           className="fixed -top-20 left-4 z-[200] rounded-lg bg-accent px-4 py-3 font-semibold text-gray-900 shadow-lg transition-[top] focus:top-4"

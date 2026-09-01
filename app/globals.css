@@ -61,6 +61,25 @@
   --shadow-overlay: 0 24px 60px rgba(0, 0, 0, 0.5);
 }
 
+:root.glass {
+  color-scheme: dark;
+  --background: transparent;
+  --foreground: #ffffff;
+  --muted: #d7d9e4;
+  --accent: #ffbd38;
+  --accent-text: #ffd36a;
+  --header-bg: rgba(20, 18, 40, 0.44);
+  --content-bg: rgba(32, 29, 57, 0.38);
+  --sidebar-bg: rgba(24, 22, 48, 0.42);
+  --article-text: #f1f2f8;
+  --border: rgba(255, 255, 255, 0.24);
+  --surface-overlay: rgba(255, 255, 255, 0.11);
+  --surface-overlay-strong: rgba(255, 255, 255, 0.18);
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.34), inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 18px 46px rgba(4, 3, 16, 0.24);
+  --shadow-card-raised: inset 0 1px 0 rgba(255, 255, 255, 0.42), inset 0 -1px 0 rgba(255, 255, 255, 0.08), 0 28px 68px rgba(4, 3, 16, 0.36);
+  --shadow-overlay: inset 0 1px 0 rgba(255, 255, 255, 0.44), 0 34px 90px rgba(3, 2, 14, 0.48);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -90,6 +109,95 @@ body {
   max-width: 100%;
   overflow-x: hidden;
   overscroll-behavior-x: none;
+}
+
+.liquid-glass-filter {
+  position: fixed;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+html.glass body {
+  isolation: isolate;
+  background: #15112b;
+}
+
+html.glass body::before,
+html.glass body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+html.glass body::before {
+  z-index: -2;
+  background:
+    radial-gradient(ellipse 82% 68% at 15% 7%, rgba(242, 66, 148, 0.96) 0%, rgba(183, 46, 159, 0.58) 28%, transparent 61%),
+    radial-gradient(ellipse 72% 72% at 88% 18%, rgba(79, 102, 238, 0.92) 0%, rgba(70, 52, 185, 0.56) 34%, transparent 68%),
+    radial-gradient(ellipse 86% 76% at 72% 94%, rgba(247, 137, 69, 0.92) 0%, rgba(181, 75, 117, 0.46) 36%, transparent 67%),
+    linear-gradient(145deg, #301442 0%, #281641 37%, #141836 68%, #101326 100%);
+  background-attachment: fixed;
+}
+
+html.glass body::after {
+  z-index: -1;
+  opacity: 0.78;
+  background:
+    radial-gradient(circle at 25% 28%, rgba(255, 255, 255, 0.12), transparent 24%),
+    radial-gradient(circle at 78% 68%, rgba(135, 214, 255, 0.14), transparent 28%);
+  filter: blur(24px) saturate(130%);
+  animation: glass-wallpaper-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes glass-wallpaper-drift {
+  from { transform: scale(1.03) translate3d(-1.2%, -0.8%, 0); }
+  to { transform: scale(1.09) translate3d(1.4%, 1%, 0); }
+}
+
+html.glass .bg-header-bg,
+html.glass .bg-content-bg,
+html.glass .bg-sidebar-bg,
+html.glass .bg-surface-overlay,
+html.glass .bg-surface-overlay-strong {
+  background-color: var(--content-bg) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.045)) !important;
+  border-color: var(--border) !important;
+  box-shadow: var(--shadow-card);
+  -webkit-backdrop-filter: url("#liquid-glass") blur(7px) saturate(180%);
+  backdrop-filter: url("#liquid-glass") blur(7px) saturate(180%);
+}
+
+html.glass .bg-header-bg {
+  background-color: var(--header-bg) !important;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08), 0 14px 38px rgba(4, 3, 16, 0.2);
+}
+
+html.glass .bg-sidebar-bg {
+  background-color: var(--sidebar-bg) !important;
+}
+
+html.glass .glass-theme-button[aria-pressed="true"] {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.52);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.42), 0 10px 28px rgba(4, 3, 16, 0.28);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html.glass .bg-header-bg,
+  html.glass .bg-content-bg,
+  html.glass .bg-sidebar-bg,
+  html.glass .bg-surface-overlay,
+  html.glass .bg-surface-overlay-strong {
+    background-color: rgba(31, 27, 55, 0.9) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.glass body::after {
+    animation: none;
+  }
 }
 
 @supports (overflow: clip) {
