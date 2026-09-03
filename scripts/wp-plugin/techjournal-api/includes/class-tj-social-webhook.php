@@ -3,7 +3,7 @@
  * Webhook autopost social: alla pubblicazione di un post WP notifica tj-api.
  *
  * Configurazione (wp-config.php o opzioni):
- * - TJ_WEBHOOK_URL  → es. https://www.techjournal.it/api/webhooks/wp-post-published
+ * - TJ_WEBHOOK_URL  → es. https://backend.techjournal.it/api/webhooks/wp-post-published
  * - TJ_WEBHOOK_SECRET → stesso valore di WP_WEBHOOK_SECRET su tj-api (Vercel)
  *
  * @package TechJournal_API
@@ -30,7 +30,7 @@ class TJ_Social_Webhook {
         register_setting('tj_social_webhook', self::OPTION_URL, [
             'type' => 'string',
             'sanitize_callback' => 'esc_url_raw',
-            'default' => 'https://www.techjournal.it/api/webhooks/wp-post-published',
+            'default' => 'https://backend.techjournal.it/api/webhooks/wp-post-published',
         ]);
         register_setting('tj_social_webhook', self::OPTION_SECRET, [
             'type' => 'string',
