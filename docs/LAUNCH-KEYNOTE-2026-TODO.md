@@ -22,6 +22,7 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 ## P0 — WordPress e pipeline editoriale
 
 - [x] Importare l’archivio WordPress nel database editoriale, preservando `wp_id`, contenuto e metadati, senza avviare il backfill audio.
+- [x] Importare automaticamente nel database editoriale ogni post WordPress alla prima pubblicazione, tramite webhook idempotente.
 - [ ] Verificare nell’admin WordPress che il plugin TechJournal API 1.7.0 sia installato e attivo.
 - [ ] Verificare una scrittura autenticata reale di TL;DR e breaking tramite `tj-api`.
 - [ ] Eseguire il percorso completo feed → AI → WordPress → frontend con un contenuto di prova controllato.
