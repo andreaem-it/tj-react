@@ -21,11 +21,14 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 
 ## P0 — WordPress e pipeline editoriale
 
+- [x] Importare l’archivio WordPress nel database editoriale, preservando `wp_id`, contenuto e metadati, senza avviare il backfill audio.
 - [ ] Verificare nell’admin WordPress che il plugin TechJournal API 1.7.0 sia installato e attivo.
 - [ ] Verificare una scrittura autenticata reale di TL;DR e breaking tramite `tj-api`.
 - [ ] Eseguire il percorso completo feed → AI → WordPress → frontend con un contenuto di prova controllato.
 - [ ] Verificare attribuzione autore, changelog e campi recensione.
 - [ ] Preparare e pubblicare almeno una recensione reale con metodologia, durata, voto, pro e contro.
+
+Collaudo Production 3 settembre 2026: importati 1.573 articoli WordPress, 4 già presenti, 0 errori (1.577 record WordPress totali). Il trigger di generazione audio è sospeso; nessun job è in coda o in elaborazione.
 
 ## P0 — Lettura audio articoli
 
