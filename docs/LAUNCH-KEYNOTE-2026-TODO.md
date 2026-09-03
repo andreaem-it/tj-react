@@ -43,11 +43,13 @@ Collaudo Production 1 settembre 2026: tre job completati al primo tentativo con 
 
 - [ ] Confermare scheduler `ingest-feeds` ogni circa 10 minuti.
 - [ ] Confermare scheduler `autopost-fill-day` giornaliero.
-- [ ] Confermare scheduler `article-audio-worker` ogni minuto.
+- [x] Confermare scheduler `article-audio-worker` ogni minuto.
 - [ ] Confermare scheduler newsletter giornaliera e Price Radar settimanale.
 - [ ] Confermare scheduler guide review/auto-update e stato del relativo feature flag.
 - [ ] Confermare timer VPS Price Radar oppure predisporre un sostituto monitorato.
 - [ ] Verificare autenticazione `CRON_SECRET`, log dell’ultimo successo e alert sui fallimenti.
+
+Collaudo Production 3 settembre 2026: il Worker Cloudflare `tj-audio-scheduler` ha il trigger `* * * * *` applicato alla versione attiva; il job audio dell’articolo 8 ha completato con Achernar al primo tentativo (`ready`). L’handler registra e propaga gli errori al Cron Event invece di perdere un fallimento in background.
 
 ## P0 — Smoke test end-to-end
 
