@@ -13,8 +13,8 @@ Questa checklist misura la prontezza al lancio, non sostituisce il Piano 94. Ogn
 
 ## P0 — Integrità del candidato al lancio
 
-- [ ] Far completare e committare separatamente a Claude le sitemap segmentate già presenti nel worktree frontend.
-- [ ] Riallineare questa checklist con il Piano 94 dopo la chiusura delle sitemap, senza sovrascrivere modifiche altrui.
+- [x] Far completare e committare separatamente a Claude le sitemap segmentate già presenti nel worktree frontend. Completato con `3d4fbda`; i cinque segmenti sono raggiungibili in produzione.
+- [x] Riallineare questa checklist con il Piano 94 dopo la chiusura delle sitemap, senza sovrascrivere modifiche altrui. Verificato il 5 settembre 2026.
 - [x] Verificare che `dev` sia verde nei tre repository: test, TypeScript, ESLint dove configurato e build di produzione. Verificato il 2026-08-26: frontend 328 test + lint + typecheck + build Webpack; API 162 test + build TypeScript; admin lint + typecheck + build Webpack.
 - [x] Preparare una matrice delle variabili necessarie per Preview e Production senza copiarne i valori nei log. Vedi `docs/DEPLOY-ENV-MATRIX.md`; audit dei soli nomi completato il 2026-08-26.
 - [ ] Confermare backup, rollback e deployment precedente recuperabile per frontend, API e admin.
