@@ -66,6 +66,8 @@ Collaudo Production 3 settembre 2026: il Worker Cloudflare `tj-audio-scheduler` 
 - [ ] Newsletter, Web Push, Price Alert e incremento visualizzazioni articolo.
 - [ ] Sitemap, robots, feed RSS, metadata, JSON-LD e canonical.
 
+Smoke pubblico 5 settembre 2026: `www.techjournal.it`, categoria Apple, Topic Hub iPhone 18, Price Radar e Compatibility rispondono 200 e mostrano contenuto; `backend.techjournal.it/health` risponde 200. Restano da completare i percorsi autenticati e le verifiche funzionali elencate sopra.
+
 ## P1 — UI, accessibilità e responsive
 
 - [x] Aggiungere tema opzionale Liquid Glass con selettore dedicato, wallpaper fisso, movimento ambientale lento ma percepibile su due piani, rifrazione SVG, fallback e reduced motion.
