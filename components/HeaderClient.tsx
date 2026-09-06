@@ -113,7 +113,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-header-bg border-b border-border">
+    <header className="sticky top-0 z-50 border-b border-border bg-header-bg pt-[env(safe-area-inset-top)]">
       <div className="max-w-7xl mx-auto px-[10px] sm:px-4 xl:px-12">
         <div className="flex items-center justify-between py-3 gap-2">
           <button

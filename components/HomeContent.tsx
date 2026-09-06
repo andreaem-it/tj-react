@@ -94,7 +94,7 @@ export default function HomeContent({
     process.env.NEXT_PUBLIC_ADSENSE_SLOT_ARTICLE_SIDEBAR;
 
   return (
-    <div className="max-w-7xl mx-auto px-[5px] md:px-4 py-6">
+    <div className="w-full min-w-0 max-w-7xl mx-auto px-[5px] md:px-4 py-6">
       <h1 className="sr-only">{heading}</h1>
       {breakingSlot}
       {/* Sezione in testa: tutta la larghezza, 4 articoli (1 grande + 3 a destra). La sidebar inizia sotto. */}
