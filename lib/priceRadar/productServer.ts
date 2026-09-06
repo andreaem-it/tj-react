@@ -28,6 +28,14 @@ import type {
  */
 
 const UPSTREAM_TIMEOUT_MS = 6000;
+/**
+ * Evita che una stessa istanza ritenti l'upstream indisponibile per ogni
+ * componente/pagina durante una rigenerazione. È un circuit breaker effimero:
+ * non sostituisce la Data Cache e, scaduto il breve intervallo, la richiesta
+ * torna normale.
+ */
+const UPSTREAM_COOLDOWN_MS = 30_000;
+let upstreamUnavailableUntil = 0;
 
 /**
  * TTL dei dati prodotto.
@@ -40,6 +48,8 @@ const UPSTREAM_TIMEOUT_MS = 6000;
 export const PRODUCT_REVALIDATE_SECONDS = 1800;
 
 async function getJson<T>(url: string, revalidate: number): Promise<T | null> {
+  if (Date.now() < upstreamUnavailableUntil) return null;
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
   try {
@@ -49,11 +59,13 @@ async function getJson<T>(url: string, revalidate: number): Promise<T | null> {
       signal: controller.signal,
     });
     if (!res.ok) {
+      if (res.status >= 500) upstreamUnavailableUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
       console.error(`[PriceRadar] upstream ${res.status} su ${url}`);
       return null;
     }
     return (await res.json()) as T;
   } catch (e) {
+    upstreamUnavailableUntil = Date.now() + UPSTREAM_COOLDOWN_MS;
     console.error(`[PriceRadar] fetch fallito su ${url}:`, e);
     return null;
   } finally {
