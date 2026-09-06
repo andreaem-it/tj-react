@@ -94,6 +94,8 @@ Incident response 6 settembre 2026: i cold start Vercel eseguivano le `ensure*Sc
 
 Hardening build 6 settembre 2026: le fetch server-side di Price Radar e Compatibility riusano gli header autenticati del proxy verso tj-api, inclusi i bypass configurati, così i worker Vercel non degradano su fallback per controlli anti-bot.
 
+Resilienza deploy 6 settembre 2026: la pre-generazione iniziale Vercel delle schede Price Radar e Compatibility è differita a ISR on-demand. Un timeout momentaneo di `tj-api` non viene più ripetuto per ogni ASIN/dispositivo e non può rallentare il rilascio; il contenuto è generato e cacheato alla prima visita.
+
 ## P1 — Preparazione editoriale keynote
 
 - [x] Preparare Topic Hub Apple/iPhone e piano dei contenuti evergreen collegati. Hub già presenti nel registry; verifica editoriale e contenuti assegnati nel runbook.

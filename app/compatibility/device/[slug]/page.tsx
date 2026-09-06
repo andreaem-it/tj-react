@@ -39,6 +39,13 @@ export const revalidate = 3600;
 export const dynamicParams = true;
 
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
+  // Durante un build Vercel il catalogo risiede dietro un servizio esterno.
+  // Prerenderizzare tutte le schede qui moltiplica un singolo timeout upstream
+  // per ogni dispositivo e può rendere il deploy inutilmente lento. Con
+  // `dynamicParams` e `revalidate` le schede vengono generate alla prima
+  // visita e poi conservate in ISR, senza legare il rilascio all'API.
+  if (process.env.VERCEL === "1") return [];
+
   try {
     const devices = await fetchCompatibilityDevices();
     return devices
