@@ -45,6 +45,8 @@ const MAX_QUERY_LENGTH = 120;
 const LIMIT_PER_KIND = 5;
 /** Articoli richiesti a monte: il matcher ne scarta una parte. */
 const ARTICLE_FETCH_LIMIT = 12;
+/** La ricerca suggerita non deve restare appesa a un archivio esterno. */
+const SEARCH_SOURCE_TIMEOUT_MS = 6_000;
 
 /**
  * Log della query verso tj-api (§54), fire-and-forget: la ricerca deve
@@ -69,6 +71,28 @@ function emptyResponse(query: string): NextResponse {
   });
 }
 
+/**
+ * Restituisce un ripiego locale quando una delle fonti opzionali è lenta.
+ *
+ * Il timer non annulla la richiesta originaria (le API dei data layer non
+ * condividono un segnale), ma libera subito la risposta HTTP: l'interfaccia
+ * conserva argomenti/sezioni e indica l'assenza degli articoli anziché
+ * trasformare un suggerimento di ricerca in un'attesa di decine di secondi.
+ */
+async function withinSearchDeadline<T>(promise: Promise<T>, fallback: T): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timeoutId = setTimeout(() => resolve(fallback), SEARCH_SOURCE_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+  }
+}
+
 export async function GET(request: NextRequest) {
   const raw = request.nextUrl.searchParams.get("q") ?? "";
   const query = raw.trim();
@@ -84,8 +108,11 @@ export async function GET(request: NextRequest) {
   if (tokens.length === 0) return emptyResponse(query);
 
   const [localIndex, articles] = await Promise.all([
-    buildLocalIndex().catch(() => []),
-    articleEntries(query, ARTICLE_FETCH_LIMIT),
+    withinSearchDeadline(buildLocalIndex().catch(() => []), []),
+    withinSearchDeadline(
+      articleEntries(query, ARTICLE_FETCH_LIMIT),
+      { entries: [], unavailable: true },
+    ),
   ]);
 
   /**
