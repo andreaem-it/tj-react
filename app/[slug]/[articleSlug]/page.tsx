@@ -306,21 +306,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
             {isFeatureEnabled("articleAudio") ? <ArticleAudioPlayer postId={post.id} /> : null}
 
-            {post.imageUrl && (
-              <div className="mt-6 relative w-full max-w-3xl aspect-video rounded-lg overflow-hidden bg-content-bg">
-                <Image
-                  src={post.imageUrl}
-                  alt={post.imageAlt || post.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 800px"
-                  priority
-                  placeholder="blur"
-                  blurDataURL={BLUR_DATA_URL}
-                />
-              </div>
-            )}
           </header>
+
+          {post.imageUrl && (
+            <div className="relative w-full aspect-video overflow-hidden bg-content-bg">
+              <Image
+                src={post.imageUrl}
+                alt={post.imageAlt || post.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 960px"
+                priority
+                placeholder="blur"
+                blurDataURL={BLUR_DATA_URL}
+              />
+            </div>
+          )}
 
           <div className="px-3 py-6 md:p-8">
             <ReviewBox review={post.review} />

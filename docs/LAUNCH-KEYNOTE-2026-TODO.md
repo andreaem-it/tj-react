@@ -78,6 +78,8 @@ SEO tecnico pubblico 5 settembre 2026: `robots.txt`, `sitemap.xml` e `feed.xml` 
 - [ ] Verificare navigazione completa da tastiera, ordine focus, dialog e sidepanel.
 - [ ] Verificare contrasto, zoom 200%, reduced motion e testi lunghi.
 - [ ] Controllare in particolare homepage, articolo/player, ricerca, Price Radar, Compatibility e admin Ingestor.
+
+Correzione UI 6 settembre 2026: l'immagine in evidenza degli articoli occupa ora l'intera card editoriale, indipendente dalla larghezza della colonna testuale (`page.tsx` articolo); test, TypeScript ed ESLint verdi.
 - [x] Aggiungere nella dashboard e nell’editor articoli lo stato audio sempre visibile, progress bar indeterminata e azione di rigenerazione per i job falliti; gli articoli importati da WordPress attendono la normalizzazione dell’editor prima di rilevare modifiche locali.
 
 ## P1 — Performance e resilienza
