@@ -1,4 +1,5 @@
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
+import { tjApiServerHeaders } from "@/lib/tjApiServerHeaders";
 import { fetchTjProxyJson, type TjCachePolicy } from "@/lib/tjApiClient";
 import type {
   CompatibilityStatus,
@@ -12,7 +13,6 @@ import type {
 const CTX = "compatibility";
 
 const DIRECT_TIMEOUT_MS = 8000;
-const TJ_API_USER_AGENT = "TechJournal-Frontend/1.0 (+https://www.techjournal.it)";
 
 /**
  * Richiesta diretta a tj-api, quando `TJ_API_BASE_URL` è configurata.
@@ -48,7 +48,7 @@ async function fetchDirectJson<T>(
   const timer = setTimeout(() => controller.abort(), DIRECT_TIMEOUT_MS);
   try {
     const res = await fetch(`${base}${path}`, {
-      headers: { Accept: "application/json", "User-Agent": TJ_API_USER_AGENT },
+      headers: tjApiServerHeaders(),
       signal: controller.signal,
       ...(cachePolicy === undefined || cachePolicy === "no-store"
         ? { cache: "no-store" as RequestCache }

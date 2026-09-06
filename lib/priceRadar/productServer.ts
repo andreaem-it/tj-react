@@ -1,4 +1,5 @@
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
+import { tjApiServerHeaders } from "@/lib/tjApiServerHeaders";
 import {
   analyzePriceHistory,
   compressToChangePoints,
@@ -27,7 +28,6 @@ import type {
  */
 
 const UPSTREAM_TIMEOUT_MS = 6000;
-const TJ_API_USER_AGENT = "TechJournal-Frontend/1.0 (+https://www.techjournal.it)";
 
 /**
  * TTL dei dati prodotto.
@@ -44,7 +44,7 @@ async function getJson<T>(url: string, revalidate: number): Promise<T | null> {
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
   try {
     const res = await fetch(url, {
-      headers: { Accept: "application/json", "User-Agent": TJ_API_USER_AGENT },
+      headers: tjApiServerHeaders(),
       next: { revalidate },
       signal: controller.signal,
     });

@@ -92,6 +92,8 @@ Correzione UI 6 settembre 2026: l'immagine in evidenza degli articoli occupa ora
 
 Incident response 6 settembre 2026: i cold start Vercel eseguivano le `ensure*Schema`, saturando il pool Supabase in session mode e causando 500 su Price Radar e Compatibility. `tj-api` ora salta tali ensure sui cold start e preferisce il transaction pooler tramite `DATABASE_URL_TRANSACTION`; verifica concorrente post-deploy: health, due schede Compatibility e due route Price Radar tutte 200.
 
+Hardening build 6 settembre 2026: le fetch server-side di Price Radar e Compatibility riusano gli header autenticati del proxy verso tj-api, inclusi i bypass configurati, così i worker Vercel non degradano su fallback per controlli anti-bot.
+
 ## P1 — Preparazione editoriale keynote
 
 - [x] Preparare Topic Hub Apple/iPhone e piano dei contenuti evergreen collegati. Hub già presenti nel registry; verifica editoriale e contenuti assegnati nel runbook.
