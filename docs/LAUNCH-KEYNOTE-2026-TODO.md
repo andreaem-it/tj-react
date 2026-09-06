@@ -64,13 +64,15 @@ Collaudo Production 3 settembre 2026: il Worker Cloudflare `tj-audio-scheduler` 
 - [ ] Price Radar: catalogo, dettaglio, storico, proposta lettore, moderazione, modifica/eliminazione e batch manuale.
 - [ ] Compatibility: dispositivi, sistemi operativi, matrice, confronto e import admin.
 - [ ] Newsletter, Web Push, Price Alert e incremento visualizzazioni articolo.
-- [ ] Sitemap, robots, feed RSS, metadata, JSON-LD e canonical.
+- [x] Sitemap, robots, feed RSS, metadata, JSON-LD e canonical.
 
 Smoke pubblico 5 settembre 2026: `www.techjournal.it`, categoria Apple, Topic Hub iPhone 18, Price Radar e Compatibility rispondono 200 e mostrano contenuto; `backend.techjournal.it/health` risponde 200. Restano da completare i percorsi autenticati e le verifiche funzionali elencate sopra.
 
 SEO tecnico pubblico 5 settembre 2026: `robots.txt`, `sitemap.xml` e `feed.xml` rispondono 200; la categoria Apple espone canonical e due blocchi JSON-LD. Restano da verificare le sitemap segmentate e le pagine articolo.
 
 Compatibilità permalink 6 settembre 2026: aggiunti redirect permanenti dalle URL WordPress annidate e dalle varianti AMP/feed agli URL canonici; la suite verifica i casi Apple, App, Gaming e la conservazione dei parametri di query.
+
+Smoke SEO pubblico 6 settembre 2026: `robots.txt`, indice sitemap, cinque sitemap segmentate e feed RSS rispondono 200 con i rispettivi content type; un articolo estratto dalla sitemap espone canonical assoluto e JSON-LD.
 
 ## P1 — UI, accessibilità e responsive
 
