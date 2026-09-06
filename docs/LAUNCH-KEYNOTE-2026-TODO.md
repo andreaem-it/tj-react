@@ -74,6 +74,8 @@ Compatibilità permalink 6 settembre 2026: aggiunti redirect permanenti dalle UR
 
 Smoke SEO pubblico 6 settembre 2026: `robots.txt`, indice sitemap, cinque sitemap segmentate e feed RSS rispondono 200 con i rispettivi content type; un articolo estratto dalla sitemap espone canonical assoluto e JSON-LD.
 
+Smoke pubblico esteso 6 settembre 2026: homepage, categoria Apple, articolo, Topic Hub iPhone 18, istituzionale, Price Radar, prodotto estratto dalla sitemap, Compatibility e confronto rispondono 200 con il relativo H1. La ricerca pubblica ha restituito 200 in 1,97 s dopo il limite alle fonti opzionali; restano i flussi autenticati e il profilo autore da verificare.
+
 ## P1 — UI, accessibilità e responsive
 
 - [x] Aggiungere tema opzionale Liquid Glass con selettore dedicato, wallpaper fisso, movimento ambientale lento ma percepibile su due piani, rifrazione SVG, fallback e reduced motion.
