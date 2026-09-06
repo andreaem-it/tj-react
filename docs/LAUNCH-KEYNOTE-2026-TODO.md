@@ -134,6 +134,8 @@ Resilienza ricerca 6 settembre 2026: l'endpoint di suggerimenti risponde entro s
 
 Rilascio coordinato 6 settembre 2026: su autorizzazione esplicita sono stati integrati e promossi `dev → main` senza conflitti (frontend `dcb13dc`, API `b9a77a8`, admin `b7b2878`). I P0 di collaudo manuale WordPress, scheduler, player mobile e rollback restano aperti e sono rischio residuo accettato, non evidenza inventata. Smoke post-release: `techjournal.it` (home, categoria, ricerca, Price Radar, Compatibility, sitemap), `admin.techjournal.it/login`, `backend.techjournal.it/health`, catalogo Price Radar e dispositivi Compatibility: tutti HTTP 200.
 
+Correzione runtime 7 settembre 2026: la lista articoli unificata amministrativa non percorre più l'intero archivio WordPress a ogni apertura. Legge soltanto la finestra remota necessaria per intercettare post appena pubblicati e carica Supabase/WordPress in parallelo, eliminando il 504 osservato su `/api/admin/articles/unified`. API `78817dd`: 174 test e build TypeScript verdi; lint non configurato nel package API.
+
 ## Registro evidenze 2026-08-26
 
 - Resilienza API: aggiunti timeout espliciti per OpenAI (`8c83d2b`), Google TTS (`0f69382`, test deterministico `b874d32`), Brevo (`34f85f0`), Search Console (`a1ca046`), AdSense (`0f4e905`), GA4 realtime (`9583d6a`), client WordPress (`31d6476`) e recupero digest newsletter (`e16b77b`). Suite API finale: 165/165 test e build TypeScript verdi.
