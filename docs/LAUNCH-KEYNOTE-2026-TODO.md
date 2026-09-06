@@ -86,6 +86,7 @@ Smoke pubblico esteso 6 settembre 2026: homepage, categoria Apple, articolo, Top
 - [ ] Controllare in particolare homepage, articolo/player, ricerca, Price Radar, Compatibility e admin Ingestor.
 
 Correzione UI 6 settembre 2026: l'immagine in evidenza degli articoli occupa ora l'intera card editoriale, indipendente dalla larghezza della colonna testuale (`page.tsx` articolo); test, TypeScript ed ESLint verdi.
+Correzione mobile 6 settembre 2026: il wrapper della home dichiara esplicitamente larghezza e shrink nel contenitore flex, eliminando lo sforamento laterale delle card a 390 px; header e skeleton rispettano inoltre `safe-area-inset-top`, così in Safari PWA i controlli restano sotto Dynamic Island/status bar.
 - [x] Aggiungere nella dashboard e nell’editor articoli lo stato audio sempre visibile, progress bar indeterminata e azione di rigenerazione per i job falliti; gli articoli importati da WordPress attendono la normalizzazione dell’editor prima di rilevare modifiche locali.
 
 ## P1 — Performance e resilienza
