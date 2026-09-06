@@ -13,7 +13,6 @@ import {
   analyzeProduct,
   loadPriceHistory,
   loadProductById,
-  loadProductList,
   resolveProductIdByAsin,
 } from "@/lib/priceRadar/productServer";
 import { formatEuro } from "@/lib/priceRadar/rating";
@@ -39,19 +38,9 @@ export const dynamicParams = true;
  * alla Data Cache.
  */
 export async function generateStaticParams(): Promise<Array<{ asin: string }>> {
-  // Il catalogo arriva da tj-api: durante il build Vercel le schede possono
-  // essere generate on-demand e cacheate con ISR. Evitiamo quindi che un
-  // timeout dell'upstream venga ripetuto per ogni ASIN e ritardi il deploy.
-  if (process.env.VERCEL === "1") return [];
-
-  try {
-    const products = await loadProductList();
-    return products
-      .filter((p) => typeof p.asin === "string" && p.asin.length >= 5)
-      .map((p) => ({ asin: p.asin }));
-  } catch {
-    return [];
-  }
+  // Il catalogo arriva da tj-api. Le schede sono ISR on-demand: non si
+  // enumerano al build per non ripetere un timeout dell'upstream per ogni ASIN.
+  return [];
 }
 
 interface ProductPageProps {

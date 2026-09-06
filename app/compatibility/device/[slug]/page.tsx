@@ -10,7 +10,6 @@ import { SupportTypeBadge } from "@/components/compatibility/SupportTypeBadge";
 import ProductPriceCard from "@/components/priceRadar/ProductPriceCard";
 import {
   COMPATIBILITY_LIST_REVALIDATE_S,
-  fetchCompatibilityDevices,
   fetchCompatibilityOsList,
   fetchDeviceDetail,
 } from "@/lib/compatibility/serverApi";
@@ -39,23 +38,11 @@ export const revalidate = 3600;
 export const dynamicParams = true;
 
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
-  // Durante un build Vercel il catalogo risiede dietro un servizio esterno.
-  // Prerenderizzare tutte le schede qui moltiplica un singolo timeout upstream
-  // per ogni dispositivo e può rendere il deploy inutilmente lento. Con
-  // `dynamicParams` e `revalidate` le schede vengono generate alla prima
-  // visita e poi conservate in ISR, senza legare il rilascio all'API.
-  if (process.env.VERCEL === "1") return [];
-
-  try {
-    const devices = await fetchCompatibilityDevices();
-    return devices
-      .map((d) => (typeof d.slug === "string" ? d.slug.trim() : ""))
-      .filter((slug) => slug.length > 0)
-      .map((slug) => ({ slug }));
-  } catch {
-    // API irraggiungibile al build: nessun prerender, pagine generate on-demand.
-    return [];
-  }
+  // Il catalogo è un upstream operativo, non un elenco di route del bundle.
+  // Enumerarlo qui amplifica un suo timeout su tutte le schede e trasforma un
+  // deploy in un batch fragile. `dynamicParams` + ISR produce ciascuna pagina
+  // alla prima visita e la conserva per un'ora, anche nei build locali.
+  return [];
 }
 
 const TYPE_LABEL = { iphone: "iPhone", ipad: "iPad", mac: "Mac" } as const;
