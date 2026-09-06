@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import PriceRadarContent from "@/components/PriceRadarContent";
 import PriceRadarStructuredData from "@/components/PriceRadarStructuredData";
+import BestDealsSection from "@/components/priceRadar/BestDealsSection";
 import { SITE_URL } from "@/lib/constants";
 import { loadInitialPriceRadarData } from "@/lib/priceRadar/server";
 
@@ -46,7 +48,25 @@ export default async function PriceRadarPage() {
   return (
     <>
       <PriceRadarStructuredData />
-      <PriceRadarContent initialData={initialData} />
+      {/*
+        Il blocco occasioni entra come `headerSlot`, non come fratello della
+        pagina, per due ragioni distinte:
+        — in `AppShell` i children stanno in un contenitore `flex justify-center`,
+          quindi due elementi visibili si affiancano invece di impilarsi;
+        — messo prima, il suo `<h2>` precederebbe l'`<h1>` della pagina.
+
+        Resta in `Suspense` perché verifica lo storico di una rosa di candidati:
+        è la parte più lenta e non deve trattenere la griglia, che è già pronta.
+        Se non c'è nulla da certificare non rende nulla e lo spazio si richiude.
+      */}
+      <PriceRadarContent
+        initialData={initialData}
+        headerSlot={
+          <Suspense fallback={null}>
+            <BestDealsSection />
+          </Suspense>
+        }
+      />
     </>
   );
 }

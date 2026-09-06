@@ -1,12 +1,12 @@
 export const SITE_THEME_STORAGE_KEY = "theme";
 
-export type SiteTheme = "light" | "dark";
+export type SiteTheme = "light" | "dark" | "glass";
 
 /** Preferenza salvata o sistema; allineato al comportamento di ThemeToggle. */
 export function getStoredOrPreferredTheme(): SiteTheme {
   if (typeof window === "undefined") return "dark";
   const stored = window.localStorage.getItem(SITE_THEME_STORAGE_KEY) as SiteTheme | null;
-  if (stored === "light" || stored === "dark") return stored;
+  if (stored === "light" || stored === "dark" || stored === "glass") return stored;
   const prefersDark =
     typeof window.matchMedia === "function" &&
     window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -14,12 +14,14 @@ export function getStoredOrPreferredTheme(): SiteTheme {
 }
 
 export function applySiteThemeToDocument(theme: SiteTheme): void {
-  document.documentElement.classList.toggle("dark", theme === "dark");
+  document.documentElement.classList.toggle("glass", theme === "glass");
+  document.documentElement.classList.toggle("dark", theme !== "light");
 }
 
 /** Per useSyncExternalStore: tema da classe `dark` su `<html>`. */
 export function getSiteThemeFromDom(): SiteTheme {
   if (typeof document === "undefined") return "dark";
+  if (document.documentElement.classList.contains("glass")) return "glass";
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
@@ -46,4 +48,4 @@ export function subscribeSiteThemeClass(onChange: () => void): () => void {
  * Serve a CSS variabili, iubenda e primo paint coerenti con ThemeToggle (layout React non forza più sempre dark).
  */
 export const SITE_THEME_BOOTSTRAP_SCRIPT =
-  '(function(){try{var k="theme";var t=localStorage.getItem(k);var r=document.documentElement;var p=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;var dark=t==="dark"||(t!=="light"&&p);r.classList.toggle("dark",dark);}catch(e){}})();';
+  '(function(){try{var k="theme";var t=localStorage.getItem(k);var r=document.documentElement;var p=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;var glass=t==="glass";var dark=glass||t==="dark"||(t!=="light"&&p);r.classList.toggle("glass",glass);r.classList.toggle("dark",dark);}catch(e){}})();';

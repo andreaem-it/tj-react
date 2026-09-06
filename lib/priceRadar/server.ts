@@ -1,4 +1,5 @@
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
+import { tjApiServerHeaders } from "@/lib/tjApiServerHeaders";
 import {
   isDisplayableOffer,
   mapProductsToOffers,
@@ -30,7 +31,6 @@ import {
 
 const UPSTREAM_TIMEOUT_MS = 6000;
 /** Stesso UA delle chiamate server-to-server del proxy (vedi `lib/tjApiProxy`). */
-const TJ_API_USER_AGENT = "TechJournal-Frontend/1.0 (+https://www.techjournal.it)";
 
 /** Allineato al TTL della cache in memoria del componente client. */
 export const PRICE_RADAR_REVALIDATE_SECONDS = 300;
@@ -49,7 +49,7 @@ async function getJson<T>(url: string): Promise<T | null> {
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
   try {
     const res = await fetch(url, {
-      headers: { Accept: "application/json", "User-Agent": TJ_API_USER_AGENT },
+      headers: tjApiServerHeaders(),
       next: { revalidate: PRICE_RADAR_REVALIDATE_SECONDS },
       signal: controller.signal,
     });

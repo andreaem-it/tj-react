@@ -1,54 +1,89 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
-import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
+import { useId, useRef, useState } from "react";
+import type { PostListItem } from "@/lib/api";
+import { getCategoryUrlSlugFromWpSlug } from "@/lib/categorySlugs";
 
-type RankingKey = "read" | "week" | "month";
+type RankingKey = "read" | "week" | "month" | "hour1" | "hour6" | "hour24";
 
 interface HomeRankingsSidebarProps {
   mostReadPosts: PostListItem[];
   weekPosts: PostListItem[];
   monthPosts: PostListItem[];
+  hour1Posts?: PostListItem[];
+  hour6Posts?: PostListItem[];
+  hour24Posts?: PostListItem[];
 }
 
 const labels: Record<RankingKey, string> = {
   read: "Più letti",
   week: "Settimana",
   month: "Mese",
+  hour1: "1 ora",
+  hour6: "6 ore",
+  hour24: "24 ore",
 };
 
 export default function HomeRankingsSidebar({
   mostReadPosts,
   weekPosts,
   monthPosts,
+  hour1Posts = [],
+  hour6Posts = [],
+  hour24Posts = [],
 }: HomeRankingsSidebarProps) {
-  const groups: Record<RankingKey, PostListItem[]> = {
-    read: mostReadPosts,
-    week: weekPosts,
-    month: monthPosts,
-  };
-  const firstAvailable = (Object.keys(groups) as RankingKey[]).find((key) => groups[key].length > 0);
+  const hasVelocity = hour1Posts.length > 0 || hour6Posts.length > 0 || hour24Posts.length > 0;
+  const groups = (hasVelocity
+    ? { hour1: hour1Posts, hour6: hour6Posts, hour24: hour24Posts }
+    : { read: mostReadPosts, week: weekPosts, month: monthPosts }) as Partial<Record<RankingKey, PostListItem[]>>;
+  const firstAvailable = (Object.keys(groups) as RankingKey[]).find((key) => (groups[key]?.length ?? 0) > 0);
   const [active, setActive] = useState<RankingKey>(firstAvailable ?? "read");
   const baseId = useId();
-  const posts = groups[active];
+  const tabRefs = useRef<Partial<Record<RankingKey, HTMLButtonElement>>>({});
+  const posts = groups[active] ?? [];
+
+  const selectTab = (key: RankingKey) => {
+    setActive(key);
+    tabRefs.current[key]?.focus();
+  };
+
+  const handleTabKeyDown = (event: React.KeyboardEvent, key: RankingKey) => {
+    const enabled = (Object.keys(groups) as RankingKey[]).filter(
+      (candidate) => (groups[candidate]?.length ?? 0) > 0,
+    );
+    const index = enabled.indexOf(key);
+    let next: RankingKey | undefined;
+    if (event.key === "ArrowRight") next = enabled[(index + 1) % enabled.length];
+    if (event.key === "ArrowLeft") next = enabled[(index - 1 + enabled.length) % enabled.length];
+    if (event.key === "Home") next = enabled[0];
+    if (event.key === "End") next = enabled.at(-1);
+    if (!next) return;
+    event.preventDefault();
+    selectTab(next);
+  };
 
   if (!firstAvailable) return null;
 
   return (
-    <aside className="bg-sidebar-bg rounded-lg p-6 w-full lg:w-[320px] shrink-0" aria-label="Classifiche articoli">
+    <aside className="w-full shrink-0 rounded-surface bg-sidebar-bg p-panel lg:w-[320px]" aria-label="Classifiche articoli">
       <div className="flex border-b border-border mb-4" role="tablist" aria-label="Periodo classifica">
         {(Object.keys(groups) as RankingKey[]).map((key) => (
           <button
             key={key}
+            ref={(node) => {
+              if (node) tabRefs.current[key] = node;
+            }}
             id={`${baseId}-tab-${key}`}
             type="button"
             role="tab"
             aria-selected={active === key}
             aria-controls={`${baseId}-panel`}
-            disabled={groups[key].length === 0}
+            disabled={(groups[key]?.length ?? 0) === 0}
+            tabIndex={active === key ? 0 : -1}
             onClick={() => setActive(key)}
-            className={`min-h-11 flex-1 px-2 text-xs font-semibold transition-colors border-b-2 -mb-px ${
+            onKeyDown={(event) => handleTabKeyDown(event, key)}
+            className={`min-h-11 flex-1 px-2 text-xs font-semibold transition-colors border-b-2 -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ${
               active === key
                 ? "border-accent text-foreground"
                 : "border-transparent text-muted hover:text-accent disabled:opacity-40"
@@ -73,7 +108,7 @@ export default function HomeRankingsSidebar({
               <Link
                 href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
                 prefetch={false}
-                className="group block"
+                className="group block rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <span className="text-muted text-xs font-semibold uppercase tracking-wide">
                   {post.categoryName}

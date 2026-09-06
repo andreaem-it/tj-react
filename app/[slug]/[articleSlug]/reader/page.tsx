@@ -4,6 +4,7 @@ import { fetchPostBySlugDetailed, getCategoryUrlSlugFromWpSlug } from "@/lib/api
 import { brandedSeoTitle } from "@/lib/seo";
 import { SITE_URL } from "@/lib/constants";
 import ArticleBody from "@/components/ArticleBody";
+import { enrichArticle } from "@/lib/content/enrich";
 
 /** Allineato alla pagina articolo: le modifiche non hanno un webhook. */
 export const revalidate = 900;
@@ -58,6 +59,16 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
   }
 
   const articleHref = `/${postCategoryUrlSlug}/${post.slug}`;
+  // Sanificazione, ancore e link interni lato server, come nella pagina
+  // articolo: `ArticleBody` riceve HTML già sicuro e non porta più
+  // `sanitize-html` nel bundle del browser.
+  const { safeHtml } = enrichArticle({
+    title: post.title,
+    excerpt: post.excerpt,
+    content: post.content,
+    categorySlug: post.categorySlug,
+    categoryHref: `/${postCategoryUrlSlug}`,
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -86,7 +97,7 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
           </p>
         </header>
         <div className="article-body-wrapper" data-font-size="1">
-          <ArticleBody html={post.content} postId={post.id} />
+          <ArticleBody safeHtml={safeHtml} postId={post.id} />
         </div>
       </article>
     </div>

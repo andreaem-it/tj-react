@@ -7,20 +7,12 @@ import { usePathname } from "next/navigation";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { fetchMegamenu as fetchMegamenuFromApi, type MegamenuPost } from "@/lib/tjApiClient";
 import { useDialogFocus } from "./useDialogFocus";
+// Sorgente unica: la stessa lista serve all'internal linking automatico per
+// sapere quali archivi sono già raggiungibili da ogni pagina (vedi `lib/siteNav`).
+import { NAV_ITEMS } from "@/lib/siteNav";
+import SearchLauncher from "@/components/search/SearchLauncher";
 
 export type { MegamenuPost };
-
-const NAV_ITEMS = [
-  { label: "Ultime Notizie", href: "/" },
-  { label: "Apple", slug: "apple" },
-  { label: "Apps", slug: "apps" },
-  { label: "Tech", slug: "tech" },
-  { label: "Gaming", slug: "gaming" },
-  { label: "Smart Home", slug: "smart-home" },
-  { label: "IA", slug: "ia" },
-  { label: "Price Radar", href: "/price-radar" },
-  { label: "Compatibilità", href: "/compatibility" },
-];
 
 interface NavBarProps {
   /** @deprecated I link alle categorie usano ora solo lo slug (es. /apple). */
@@ -205,11 +197,15 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
                 <TjLink
                   key={slug}
                   href={categoryHref}
-                  className="text-foreground hover:text-accent transition-colors text-base font-medium flex items-center gap-0.5 py-1"
+                  className="text-foreground hover:text-accent transition-colors text-base font-medium flex min-h-11 items-center gap-0.5 py-2"
                   onMouseEnter={() => slug != null && handleEnter(slug)}
                   onFocus={() => slug != null && handleEnter(slug)}
                   aria-expanded={activeSlug === slug}
-                  aria-controls={`megamenu-${slug}`}
+                  /* `aria-controls` solo a pannello aperto: il megamenu esiste
+                     nel DOM unicamente quando `activeSlug` coincide, e un
+                     riferimento a un elemento assente è un attributo rotto —
+                     compariva su ogni pagina del sito, tre volte. */
+                  aria-controls={activeSlug === slug ? `megamenu-${slug}` : undefined}
                 >
                   {item.label}
                   <svg className="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
@@ -223,22 +219,18 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
               <TjLink
                 key={item.href}
                 href={item.href}
-                className="text-foreground hover:text-accent transition-colors text-base font-medium py-1"
+                className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2"
                 onClick={item.href === "/" ? handleHomeLinkClick : undefined}
               >
                 {item.label}
               </TjLink>
             );
           })}
-          <TjLink
-            href="/search"
-            className="ml-auto text-foreground hover:text-accent transition-colors p-1"
-            aria-label="Cerca"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </TjLink>
+          {/* Ricerca globale: apre la tendina ⌘K invece di portare a /search.
+              La pagina resta raggiungibile — dal menu mobile e dal fondo della
+              tendina stessa — perché è indicizzabile, condivisibile e funziona
+              senza JavaScript. */}
+          <SearchLauncher className="ml-auto p-1 text-foreground transition-colors hover:text-accent" />
         </nav>
 
         {/* Megamenu fisso sotto la barra: stessa posizione per tutte le voci */}
@@ -273,10 +265,10 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
             <button
               type="button"
               onClick={closeMobileMenu}
-              className="p-2 text-foreground hover:text-accent transition-colors rounded-lg hover:bg-surface-overlay"
+              className="flex h-11 w-11 items-center justify-center text-foreground hover:text-accent transition-colors rounded-lg hover:bg-surface-overlay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="Chiudi menu"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -284,13 +276,15 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
           <nav className="flex-1 overflow-auto py-6 px-4">
             <ul className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
-                const href =
-                  "href" in item && item.href ? item.href : item.slug ? `/${item.slug}` : "/";
+                // Il tipo `NavItem` è un'unione: una voce ha `href` **oppure**
+                // `slug`, mai entrambi. Il ripiego su "/" del codice precedente
+                // era irraggiungibile.
+                const href = "href" in item ? item.href : `/${item.slug}`;
                 return (
-                  <li key={"href" in item ? item.href : item.slug ?? ""}>
+                  <li key={href}>
                     <TjLink
                       href={href}
-                      className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
+                      className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       onClick={(event) => {
                         if (href === "/") handleHomeLinkClick(event);
                         closeMobileMenu();
@@ -304,7 +298,7 @@ export default function NavBar({ megamenuBySlug: initialMegamenu = {}, mobileMen
               <li className="border-t border-border mt-2 pt-2">
                 <TjLink
                   href="/search"
-                  className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium"
+                  className="block py-3 px-4 text-foreground hover:text-accent hover:bg-surface-overlay rounded-lg transition-colors text-lg font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   onClick={closeMobileMenu}
                 >
                   Cerca

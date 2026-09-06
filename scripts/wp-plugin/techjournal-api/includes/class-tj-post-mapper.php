@@ -60,7 +60,12 @@ class TJ_Post_Mapper {
             'imageAlt' => $featured_image['alt'] ?? $this->decode_text($post->post_title),
             'authorName' => $author['name'] ?? '',
             'authorAvatarUrl' => $author['avatar_url'] ?? '',
+            'authorSlug' => $author['slug'] ?? '',
             'viewCount' => $this->get_view_count($post->ID),
+            'review' => $this->get_review_data($post->ID),
+            'changelog' => $this->get_changelog_data($post->ID),
+            'tldr' => $this->get_tldr_data($post->ID),
+            'breaking' => $this->get_breaking_data($post->ID),
         ];
     }
 
@@ -143,7 +148,7 @@ class TJ_Post_Mapper {
     }
 
     /**
-     * Ottiene nome e avatar dell'autore.
+     * Ottiene nome, slug e avatar dell'autore.
      */
     private function get_author_data(int $user_id): array {
         if ($user_id <= 0) {
@@ -161,8 +166,155 @@ class TJ_Post_Mapper {
 
         return [
             'name' => $user->display_name,
+            // `user_nicename` e non `user_login`: è già lo slug che WordPress
+            // usa per gli URL autore nativi, quindi non introduce una seconda
+            // fonte di verità per "come si scrive questo autore nell'URL".
+            'slug' => $user->user_nicename,
             'avatar_url' => $avatar_url ?: '',
         ];
+    }
+
+    /**
+     * Dati di recensione (§47), da custom field compilati a mano.
+     *
+     * Nessun campo è obbligatorio tranne `tj_review_rating`: senza un voto non
+     * c'è una recensione da mostrare, solo un articolo che parla di un
+     * prodotto. Gli altri campi (pro, contro, durata del test, metodologia,
+     * verdetto) restano `null`/vuoti se non compilati — il frontend decide se
+     * e cosa mostrare, qui ci si limita a leggere quello che una persona ha
+     * scritto davvero. Nessun valore è calcolato o dedotto.
+     */
+    private function get_review_data(int $post_id): ?array {
+        $rating_raw = get_post_meta($post_id, 'tj_review_rating', true);
+        $rating = is_numeric($rating_raw) ? (float) $rating_raw : null;
+        if ($rating === null || $rating < 0 || $rating > 10) {
+            return null;
+        }
+
+        $test_duration = trim((string) get_post_meta($post_id, 'tj_review_test_duration', true));
+        $methodology = trim((string) get_post_meta($post_id, 'tj_review_methodology', true));
+        $verdict = trim((string) get_post_meta($post_id, 'tj_review_verdict', true));
+
+        return [
+            'rating' => $rating,
+            // Fissa a 10: un campo di configurazione per la scala aggiungerebbe
+            // una decisione in più da prendere a ogni recensione per nessun
+            // beneficio reale.
+            'ratingScale' => 10,
+            'pros' => $this->split_review_lines(get_post_meta($post_id, 'tj_review_pros', true)),
+            'cons' => $this->split_review_lines(get_post_meta($post_id, 'tj_review_cons', true)),
+            'testDuration' => $test_duration !== '' ? $this->decode_text($test_duration) : null,
+            'methodology' => $methodology !== '' ? $this->decode_text($methodology) : null,
+            'verdict' => $verdict !== '' ? $this->decode_text($verdict) : null,
+        ];
+    }
+
+    /**
+     * Cronologia aggiornamenti (§19, §35-36), da custom field `tj_changelog`.
+     *
+     * Una riga per voce, formato `AAAA-MM-GG: nota`: è il formato più semplice
+     * che si possa scrivere a mano senza pensare a sintassi. `modified` (già
+     * esposto) resta la fonte per "il contenuto è cambiato"; questo campo
+     * risponde alla domanda che `modified` da solo non può: *cosa* è cambiato.
+     * Un contenuto senza questo campo compilato mostra solo `modified`, come
+     * già faceva prima: niente cronologia inventata per riempire uno spazio.
+     *
+     * Righe malformate (data non valida, separatore assente) vengono scartate
+     * silenziosamente: è più sicuro ignorare una riga scritta male che
+     * bloccare l'intero endpoint per un errore di battitura in un campo
+     * testuale libero.
+     */
+    private function get_changelog_data(int $post_id): array {
+        $raw = get_post_meta($post_id, 'tj_changelog', true);
+        if (!is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+
+        $entries = [];
+        $lines = preg_split('/\r\n|\r|\n/', $raw);
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            $parts = explode(':', $line, 2);
+            if (count($parts) !== 2) {
+                continue;
+            }
+            $date = trim($parts[0]);
+            $note = trim($parts[1]);
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                continue;
+            }
+            $entries[] = ['date' => $date, 'note' => $this->decode_text($note)];
+        }
+
+        // Più recente prima: chi legge vuole sapere cosa è cambiato per
+        // ultimo, non l'ordine in cui è stato scritto nel campo.
+        usort($entries, static fn($a, $b) => strcmp($b['date'], $a['date']));
+        return $entries;
+    }
+
+    /**
+     * TL;DR (§14): 3-5 punti chiave, da custom field `tj_tldr`, un punto per
+     * riga. Generato dall'autoposter per i nuovi articoli sufficientemente
+     * lunghi (persistito una sola volta, non ricalcolato a ogni richiesta) o
+     * scritto a mano dalla redazione — qui ci si limita a leggere quello che
+     * è già salvato, nessun calcolo. Nessun campo obbligatorio: un articolo
+     * senza `tj_tldr` compilato restituisce semplicemente un array vuoto, il
+     * frontend decide se e come mostrare il blocco.
+     */
+    private function get_tldr_data(int $post_id): array {
+        $raw = get_post_meta($post_id, 'tj_tldr', true);
+        return $this->split_review_lines($raw);
+    }
+
+    /**
+     * Breaking news (§12): stato attivo/scaduto letto da custom field
+     * WordPress, non più da un array hardcoded nel frontend.
+     *
+     * `tj_breaking_kind` vuoto o assente = non è breaking, `null` restituito
+     * — è la lettura corretta più comune, non un caso da gestire a parte.
+     * Nessuna scadenza calcolata qui: `tj_breaking_expires_at` è quello che
+     * la redazione ha scritto, il frontend decide se è già passata (stessa
+     * logica pura già testata in `activeBreaking()`).
+     */
+    private function get_breaking_data(int $post_id): ?array {
+        $kind = trim((string) get_post_meta($post_id, 'tj_breaking_kind', true));
+        if ($kind !== 'breaking' && $kind !== 'live') {
+            return null;
+        }
+
+        $expires_at = trim((string) get_post_meta($post_id, 'tj_breaking_expires_at', true));
+        if ($expires_at === '') {
+            // Un breaking senza scadenza dichiarata equivale a non attivo
+            // (§12): meglio non accendere la barra che lasciarla accesa per
+            // sempre perché nessuno ha compilato il campo.
+            return null;
+        }
+
+        $priority_raw = get_post_meta($post_id, 'tj_breaking_priority', true);
+        $priority = is_numeric($priority_raw) ? (int) $priority_raw : null;
+
+        return [
+            'kind' => $kind,
+            'expiresAt' => $expires_at,
+            'priority' => $priority,
+        ];
+    }
+
+    /**
+     * Un pro/contro per riga. Testo semplice nel campo custom, non HTML: chi
+     * compila non deve pensare a markup, solo scrivere una riga per voce.
+     */
+    private function split_review_lines($raw): array {
+        if (!is_string($raw) || trim($raw) === '') {
+            return [];
+        }
+        $lines = preg_split('/\r\n|\r|\n/', $raw);
+        $lines = array_map('trim', $lines);
+        $lines = array_filter($lines, static fn($line) => $line !== '');
+        return array_values(array_map(fn($line) => $this->decode_text($line), $lines));
     }
 
     /**
@@ -317,6 +469,41 @@ class TJ_Post_Mapper {
      */
     public static function resolve_category_slug(string $url_slug): string {
         return self::SLUG_MAPPING[$url_slug] ?? $url_slug;
+    }
+
+    /**
+     * Risolve un utente WordPress dal suo `user_nicename` (§40).
+     *
+     * Restituisce `null` anche per un utente esistente ma senza alcun post
+     * pubblicato: un account di servizio (editor, admin) non deve diventare
+     * una pagina autore pubblica solo perché esiste.
+     */
+    public static function get_author_by_slug(string $slug): ?array {
+        $user = get_user_by('slug', $slug);
+        if (!$user) {
+            return null;
+        }
+
+        $has_published_post = count(get_posts([
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'author' => $user->ID,
+            'posts_per_page' => 1,
+            'fields' => 'ids',
+        ])) > 0;
+        if (!$has_published_post) {
+            return null;
+        }
+
+        $avatar_url = get_avatar_url($user->ID, ['size' => 192]);
+        $bio = get_the_author_meta('description', $user->ID);
+
+        return [
+            'name' => $user->display_name,
+            'slug' => $user->user_nicename,
+            'bio' => is_string($bio) ? trim($bio) : '',
+            'avatarUrl' => $avatar_url ?: '',
+        ];
     }
 
     /**

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: TechJournal API
  * Description: REST API tj/v1 per il frontend TechJournal e webhook autopost social alla pubblicazione.
- * Version: 1.1.0
+ * Version: 1.7.0
  * Author: TechJournal
  * Requires at least: 6.0
  * Requires PHP: 8.0
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TJ_API_PLUGIN_VERSION', '1.1.0');
+define('TJ_API_PLUGIN_VERSION', '1.7.0');
 define('TJ_API_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
 require_once TJ_API_PLUGIN_DIR . 'includes/class-tj-post-mapper.php';

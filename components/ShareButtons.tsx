@@ -12,7 +12,7 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
 
   if (variant === "articleTop") {
     const bigBtnClass =
-      "inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-black text-white hover:opacity-90 transition-opacity font-medium text-sm";
+      "inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-black text-white hover:opacity-90 transition-opacity font-medium text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
     return (
       <div className="flex flex-col items-center gap-3">
         <div className="flex items-center gap-2">
@@ -44,8 +44,8 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
 
   const btnClass =
     variant === "dark"
-      ? "inline-flex items-center justify-center w-11 h-11 rounded-full bg-surface-overlay text-foreground hover:bg-accent hover:text-gray-900 transition-colors"
-      : "inline-flex items-center justify-center w-11 h-11 rounded-full bg-surface-overlay-strong text-foreground hover:bg-accent hover:text-gray-900 transition-colors";
+      ? "inline-flex items-center justify-center w-11 h-11 rounded-full bg-surface-overlay text-foreground hover:bg-accent hover:text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      : "inline-flex items-center justify-center w-11 h-11 rounded-full bg-surface-overlay-strong text-foreground hover:bg-accent hover:text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -74,7 +74,7 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
         className={btnClass}
         aria-label="Invia per email"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       </a>
@@ -84,7 +84,7 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
         className={btnClass}
         aria-label="Copia link"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>
       </button>

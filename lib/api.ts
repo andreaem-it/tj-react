@@ -1,6 +1,12 @@
 import https from "node:https";
 import { unstable_cache } from "next/cache";
 import { buildWpTjRequestHeaders, WP_BASE, logApiUrl } from "@/lib/constants";
+import { resolveCategoryByUrlSlug } from "@/lib/categorySlugs";
+export {
+  getCategoryUrlSlug,
+  getCategoryUrlSlugFromWpSlug,
+  resolveCategoryByUrlSlug,
+} from "@/lib/categorySlugs";
 
 /**
  * TTL Data Cache / ISR. Alzato da 300s da quando il webhook di pubblicazione
@@ -35,6 +41,39 @@ export interface WPCategory {
   parent?: number;
 }
 
+/**
+ * Dati di recensione compilati a mano (§47), da custom field WordPress.
+ *
+ * Nessun campo qui è calcolato: `rating` è il voto che una persona ha dato
+ * dopo un test reale, `pros`/`cons` sono righe scritte a mano. Un post senza
+ * voto non ha `review` (il plugin restituisce `null`): l'assenza è
+ * l'informazione corretta, non un dato mancante da riempire con un default.
+ */
+export interface PostReview {
+  rating: number;
+  ratingScale: number;
+  pros: string[];
+  cons: string[];
+  testDuration: string | null;
+  methodology: string | null;
+  verdict: string | null;
+}
+
+/**
+ * Voce di cronologia aggiornamenti (§19, §35-36), da custom field WordPress
+ * `tj_changelog` (una riga `AAAA-MM-GG: nota` per voce).
+ *
+ * `modified` (già su `PostWithMeta`) dice *che* il contenuto è cambiato;
+ * questo dice *cosa* — ma solo se qualcuno lo ha scritto. Un articolo senza
+ * `tj_changelog` compilato non ha changelog: mostra solo `modified`, come
+ * sempre.
+ */
+export interface ChangelogEntry {
+  /** `AAAA-MM-GG`. */
+  date: string;
+  note: string;
+}
+
 export interface PostWithMeta {
   id: number;
   date: string;
@@ -52,7 +91,26 @@ export interface PostWithMeta {
   imageAlt: string;
   authorName: string;
   authorAvatarUrl: string | null;
+  /** Slug WordPress dell'autore, per `/autore/[slug]` (§40). Assente finché il plugin non è aggiornato, come `modified`. */
+  authorSlug?: string;
   viewCount: number | null;
+  /** Presente solo se il post ha un voto compilato a mano (§47). */
+  review?: PostReview | null;
+  /** Vuoto se il post non ha una cronologia compilata a mano (§19). */
+  changelog?: ChangelogEntry[];
+  /**
+   * TL;DR (§14): 3-5 punti chiave, da custom field WordPress `tj_tldr`.
+   * Generato una sola volta dall'autoposter e persistito — non ricalcolato a
+   * ogni richiesta. Vuoto per articoli senza TL;DR compilato.
+   */
+  tldr?: string[];
+  /**
+   * Breaking news (§12), da custom field WordPress `tj_breaking_*`.
+   * `null`/assente per la stragrande maggioranza degli articoli — è lo stato
+   * normale, non un dato mancante. Vedi `lib/home/overrides.ts` per come si
+   * trasforma in una voce di `BreakingEntry` e come si sceglie quale mostrare.
+   */
+  breaking?: { kind: "breaking" | "live"; expiresAt: string; priority: number | null } | null;
 }
 
 /**
@@ -219,6 +277,7 @@ async function fetchTjPostsDirect(params: {
   categoryIds?: number[];
   after?: string;
   search?: string;
+  authorSlug?: string;
   requestCache?: RequestCache;
 }): Promise<TjPostsResult> {
   const {
@@ -228,6 +287,7 @@ async function fetchTjPostsDirect(params: {
     categoryIds,
     after,
     search,
+    authorSlug,
     requestCache,
   } = params;
   const searchParams = new URLSearchParams({
@@ -241,6 +301,7 @@ async function fetchTjPostsDirect(params: {
   }
   if (after) searchParams.set("after", after);
   if (search) searchParams.set("search", search);
+  if (authorSlug) searchParams.set("author", authorSlug);
 
   const url = `${WP_BASE}/posts?${searchParams.toString()}`;
   logApiUrl(url);
@@ -283,6 +344,7 @@ function fetchTjPostsCacheKey(params: {
   categoryIds?: number[];
   after?: string;
   search?: string;
+  authorSlug?: string;
 }): string[] {
   return [
     "tj-posts",
@@ -292,6 +354,7 @@ function fetchTjPostsCacheKey(params: {
     (params.categoryIds ?? []).join(","),
     params.after ?? "",
     params.search ?? "",
+    params.authorSlug ?? "",
   ];
 }
 
@@ -302,6 +365,7 @@ async function fetchTjPosts(params: {
   categoryIds?: number[];
   after?: string;
   search?: string;
+  authorSlug?: string;
   requestCache?: RequestCache;
 }): Promise<TjPostsResult> {
   const { requestCache, ...cacheParams } = params;
@@ -334,20 +398,22 @@ export async function fetchPosts(params: {
   page?: number;
   categoryId?: number;
   categoryIds?: number[];
+  /** Slug WordPress dell'autore: articoli di `/autore/[slug]` (§40). */
+  authorSlug?: string;
   requestCache?: RequestCache;
 }): Promise<TjPostsResult> {
-  const { perPage = 10, page = 1, categoryId, categoryIds, requestCache } = params;
+  const { perPage = 10, page = 1, categoryId, categoryIds, authorSlug, requestCache } = params;
   const ids = categoryIds ?? (categoryId != null && categoryId > 0 ? [categoryId] : []);
 
   if (ids.length === 0) {
-    return fetchTjPosts({ perPage, page, requestCache });
+    return fetchTjPosts({ perPage, page, authorSlug, requestCache });
   }
 
   if (ids.length === 1) {
-    return fetchTjPosts({ perPage, page, category: ids[0], requestCache });
+    return fetchTjPosts({ perPage, page, category: ids[0], authorSlug, requestCache });
   }
 
-  return fetchTjPosts({ perPage, page, categoryIds: ids, requestCache });
+  return fetchTjPosts({ perPage, page, categoryIds: ids, authorSlug, requestCache });
 }
 
 /**
@@ -679,6 +745,61 @@ export async function fetchPostBySlug(slug: string): Promise<PostWithMeta | null
   return result.status === "found" ? result.post : null;
 }
 
+/** Profilo pubblico di un autore che ha effettivamente pubblicato (§40). */
+export interface AuthorProfile {
+  name: string;
+  slug: string;
+  /** Testo `description` del profilo utente WordPress. Stringa vuota se assente. */
+  bio: string;
+  avatarUrl: string | null;
+}
+
+async function fetchAuthorRaw(slug: string): Promise<AuthorProfile | null> {
+  const url = `${WP_BASE}/author/${encodeURIComponent(slug)}`;
+  logApiUrl(url);
+  const res = await fetchWithTimeout(url, {
+    headers: buildWpTjRequestHeaders(),
+    next: { revalidate: TJ_FETCH_REVALIDATE, tags: ["tj-author", `tj-author:${slug}`] },
+  });
+  // 404 è una risposta definitiva (autore inesistente, o senza post pubblicati,
+  // o — finché il plugin non è aggiornato — la route stessa non esiste):
+  // in tutti i casi il profilo non c'è, e va trattato come tale, non come errore.
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`TJ API author HTTP ${res.status}`);
+  const data = (await res.json()) as Partial<AuthorProfile> | null;
+  if (!data || typeof data.name !== "string" || !data.name.trim()) return null;
+  return {
+    name: data.name,
+    slug: typeof data.slug === "string" && data.slug ? data.slug : slug,
+    bio: typeof data.bio === "string" ? data.bio : "",
+    avatarUrl: typeof data.avatarUrl === "string" && data.avatarUrl ? data.avatarUrl : null,
+  };
+}
+
+/**
+ * Profilo autore per `/autore/[slug]` e il box "Scritto da" in coda
+ * all'articolo (§40).
+ *
+ * Richiede `GET tj/v1/author/:slug`, non ancora deployato in produzione al
+ * momento in cui questa funzione è stata scritta (vedi
+ * `scripts/wp-plugin/techjournal-api`): fino al deploy risponde sempre
+ * `null` — un 404 legittimo, non un errore — e i chiamanti (`AuthorCard`,
+ * la pagina autore) degradano di conseguenza invece di rompersi.
+ */
+export async function fetchAuthorBySlug(slug: string): Promise<AuthorProfile | null> {
+  const raw = typeof slug === "string" ? slug.trim() : "";
+  if (!raw) return null;
+  try {
+    return await unstable_cache(() => fetchAuthorRaw(raw), ["tj-author", raw], {
+      revalidate: TJ_FETCH_REVALIDATE,
+      tags: ["tj-author", `tj-author:${raw}`],
+    })();
+  } catch (e) {
+    console.error(`[TJ API] fetchAuthorBySlug fallita (${raw}):`, e);
+    return null;
+  }
+}
+
 async function fetchCategoriesRaw(): Promise<WPCategory[]> {
   const url = `${WP_BASE}/categories`;
   logApiUrl(url);
@@ -729,41 +850,12 @@ export async function fetchCategories(): Promise<WPCategory[]> {
   }
 }
 
-/** Mapping slug URL → slug WordPress. */
-const URL_SLUG_TO_WP_SLUG: Record<string, string> = {
-  apps: "applicazioni",
-  gaming: "games",
-  tech: "tecnologia",
-  ia: "intelligenza-artificiale",
-};
-
-const WP_SLUG_TO_URL_SLUG: Record<string, string> = Object.fromEntries(
-  Object.entries(URL_SLUG_TO_WP_SLUG).map(([url, wp]) => [wp, url])
-);
-
-export function getCategoryUrlSlug(cat: WPCategory): string {
-  return WP_SLUG_TO_URL_SLUG[cat.slug] ?? cat.slug;
-}
-
-export function getCategoryUrlSlugFromWpSlug(wpSlug: string): string {
-  return WP_SLUG_TO_URL_SLUG[wpSlug] ?? wpSlug;
-}
-
-export function resolveCategoryByUrlSlug(
-  categories: WPCategory[],
-  urlSlug: string
-): WPCategory | undefined {
-  const wpSlug = URL_SLUG_TO_WP_SLUG[urlSlug] ?? urlSlug;
-  return categories.find((c) => c.slug === wpSlug);
-}
-
 export async function fetchPostsByCategorySlug(
   slug: string,
   perPage = 5
 ): Promise<PostListItem[]> {
   const categories = await fetchCategories();
-  const wpSlug = URL_SLUG_TO_WP_SLUG[slug] ?? slug;
-  const cat = categories.find((c) => c.slug === wpSlug);
+  const cat = resolveCategoryByUrlSlug(categories, slug);
   if (!cat) return [];
   const categoryIds = getCategoryIdsIncludingChildren(categories, cat.id);
   const { posts } = await fetchPosts({ perPage, categoryIds });

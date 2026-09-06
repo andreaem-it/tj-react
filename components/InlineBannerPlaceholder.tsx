@@ -50,7 +50,7 @@ export default function InlineBannerPlaceholder({
       aria-label="Banner pubblicitario"
     >
       <span className="text-center px-2">
-        {width === "100%" ? `${height}px · Banner` : `${width}×${height}`}
+        {width === "100%" ? `${height}px · Pubblicità` : `${width}×${height} · Pubblicità`}
       </span>
     </div>
   );

@@ -6,14 +6,17 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function unauthorized(): NextResponse {
-  return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  return NextResponse.json(
+    { error: "Non autorizzato" },
+    { status: 401, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 export async function GET(request: NextRequest) {
   if (!isPriceRadarAdminConfigured()) {
     return NextResponse.json(
       { error: "PRICE_RADAR_ADMIN_SECRET non configurato sul sito" },
-      { status: 503 },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
   if (!isPriceRadarAdminRequest(request)) {

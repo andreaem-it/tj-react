@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const IUBENDA_TIMEOUT_MS = 8_000;
+const MAX_POLICY_RESPONSE_BYTES = 1024 * 1024;
+
 /**
  * Proxy per l'API iubenda Direct Text Embedding (Privacy / Cookie policy).
  * Richiede piano Advanced o Ultimate e policy in versione Pro.
@@ -33,28 +36,74 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: "Missing id" }, { status: 400 });
   }
 
-  if (ALLOWED_POLICY_IDS.size > 0 && !ALLOWED_POLICY_IDS.has(id)) {
+  if (type !== "privacy" && type !== "cookie") {
+    return NextResponse.json({ success: false, error: "Invalid type" }, { status: 400 });
+  }
+
+  if (ALLOWED_POLICY_IDS.size === 0) {
+    return NextResponse.json(
+      { success: false, error: "Iubenda policy ids not configured" },
+      { status: 503 },
+    );
+  }
+
+  if (!ALLOWED_POLICY_IDS.has(id)) {
     return NextResponse.json({ success: false, error: "Invalid id" }, { status: 400 });
   }
 
   const encodedId = encodeURIComponent(id);
-  const path =
-    type === "cookie"
-      ? `privacy-policy/${encodedId}/cookie-policy`
-      : `privacy-policy/${encodedId}`;
+  const path = type === "cookie"
+    ? `privacy-policy/${encodedId}/cookie-policy`
+    : `privacy-policy/${encodedId}`;
   const url = `https://www.iubenda.com/api/${path}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), IUBENDA_TIMEOUT_MS);
 
   try {
     const res = await fetch(url, {
       headers: { Accept: "application/json" },
       next: { revalidate: 3600 },
+      signal: controller.signal,
     });
-    const data = await res.json().catch(() => ({}));
+    const declaredLength = Number(res.headers.get("content-length"));
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_POLICY_RESPONSE_BYTES) {
+      return NextResponse.json(
+        { success: false, error: "Upstream payload too large" },
+        { status: 502 },
+      );
+    }
+    const text = await res.text();
+    if (new TextEncoder().encode(text).byteLength > MAX_POLICY_RESPONSE_BYTES) {
+      return NextResponse.json(
+        { success: false, error: "Upstream payload too large" },
+        { status: 502 },
+      );
+    }
+    let data: unknown;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid upstream response" },
+        { status: 502 },
+      );
+    }
 
     if (!res.ok) {
+      const upstreamError =
+        typeof data === "object" && data !== null && "error" in data
+          ? (data as { error?: unknown }).error
+          : undefined;
       return NextResponse.json(
-        { success: false, error: (data as { error?: string }).error ?? "Request failed" },
+        { success: false, error: typeof upstreamError === "string" ? upstreamError : "Request failed" },
         { status: res.status }
+      );
+    }
+
+    if (typeof data !== "object" || data === null || Array.isArray(data)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid upstream response" },
+        { status: 502 },
       );
     }
 
@@ -63,10 +112,13 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
       },
     });
-  } catch {
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "AbortError";
     return NextResponse.json(
-      { success: false, error: "Network error" },
-      { status: 502 }
+      { success: false, error: timedOut ? "Upstream timeout" : "Network error" },
+      { status: timedOut ? 504 : 502 }
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

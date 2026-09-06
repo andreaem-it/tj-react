@@ -9,13 +9,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"tests/**/*.test.ts\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-brands-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.2.0",
-    "@mep-agency/next-iubenda": "^1.0.0-alpha5",
+    "@mep-agency/next-iubenda": "1.0.0-alpha5",
     "@microsoft/clarity": "^1.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@vercel/analytics": "^1.6.1",

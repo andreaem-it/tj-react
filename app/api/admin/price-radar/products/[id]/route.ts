@@ -6,18 +6,37 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function unauthorized(): NextResponse {
-  return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  return NextResponse.json(
+    { error: "Non autorizzato" },
+    { status: 401, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
-export async function PATCH(request: NextRequest) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  if (!/^[1-9]\d*$/.test(id)) {
+    return NextResponse.json(
+      { error: "Invalid product id" },
+      { status: 400, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   if (!isPriceRadarAdminConfigured()) {
     return NextResponse.json(
       { error: "PRICE_RADAR_ADMIN_SECRET non configurato" },
-      { status: 503 },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
     );
   }
   if (!isPriceRadarAdminRequest(request)) {
     return unauthorized();
+  }
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return NextResponse.json(
+      { error: "Content-Type non supportato" },
+      { status: 415, headers: { "Cache-Control": "no-store" } },
+    );
   }
   return proxyPriceRadarToTjApi(request, { admin: true });
 }

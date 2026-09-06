@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
@@ -71,12 +72,54 @@ export default function PoliticaEditorialePage() {
           <p>
             TechJournal punta alla massima trasparenza. L’origine delle informazioni esterne viene
             indicata quando rilevante. Eventuali correzioni o rettifiche sono pubblicate in modo
-            tempestivo e visibile.
+            tempestivo e visibile: il processo è descritto nella pagina{" "}
+            <Link href="/correzioni" className="text-accent hover:underline">
+              Correzioni
+            </Link>
+            .
           </p>
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-foreground">6. Diversità di punti di vista</h2>
+          <h2 className="text-lg font-semibold text-foreground">
+            6. Notizia, report o rumor: come li distinguiamo
+          </h2>
+          <p>
+            Non tutte le informazioni hanno lo stesso grado di certezza. Ogni articolo viene
+            classificato con una di queste etichette, visibile direttamente nel testo:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>
+              <strong className="text-foreground">Ufficiale</strong> — comunicata o resa
+              disponibile direttamente dall’azienda o dalla fonte primaria.
+            </li>
+            <li>
+              <strong className="text-foreground">Report</strong> — attribuita a un report o a
+              fonti di settore (es. analisti, testate specializzate), non ancora confermata
+              dall’azienda coinvolta.
+            </li>
+            <li>
+              <strong className="text-foreground">Rumor</strong> — indiscrezione non confermata:
+              può cambiare, essere smentita o rivelarsi errata. La trattiamo sempre con il
+              condizionale e la aggiorniamo se la situazione evolve.
+            </li>
+          </ul>
+          <p>
+            Quando un rumor si conferma o viene smentito, aggiorniamo l’articolo originale invece
+            di pubblicarne uno nuovo quasi identico, mantenendo traccia delle modifiche in{" "}
+            <Link href="/correzioni" className="text-accent hover:underline">
+              Correzioni
+            </Link>
+            . Per la lista delle fonti che utilizziamo abitualmente, vedi{" "}
+            <Link href="/fonti" className="text-accent hover:underline">
+              Fonti
+            </Link>
+            .
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-foreground">7. Diversità di punti di vista</h2>
           <p>
             Riconosciamo la varietà di opinioni nel mondo tech. Cerchiamo di presentare una gamma
             equilibrata di prospettive, evitando il partigianaggio e garantendo una copertura
@@ -85,7 +128,7 @@ export default function PoliticaEditorialePage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-foreground">7. Responsabilità sociale</h2>
+          <h2 className="text-lg font-semibold text-foreground">8. Responsabilità sociale</h2>
           <p>
             Ci impegniamo a usare tecnologia e informazione in modo responsabile. Evitiamo la
             diffusione di notizie false o sensazionalistiche e promuoviamo un uso etico delle
@@ -94,7 +137,7 @@ export default function PoliticaEditorialePage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-foreground">8. Coinvolgimento della community</h2>
+          <h2 className="text-lg font-semibold text-foreground">9. Coinvolgimento della community</h2>
           <p>
             Il feedback dei lettori è benvenuto. Invitiamo chi legge a esprimere opinioni,
             suggerimenti e correzioni: il dialogo contribuisce a migliorare la qualità del
@@ -103,7 +146,7 @@ export default function PoliticaEditorialePage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-foreground">9. Aggiornamenti</h2>
+          <h2 className="text-lg font-semibold text-foreground">10. Aggiornamenti</h2>
           <p>
             La presente politica editoriale può essere rivista e aggiornata periodicamente per
             riflettere nuove esigenze editoriali, normative o cambiamenti del contesto
@@ -112,7 +155,7 @@ export default function PoliticaEditorialePage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold text-foreground">10. Collaborazioni</h2>
+          <h2 className="text-lg font-semibold text-foreground">11. Collaborazioni</h2>
           <p>
             In caso di collaborazioni con terze parti, ci assicuriamo che siano conformi ai nostri
             standard etici ed editoriali. Le collaborazioni sono rese trasparenti ai lettori

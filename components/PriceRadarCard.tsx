@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { TechRadarOffer } from "@/lib/techradar";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { postPriceRadarProductClick } from "@/lib/tjApiClient";
@@ -61,7 +62,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
   const lastPriceUpdate = formatLastPriceUpdate(offer.created_at);
 
   return (
-    <article className="group relative flex flex-col h-full bg-content-bg rounded-xl overflow-hidden border border-border shadow-md md:hover:shadow-xl md:hover:border-accent/40 transition-all duration-300">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-card border border-border bg-content-bg shadow-card transition-all duration-300 md:hover:border-accent/40 md:hover:shadow-card-raised">
       <div className="relative aspect-square bg-sidebar-bg overflow-hidden">
         {imageUrl ? (
           useNextImage ? (
@@ -106,8 +107,17 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
         </h2>
 
         <div className="space-y-1 mb-4">
+          {/*
+            Il campo si chiama `previous_avg_price` ma trasporta `max_price_30d`
+            (vedi `mapProductsToOffers`): è il prezzo **più alto** degli ultimi
+            trenta giorni, non la media. Etichettarlo "prezzo medio" e barrarlo
+            gonfiava lo sconto percepito, ed è il confronto meno favorevole al
+            lettore fra quelli possibili. Qui si dichiara per quello che è; la
+            media vera, ponderata sul tempo, sta nella pagina prodotto.
+          */}
           <p className="text-muted text-sm">
-            Prezzo medio: <span className="line-through">{formatPrice(offer.previous_avg_price)}</span>
+            Massimo 30 giorni:{" "}
+            <span className="line-through">{formatPrice(offer.previous_avg_price)}</span>
           </p>
           <p className="text-foreground font-bold text-lg">
             Prezzo attuale: <span className="text-accent">{formatPrice(offer.price)}</span>
@@ -119,11 +129,21 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
           )}
         </div>
 
+        {offer.asin && (
+          <Link
+            href={`/price-radar/${offer.asin}`}
+            prefetch={false}
+            className="relative z-20 mb-2 flex min-h-11 items-center justify-center gap-1 rounded text-sm text-muted transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Storico prezzi e valutazione
+          </Link>
+        )}
+
         <a
           href={offer.url}
           target="_blank"
-          rel="noopener noreferrer sponsored"
-          className="relative z-20 mt-auto flex items-center justify-center gap-2 w-full py-3 px-4 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors"
+          rel="nofollow sponsored noopener noreferrer"
+          className="relative z-20 mt-auto flex min-h-11 items-center justify-center gap-2 w-full py-3 px-4 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           onClick={(e) => {
             e.stopPropagation();
             if (offer.productId != null) {
@@ -131,7 +151,7 @@ export default function PriceRadarCard({ offer }: PriceRadarCardProps) {
             }
           }}
         >
-          Scopri su Amazon
+          Scopri su Amazon (link affiliato)
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>

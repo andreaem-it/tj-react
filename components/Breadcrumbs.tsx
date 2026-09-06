@@ -41,7 +41,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
               {item.href ? (
                 <TjLink
                   href={item.href}
-                  className="hover:text-accent transition-colors wrap-anywhere text-center min-w-0 max-w-full"
+                  className="inline-flex min-h-11 items-center rounded text-center transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent wrap-anywhere min-w-0 max-w-full"
                 >
                   {item.label}
                 </TjLink>

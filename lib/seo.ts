@@ -14,6 +14,24 @@
  */
 export const MIN_POSTS_FOR_INDEXABLE_CATEGORY = 10;
 
+/**
+ * Soglia equivalente per gli hub `/topic/*`.
+ *
+ * Più bassa di quella degli archivi di categoria, e non per indulgenza: un hub
+ * non è un elenco. Aggiunge una cronologia, la separazione fra notizie e
+ * contenuti evergreen, il collegamento al database di compatibilità e i topic
+ * affini — informazione che non sta in nessuno dei singoli articoli.
+ *
+ * Sotto i cinque articoli però quella struttura non ha materiale su cui
+ * poggiare: resta una notizia sola con dell'impaginazione attorno, e per quella
+ * ricerca l'articolo stesso serve il lettore meglio dell'hub. Sono esattamente
+ * le pagine doorway da evitare, quindi restano fuori dall'indice e dalla
+ * sitemap fino a quando l'argomento non ha davvero una storia.
+ *
+ * Come per le categorie, il rientro è automatico al successivo revalidate.
+ */
+export const MIN_ARTICLES_FOR_INDEXABLE_HUB = 5;
+
 const SITE_NAME = "TechJournal";
 const TITLE_SEPARATOR = " | ";
 /**

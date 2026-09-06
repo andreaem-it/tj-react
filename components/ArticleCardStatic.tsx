@@ -28,7 +28,15 @@ export default function ArticleCardStatic({ post, priority }: ArticleCardStaticP
 
   return (
     <article className="flex flex-col group">
-      <Link href={href} prefetch={false} className="block overflow-hidden rounded-lg aspect-[16/10] relative bg-content-bg">
+      {/* `aria-label` sul link immagine: l'`alt` proviene dal CMS ed è spesso
+          vuoto, e in quel caso il link non aveva alcun nome accessibile. Il
+          titolo è la destinazione, quindi è il nome corretto. */}
+      <Link
+        href={href}
+        prefetch={false}
+        aria-label={post.title}
+        className="block overflow-hidden rounded-lg aspect-[16/10] relative bg-content-bg"
+      >
         {post.imageUrl ? (
           <Image
             src={post.imageUrl}

@@ -8,6 +8,18 @@ import type { PostListItem } from "@/lib/api";
 
 interface HomeContentProps {
   initialPosts: PostListItem[];
+  /**
+   * Articoli realmente consumati dall'API, anche quelli non mostrati qui.
+   *
+   * Distinto da `initialPosts` perché la home modulare mostra alcuni articoli in
+   * sezioni proprie — lo speciale del momento — e li toglie dalla griglia per
+   * non ripeterli. La paginazione di "carica altri" deve però continuare a
+   * sapere quanti articoli sono stati consumati, altrimenti la pagina successiva
+   * ripropone quelli già a schermo.
+   *
+   * Assente sulle pagine categoria, dove mostrato e consumato coincidono.
+   */
+  consumedPosts?: PostListItem[];
   initialTotalPages: number;
   /** Pagine già caricate lato server (per "Load more" senza duplicati). */
   initialPagesConsumed?: number;
@@ -17,6 +29,9 @@ interface HomeContentProps {
   mostReadPosts: PostListItem[];
   weekTrendingPosts: PostListItem[];
   monthTrendingPosts: PostListItem[];
+  hour1TrendingPosts?: PostListItem[];
+  hour6TrendingPosts?: PostListItem[];
+  hour24TrendingPosts?: PostListItem[];
   categoryId?: number;
   /**
    * Testo dell'H1. Le pagine categoria devono passare il proprio: senza,
@@ -24,20 +39,51 @@ interface HomeContentProps {
    * dichiarava a Google lo stesso argomento, in contraddizione col `<title>`.
    */
   heading?: string;
+
+  // ---------------------------------------------------------------------------
+  // Slot della home modulare.
+  //
+  // Sono opzionali e assenti sulle pagine categoria, che condividono questo
+  // componente: senza di essi il rendering è identico a prima, quindi la home
+  // può evolvere senza toccare venti archivi. La configurazione delle sezioni
+  // vive in `lib/home/sections.ts`; qui ci sono solo i punti in cui atterrano.
+  // ---------------------------------------------------------------------------
+
+  /** Barra breaking, sopra l'apertura. */
+  breakingSlot?: React.ReactNode;
+  /** Sezioni fra l'apertura e il flusso cronologico (es. speciale del momento). */
+  beforeGridSlot?: React.ReactNode;
+  /** Sezioni dopo il flusso: evergreen, Price Radar, compatibilità. */
+  afterGridSlot?: React.ReactNode;
+  /**
+   * Sostituisce la classifica di lettura in sidebar.
+   *
+   * Serve quando il contatore di visualizzazioni non ha abbastanza dati per
+   * ordinare qualcosa: al suo posto va un modulo costruito su un dato reale.
+   */
+  rankingsSlot?: React.ReactNode;
 }
 
 const DEFAULT_HEADING = "TechJournal: notizie su Apple, Tech e Gadget";
 
 export default function HomeContent({
   initialPosts,
+  consumedPosts,
   initialTotalPages,
   initialPagesConsumed = 1,
   offertePosts,
   mostReadPosts,
   weekTrendingPosts,
   monthTrendingPosts,
+  hour1TrendingPosts = [],
+  hour6TrendingPosts = [],
+  hour24TrendingPosts = [],
   categoryId,
   heading = DEFAULT_HEADING,
+  breakingSlot,
+  beforeGridSlot,
+  afterGridSlot,
+  rankingsSlot,
 }: HomeContentProps) {
   const HERO_POSTS_TARGET = 4;
   const heroPosts = initialPosts.slice(0, HERO_POSTS_TARGET);
@@ -50,8 +96,10 @@ export default function HomeContent({
   return (
     <div className="max-w-7xl mx-auto px-[5px] md:px-4 py-6">
       <h1 className="sr-only">{heading}</h1>
+      {breakingSlot}
       {/* Sezione in testa: tutta la larghezza, 4 articoli (1 grande + 3 a destra). La sidebar inizia sotto. */}
       <HeroSection posts={heroPosts} />
+      {beforeGridSlot && <div className="mb-8">{beforeGridSlot}</div>}
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 min-w-0">
           <HomeLoadMoreGrid
@@ -59,7 +107,7 @@ export default function HomeContent({
             /* Post già consumati dall'API, hero compresi: la griglia ne riceve
                solo una parte, ma per calcolare la pagina da cui riprendere
                serve il totale, altrimenti si richiedono post già a schermo. */
-            initialConsumedPosts={initialPosts}
+            initialConsumedPosts={consumedPosts ?? initialPosts}
             initialTotalPages={initialTotalPages}
             initialPagesConsumed={initialPagesConsumed}
             categoryId={categoryId}
@@ -75,13 +123,19 @@ export default function HomeContent({
             height={250}
             adSlot={homeSidebarSlot}
           />
-          <HomeRankingsSidebar
-            mostReadPosts={mostReadPosts}
-            weekPosts={weekTrendingPosts}
-            monthPosts={monthTrendingPosts}
-          />
+          {rankingsSlot ?? (
+            <HomeRankingsSidebar
+              mostReadPosts={mostReadPosts}
+              weekPosts={weekTrendingPosts}
+              monthPosts={monthTrendingPosts}
+              hour1Posts={hour1TrendingPosts}
+              hour6Posts={hour6TrendingPosts}
+              hour24Posts={hour24TrendingPosts}
+            />
+          )}
         </div>
       </div>
+      {afterGridSlot && <div className="mt-10 flex flex-col gap-10">{afterGridSlot}</div>}
     </div>
   );
 }

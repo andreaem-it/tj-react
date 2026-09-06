@@ -128,13 +128,16 @@ export default function AdSenseUnit({
         style={style}
         aria-label="Spazio pubblicitario (visibile in produzione)"
       >
-        <span className="text-center px-2">Annuncio (solo in produzione)</span>
+        <span className="text-center px-2">Pubblicità</span>
       </div>
     );
   }
 
   return (
     <div ref={wrapperRef} className={className} style={style}>
+      <span className="mb-1 block text-center text-[10px] uppercase tracking-wide text-muted">
+        Pubblicità
+      </span>
       <ins
         ref={insRef}
         className="adsbygoogle"

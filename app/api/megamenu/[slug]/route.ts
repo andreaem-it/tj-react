@@ -27,8 +27,8 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  if (!slug || typeof slug !== "string") {
-    return NextResponse.json({ error: "Slug mancante" }, { status: 400 });
+  if (!/^[a-z0-9](?:[a-z0-9-]{0,198}[a-z0-9])?$/.test(slug)) {
+    return NextResponse.json({ error: "Slug non valido" }, { status: 400 });
   }
 
   const pathname = request.nextUrl.pathname;
@@ -66,7 +66,13 @@ export async function GET(
   if (cached) {
     // Upstream in errore ma cache (anche scaduta) disponibile: stale-if-error.
     console.log("[WP Proxy]", "GET", pathname, 200);
-    return NextResponse.json(cached.data, { status: 200 });
+    return NextResponse.json(cached.data, {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store",
+        Warning: '110 - "Response is stale"',
+      },
+    });
   }
 
   // Errore upstream senza cache: non mascherare come 200 + [] (outage invisibile).

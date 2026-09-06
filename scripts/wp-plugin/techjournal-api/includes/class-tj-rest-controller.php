@@ -56,6 +56,98 @@ class TJ_REST_Controller extends WP_REST_Controller {
             ],
         ]);
 
+        /**
+         * Scrittura autenticata (§47, §19): l'unica nel plugin, finora
+         * interamente di sola lettura. Autenticazione via WordPress
+         * Application Passwords (core dalla 5.6) — nessun meccanismo custom:
+         * `current_user_can` funziona automaticamente perché WP risolve
+         * l'utente dall'header Basic Auth prima che il permission_callback
+         * giri. Chi chiama deve solo avere i permessi di modifica sul post,
+         * esattamente come nell'editor.
+         */
+        register_rest_route(self::NAMESPACE, '/post/(?P<id>\d+)/review', [
+            [
+                'methods' => WP_REST_Server::EDITABLE,
+                'callback' => [$this, 'update_review'],
+                'permission_callback' => [$this, 'can_edit_post'],
+                'args' => [
+                    'id' => [
+                        'required' => true,
+                        'type' => 'integer',
+                        'validate_callback' => function ($param) {
+                            return absint($param) > 0;
+                        },
+                    ],
+                ],
+            ],
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/post/(?P<id>\d+)/changelog', [
+            [
+                'methods' => WP_REST_Server::EDITABLE,
+                'callback' => [$this, 'update_changelog'],
+                'permission_callback' => [$this, 'can_edit_post'],
+                'args' => [
+                    'id' => [
+                        'required' => true,
+                        'type' => 'integer',
+                        'validate_callback' => function ($param) {
+                            return absint($param) > 0;
+                        },
+                    ],
+                ],
+            ],
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/post/(?P<id>\d+)/tldr', [
+            [
+                'methods' => WP_REST_Server::EDITABLE,
+                'callback' => [$this, 'update_tldr'],
+                'permission_callback' => [$this, 'can_edit_post'],
+                'args' => [
+                    'id' => [
+                        'required' => true,
+                        'type' => 'integer',
+                        'validate_callback' => function ($param) {
+                            return absint($param) > 0;
+                        },
+                    ],
+                ],
+            ],
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/post/(?P<id>\d+)/breaking', [
+            [
+                'methods' => WP_REST_Server::EDITABLE,
+                'callback' => [$this, 'update_breaking'],
+                'permission_callback' => [$this, 'can_edit_post'],
+                'args' => [
+                    'id' => [
+                        'required' => true,
+                        'type' => 'integer',
+                        'validate_callback' => function ($param) {
+                            return absint($param) > 0;
+                        },
+                    ],
+                ],
+            ],
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/author/(?P<slug>[a-zA-Z0-9\-_]+)', [
+            [
+                'methods' => WP_REST_Server::READABLE,
+                'callback' => [$this, 'get_author'],
+                'permission_callback' => '__return_true',
+                'args' => [
+                    'slug' => [
+                        'required' => true,
+                        'type' => 'string',
+                        'sanitize_callback' => 'sanitize_title',
+                    ],
+                ],
+            ],
+        ]);
+
         register_rest_route(self::NAMESPACE, '/megamenu/(?P<slug>[a-zA-Z0-9\-_]+)', [
             [
                 'methods' => WP_REST_Server::READABLE,
@@ -146,6 +238,10 @@ class TJ_REST_Controller extends WP_REST_Controller {
                 'type' => 'string',
                 'sanitize_callback' => 'sanitize_title',
             ],
+            'author' => [
+                'type' => 'string',
+                'sanitize_callback' => 'sanitize_title',
+            ],
         ];
     }
 
@@ -203,6 +299,20 @@ class TJ_REST_Controller extends WP_REST_Controller {
         $after = $request->get_param('after');
         $search = $request->get_param('search');
         $slug = $request->get_param('slug');
+        $author = $request->get_param('author');
+
+        // Uno slug autore che non risolve a nessun utente deve restituire
+        // zero articoli, non "ignora il filtro e mostra tutto": un ID `0` in
+        // WP_Query verrebbe trattato come "nessun filtro autore", il che
+        // sarebbe il comportamento sbagliato qui.
+        if ($author !== null && $author !== '') {
+            $author_user = get_user_by('slug', $author);
+            if (!$author_user) {
+                $response = new WP_REST_Response(['posts' => [], 'totalPages' => 0], 200);
+                $this->add_cache_headers($response, 60);
+                return $response;
+            }
+        }
 
         $args = [
             'post_type' => 'post',
@@ -213,6 +323,10 @@ class TJ_REST_Controller extends WP_REST_Controller {
             'order' => 'DESC',
             'no_found_rows' => false,
         ];
+
+        if (isset($author_user)) {
+            $args['author'] = $author_user->ID;
+        }
 
         if ($category_ids !== null && $category_ids !== '') {
             $ids = array_map('absint', array_filter(explode(',', $category_ids)));
@@ -313,6 +427,210 @@ class TJ_REST_Controller extends WP_REST_Controller {
 
         $response = new WP_REST_Response($data, 200);
         $this->add_cache_headers($response, 60);
+        return $response;
+    }
+
+    /**
+     * Permesso di modifica sul post indicato dall'URL. Stesso controllo che
+     * userebbe l'editor di WordPress — non un permesso più largo o più
+     * stretto inventato per questa API.
+     */
+    public function can_edit_post(WP_REST_Request $request): bool {
+        $id = absint($request->get_param('id'));
+        return $id > 0 && current_user_can('edit_post', $id);
+    }
+
+    /**
+     * Un valore per riga in un campo custom di solo testo, sanificato riga
+     * per riga. Righe vuote scartate; campo vuoto → meta rimossa, non
+     * salvata come stringa vuota (coerente con `get_review_data`, che
+     * tratta l'assenza del meta come "non compilato").
+     */
+    private function save_lines_meta(int $post_id, string $meta_key, $lines): void {
+        if (!is_array($lines)) {
+            delete_post_meta($post_id, $meta_key);
+            return;
+        }
+        $clean = array_values(array_filter(array_map(static function ($line) {
+            return sanitize_text_field(trim((string) $line));
+        }, $lines), static fn($line) => $line !== ''));
+
+        if (empty($clean)) {
+            delete_post_meta($post_id, $meta_key);
+            return;
+        }
+        update_post_meta($post_id, $meta_key, implode("\n", $clean));
+    }
+
+    /**
+     * PUT /tj/v1/post/:id/review (§47) — scrittura autenticata.
+     *
+     * Sovrascrive interamente i campi recensione con quanto ricevuto: un
+     * campo assente dal body viene rimosso, non lasciato invariato. Chi
+     * chiama invia sempre lo stato completo del form, non una patch parziale
+     * — più semplice da ragionare per un form con pochi campi come questo.
+     */
+    public function update_review(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = absint($request->get_param('id'));
+        $post = get_post($id);
+        if (!$post || $post->post_type !== 'post') {
+            return new WP_Error('not_found', 'Post non trovato', ['status' => 404]);
+        }
+
+        $body = $request->get_json_params() ?? [];
+        $ratingRaw = $body['rating'] ?? null;
+
+        if ($ratingRaw === null || $ratingRaw === '') {
+            delete_post_meta($id, 'tj_review_rating');
+        } else {
+            if (!is_numeric($ratingRaw) || (float) $ratingRaw < 0 || (float) $ratingRaw > 10) {
+                return new WP_Error('invalid_rating', 'Voto non valido: deve essere fra 0 e 10', ['status' => 400]);
+            }
+            update_post_meta($id, 'tj_review_rating', (string) (float) $ratingRaw);
+        }
+
+        $this->save_lines_meta($id, 'tj_review_pros', $body['pros'] ?? []);
+        $this->save_lines_meta($id, 'tj_review_cons', $body['cons'] ?? []);
+
+        foreach ([
+            'testDuration' => 'tj_review_test_duration',
+            'methodology' => 'tj_review_methodology',
+            'verdict' => 'tj_review_verdict',
+        ] as $bodyKey => $metaKey) {
+            $value = trim((string) ($body[$bodyKey] ?? ''));
+            if ($value === '') {
+                delete_post_meta($id, $metaKey);
+            } else {
+                update_post_meta($id, $metaKey, sanitize_text_field($value));
+            }
+        }
+
+        $data = $this->mapper->map_post_to_list_item($post);
+        return new WP_REST_Response(['review' => $data['review']], 200);
+    }
+
+    /**
+     * PUT /tj/v1/post/:id/changelog (§19, §35-36) — scrittura autenticata.
+     *
+     * Riscrive `tj_changelog` nello stesso formato riga per riga che
+     * `get_changelog_data` sa già leggere (`AAAA-MM-GG: nota`): non serve un
+     * secondo parser. Voci con data non valida o nota vuota vengono
+     * scartate, non bloccano il salvataggio delle altre.
+     */
+    public function update_changelog(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = absint($request->get_param('id'));
+        $post = get_post($id);
+        if (!$post || $post->post_type !== 'post') {
+            return new WP_Error('not_found', 'Post non trovato', ['status' => 404]);
+        }
+
+        $body = $request->get_json_params() ?? [];
+        $entries = is_array($body['entries'] ?? null) ? $body['entries'] : [];
+
+        $lines = [];
+        foreach ($entries as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            $date = trim((string) ($entry['date'] ?? ''));
+            $note = trim((string) ($entry['note'] ?? ''));
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || $note === '') {
+                continue;
+            }
+            $lines[] = $date . ': ' . sanitize_text_field($note);
+        }
+
+        if (empty($lines)) {
+            delete_post_meta($id, 'tj_changelog');
+        } else {
+            update_post_meta($id, 'tj_changelog', implode("\n", $lines));
+        }
+
+        $data = $this->mapper->map_post_to_list_item($post);
+        return new WP_REST_Response(['changelog' => $data['changelog']], 200);
+    }
+
+    /**
+     * PUT /tj/v1/post/:id/tldr (§14) — scrittura autenticata.
+     *
+     * Sovrascrive interamente `tj_tldr` con l'array ricevuto (max 5 righe,
+     * un punto per voce): usato dall'autoposter per persistere il TL;DR
+     * generato una sola volta, non ricalcolato a ogni richiesta. Riusa lo
+     * stesso helper riga-per-riga di pro/contro recensione — stesso formato,
+     * stesse regole di sanificazione.
+     */
+    public function update_tldr(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = absint($request->get_param('id'));
+        $post = get_post($id);
+        if (!$post || $post->post_type !== 'post') {
+            return new WP_Error('not_found', 'Post non trovato', ['status' => 404]);
+        }
+
+        $body = $request->get_json_params() ?? [];
+        $points = is_array($body['points'] ?? null) ? array_slice($body['points'], 0, 5) : [];
+
+        $this->save_lines_meta($id, 'tj_tldr', $points);
+
+        $data = $this->mapper->map_post_to_list_item($post);
+        return new WP_REST_Response(['tldr' => $data['tldr']], 200);
+    }
+
+    /**
+     * PUT /tj/v1/post/:id/breaking (§12) — scrittura autenticata.
+     *
+     * `kind` vuoto/assente disattiva il breaking (rimuove i meta). `kind`
+     * valorizzato richiede `expiresAt` — coerente con `get_breaking_data()`,
+     * che tratta un breaking senza scadenza come non attivo.
+     */
+    public function update_breaking(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $id = absint($request->get_param('id'));
+        $post = get_post($id);
+        if (!$post || $post->post_type !== 'post') {
+            return new WP_Error('not_found', 'Post non trovato', ['status' => 404]);
+        }
+
+        $body = $request->get_json_params() ?? [];
+        $kind = trim((string) ($body['kind'] ?? ''));
+
+        if ($kind === '') {
+            delete_post_meta($id, 'tj_breaking_kind');
+            delete_post_meta($id, 'tj_breaking_expires_at');
+            delete_post_meta($id, 'tj_breaking_priority');
+        } else {
+            if ($kind !== 'breaking' && $kind !== 'live') {
+                return new WP_Error('invalid_kind', 'kind deve essere "breaking", "live" o vuoto', ['status' => 400]);
+            }
+            $expires_at = trim((string) ($body['expiresAt'] ?? ''));
+            if ($expires_at === '' || strtotime($expires_at) === false) {
+                return new WP_Error('invalid_expires_at', 'expiresAt deve essere una data valida', ['status' => 400]);
+            }
+            update_post_meta($id, 'tj_breaking_kind', $kind);
+            update_post_meta($id, 'tj_breaking_expires_at', $expires_at);
+
+            $priority_raw = $body['priority'] ?? null;
+            if ($priority_raw === null || $priority_raw === '') {
+                delete_post_meta($id, 'tj_breaking_priority');
+            } else {
+                update_post_meta($id, 'tj_breaking_priority', (string) (int) $priority_raw);
+            }
+        }
+
+        $data = $this->mapper->map_post_to_list_item($post);
+        return new WP_REST_Response(['breaking' => $data['breaking']], 200);
+    }
+
+    /**
+     * GET /tj/v1/author/:slug (§40)
+     */
+    public function get_author(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $slug = $request->get_param('slug');
+        $data = TJ_Post_Mapper::get_author_by_slug($slug);
+        if ($data === null) {
+            return new WP_Error('not_found', 'Autore non trovato', ['status' => 404]);
+        }
+
+        $response = new WP_REST_Response($data, 200);
+        $this->add_cache_headers($response, self::CACHE_TTL);
         return $response;
     }
 

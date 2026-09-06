@@ -38,7 +38,7 @@ export default function BannerPlaceholder({
         <span className="text-center px-2">
           {width}×{Math.min(minHeight, 600)}
           <br />
-          Banner
+          Pubblicità
         </span>
       </div>
     );

@@ -6,6 +6,13 @@ export type ProxyToTjApiOptions = {
   methodOverride?: string;
   /** Timeout fetch verso tj-api (ms). Default 10s; webhook lunghi es. 120000. */
   timeoutMs?: number;
+  /**
+   * Sostituisce il corpo della richiesta in ingresso con JSON calcolato dal
+   * chiamante (es. il webhook di pubblicazione, che arricchisce il payload WP
+   * con topic e classificazione prima di inoltrarlo). Se assente si inoltra il
+   * corpo originale byte per byte, comportamento di sempre.
+   */
+  bodyOverride?: unknown;
 };
 
 const DEFAULT_UPSTREAM_TIMEOUT_MS = 10_000;
@@ -14,6 +21,7 @@ const TJ_API_USER_AGENT = "TechJournal-Frontend/1.0 (+https://www.techjournal.it
 const IS_DEV = process.env.NODE_ENV !== "production";
 const MAX_REQUEST_BODY_BYTES = 10 * 1024 * 1024;
 const MAX_RESPONSE_BODY_BYTES = 10 * 1024 * 1024;
+const NO_STORE = { "Cache-Control": "no-store" };
 
 /**
  * Header di risposta upstream da ripassare al client (case-insensitive in fetch).
@@ -71,7 +79,7 @@ export async function proxyToTjApi(
     if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 503);
     return NextResponse.json(
       { error: "TJ_API_BASE_URL non configurato" },
-      { status: 503 },
+      { status: 503, headers: NO_STORE },
     );
   }
 
@@ -80,12 +88,18 @@ export async function proxyToTjApi(
     upstreamOrigin = new URL(base).origin;
   } catch {
     if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 500);
-    return NextResponse.json({ error: "TJ_API_BASE_URL non valido" }, { status: 500 });
+    return NextResponse.json(
+      { error: "TJ_API_BASE_URL non valido" },
+      { status: 500, headers: NO_STORE },
+    );
   }
 
   if (upstreamOrigin === request.nextUrl.origin) {
     if (IS_DEV) console.log("[WP Proxy]", request.method, pathname, 500);
-    return NextResponse.json({ error: "Proxy loop detected" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Proxy loop detected" },
+      { status: 500, headers: NO_STORE },
+    );
   }
 
   const path = request.nextUrl.pathname + request.nextUrl.search;
@@ -111,9 +125,13 @@ export async function proxyToTjApi(
     headers.set("X-TJ-Webhook-Secret", webhookSecret);
   }
 
-  const contentTypeIn = request.headers.get("content-type");
-  if (contentTypeIn) {
-    headers.set("Content-Type", contentTypeIn);
+  if (options?.bodyOverride !== undefined) {
+    headers.set("Content-Type", "application/json");
+  } else {
+    const contentTypeIn = request.headers.get("content-type");
+    if (contentTypeIn) {
+      headers.set("Content-Type", contentTypeIn);
+    }
   }
 
   // Senza User-Agent esplicito, fetch invia "node": Cloudflare lo classifica come
@@ -127,25 +145,62 @@ export async function proxyToTjApi(
   if (bypassToken) {
     headers.set("X-TJ-API-Token", bypassToken);
   }
+  const protectionBypassSecret = process.env.TJ_API_PROTECTION_BYPASS_SECRET?.trim();
+  if (protectionBypassSecret) {
+    headers.set("x-vercel-protection-bypass", protectionBypassSecret);
+  }
 
-  const timeoutMs = options?.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
+  const requestedTimeout = options?.timeoutMs ?? DEFAULT_UPSTREAM_TIMEOUT_MS;
+  const timeoutMs = Number.isFinite(requestedTimeout)
+    ? Math.min(120_000, Math.max(100, requestedTimeout))
+    : DEFAULT_UPSTREAM_TIMEOUT_MS;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     let body: BodyInit | undefined;
-    if (method !== "GET" && method !== "HEAD") {
+    if (options?.bodyOverride !== undefined) {
+      const serialized = JSON.stringify(options.bodyOverride);
+      if (typeof serialized !== "string") {
+        return NextResponse.json(
+          { error: "Invalid JSON payload" },
+          { status: 400, headers: NO_STORE },
+        );
+      }
+      if (Buffer.byteLength(serialized, "utf8") > MAX_REQUEST_BODY_BYTES) {
+        return NextResponse.json(
+          { error: "Payload too large" },
+          { status: 413, headers: NO_STORE },
+        );
+      }
+      body = serialized;
+    } else if (method !== "GET" && method !== "HEAD") {
       const reqLenHeader = request.headers.get("content-length");
       const reqLen =
         typeof reqLenHeader === "string" && reqLenHeader.trim() !== ""
           ? Number(reqLenHeader)
           : Number.NaN;
+      if (
+        reqLenHeader !== null &&
+        (!Number.isSafeInteger(reqLen) || reqLen < 0)
+      ) {
+        return NextResponse.json(
+          { error: "Invalid Content-Length" },
+          { status: 400, headers: NO_STORE },
+        );
+      }
       if (Number.isFinite(reqLen) && reqLen > MAX_REQUEST_BODY_BYTES) {
-        return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+        return NextResponse.json(
+          { error: "Payload too large" },
+          { status: 413, headers: NO_STORE },
+        );
       }
       const buf = await request.arrayBuffer();
       if (buf.byteLength > MAX_REQUEST_BODY_BYTES) {
-        return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+        return NextResponse.json(
+          { error: "Payload too large" },
+          { status: 413, headers: NO_STORE },
+        );
       }
       if (buf.byteLength > 0) {
         body = buf;
@@ -160,8 +215,6 @@ export async function proxyToTjApi(
       signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
     if (IS_DEV) console.log("[WP Proxy]", method, pathname, res.status);
 
     const upstreamLenHeader = res.headers.get("content-length");
@@ -170,12 +223,18 @@ export async function proxyToTjApi(
         ? Number(upstreamLenHeader)
         : Number.NaN;
     if (Number.isFinite(upstreamLen) && upstreamLen > MAX_RESPONSE_BODY_BYTES) {
-      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Upstream payload too large" },
+        { status: 502, headers: NO_STORE },
+      );
     }
 
     const text = await res.text();
     if (Buffer.byteLength(text, "utf8") > MAX_RESPONSE_BODY_BYTES) {
-      return NextResponse.json({ error: "Upstream payload too large" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Upstream payload too large" },
+        { status: 502, headers: NO_STORE },
+      );
     }
     const upstreamCt = res.headers.get("content-type");
 
@@ -240,7 +299,6 @@ export async function proxyToTjApi(
       headers: outHeaders,
     });
   } catch (err) {
-    clearTimeout(timeoutId);
     const isAbort =
       err instanceof Error &&
       (err.name === "AbortError" || err.message === "This operation was aborted");
@@ -250,7 +308,9 @@ export async function proxyToTjApi(
     }
     return NextResponse.json(
       { error: isAbort ? "Upstream timeout" : "Upstream error" },
-      { status },
+      { status, headers: NO_STORE },
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

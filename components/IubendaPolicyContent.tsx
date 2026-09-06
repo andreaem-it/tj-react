@@ -47,19 +47,27 @@ export default function IubendaPolicyContent({
       return;
     }
     let cancelled = false;
-    fetch(`/api/iubenda-policy?id=${encodeURIComponent(policyId)}&type=${type}`)
-      .then((res) => res.json())
-      .then((json: ApiResponse) => {
+    const controller = new AbortController();
+
+    void (async () => {
+      try {
+        const response = await fetch(
+          `/api/iubenda-policy?id=${encodeURIComponent(policyId)}&type=${type}`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) throw new Error(`Policy iubenda non disponibile: ${response.status}`);
+        const json = (await response.json()) as ApiResponse;
         if (!cancelled) setData(json);
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setData({ success: false });
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
+
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [policyId, type]);
 
@@ -99,7 +107,7 @@ export default function IubendaPolicyContent({
             <button
               type="button"
               onClick={() => iubenda.showCookiePolicy()}
-              className="text-accent hover:underline bg-transparent border-none cursor-pointer p-0 font-inherit"
+              className="cursor-pointer rounded-sm border-none bg-transparent p-1 font-inherit text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               Visualizza cookie policy
             </button>
@@ -107,7 +115,7 @@ export default function IubendaPolicyContent({
             <button
               type="button"
               onClick={() => iubenda.openPreferences()}
-              className="text-accent hover:underline bg-transparent border-none cursor-pointer p-0 font-inherit"
+              className="cursor-pointer rounded-sm border-none bg-transparent p-1 font-inherit text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               Modifica preferenze
             </button>

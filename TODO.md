@@ -21,7 +21,28 @@ Stato rispetto al **RESOCONTO-PROGETTO.md** e ai fix operativi.
 
 ## Deploy WordPress
 
-- [ ] Pubblicare sul sito WordPress la versione aggiornata del plugin che espone il campo JSON **`modified`** negli endpoint `tj/v1` (lista e singolo post). Fino al deploy, il frontend continua a usare **`date`** come fallback.
+- [x] Campo JSON **`modified`** negli endpoint `tj/v1` (lista e singolo post). Confermato in produzione (2026-08-21): presente su ogni post.
+- [x] Plugin **v1.2.0** — pagina autore (§40): `authorSlug` su `tj/v1/posts`/`tj/v1/post/:slug`, filtro `?author=<slug>`, endpoint `GET tj/v1/author/:slug`. **Pubblicato e verificato in produzione il 2026-08-21**: il campo è presente e l'endpoint risponde correttamente (404 pulito quando non c'è corrispondenza). Nota: gli articoli recenti hanno `authorName`/`authorSlug` vuoti perché non hanno un utente WordPress valido come autore (contenuti ingeriti automaticamente) — `/autore/[slug]` diventerà utile sul primo articolo attribuito a un utente reale (es. una recensione firmata), che è il caso d'uso per cui esiste.
+- [x] Plugin **v1.3.0** — modello dati recensioni (§47): campo `review` da custom field. **Pubblicato e verificato il 2026-08-21**: `review: null` di default, come atteso finché nessun post ha i custom field compilati.
+
+  **Custom field da compilare per una recensione vera** (nessuno è generato, tutti a mano):
+  - `tj_review_rating` — **obbligatorio perché compaia qualcosa**: voto numerico da 0 a 10 (es. `8.5`).
+  - `tj_review_pros` — un pro per riga.
+  - `tj_review_cons` — un contro per riga.
+  - `tj_review_test_duration` — es. "3 settimane di utilizzo quotidiano".
+  - `tj_review_methodology` — nota libera su come è stato condotto il test.
+  - `tj_review_verdict` — una riga di conclusione.
+
+- [x] Plugin **v1.4.0** — cronologia aggiornamenti (§19, §35-36): campo `changelog` da custom field `tj_changelog`. **Pubblicato e verificato il 2026-08-21**: `changelog: []` di default, come atteso.
+
+  **Custom field `tj_changelog`**: una riga per voce, formato `AAAA-MM-GG: nota` (es. `2026-08-20: Aggiunte informazioni sulla Beta 6.`). Righe senza questo formato vengono ignorate silenziosamente, non bloccano le altre.
+
+- [x] Plugin **v1.5.0** — scrittura autenticata (§47, §19): endpoint `PUT tj/v1/post/:id/review` e `PUT tj/v1/post/:id/changelog`. **Pubblicato e verificato il 2026-08-21**: entrambi rispondono `rest_forbidden` (401) a una richiesta senza autenticazione — le rotte esistono e il controllo permessi funziona; non ancora verificata una scrittura autenticata reale (serve il passo seguente).
+
+  **Per attivare la scrittura serve ancora**, lato tj-api (non WordPress — questo passo resta da fare):
+  1. Su WordPress: **Utenti → Profilo** (con un utente che possa modificare i post) → **Password per le applicazioni** → crea una nuova password applicativa.
+  2. Su tj-api: imposta `WP_APP_USERNAME` (lo username WP) e `WP_APP_PASSWORD` (la password applicativa, non quella normale dell'account).
+  3. Senza queste due variabili, `PUT /api/admin/wp-posts/:wpId/review` e `.../changelog` rispondono 503 — degrado corretto, l'admin resta usabile per il resto. Un buon test una volta impostate: aprire "Recensione" su un articolo qualsiasi in admin e salvare un voto di prova.
 
 ---
 

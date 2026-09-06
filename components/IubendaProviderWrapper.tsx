@@ -25,7 +25,7 @@ function buildBannerConfig(
   siteIdNum: number,
   cookiePolicyIdNum: number,
 ): IubendaCookieSolutionBannerConfigInterface {
-  const isDark = theme === "dark";
+  const isDark = theme !== "light";
   const shell = isDark ? "#252525" : "#f3f4f6";
   const panelBg = isDark ? "#252525" : "#ffffff";
   const panelText = isDark ? "#ffffff" : "#111827";

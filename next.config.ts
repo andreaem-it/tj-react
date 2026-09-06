@@ -6,12 +6,51 @@ import type { NextConfig } from "next";
  *
  * Set NEXT_IMAGE_PASSTHROUGH=0 to explicitly re-enable Next/Vercel optimizer.
  */
-const usePassthroughImageLoader = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
+const usePassthroughImages = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@mep-agency/next-iubenda"],
   async redirects() {
     return [
+      // Preserve SEO equity from the former nested WordPress permalink scheme.
+      // Put AMP/feed variants first so they land on the canonical article URL.
+      {
+        source: "/:category/:slug/amp",
+        destination: "/:category/:slug",
+        permanent: true,
+      },
+      {
+        source: "/:category/:slug/feed",
+        destination: "/:category/:slug",
+        permanent: true,
+      },
+      ...["apple", "applicazioni", "games"].flatMap((section) => [
+        {
+          source: `/${section}/:category/:path+/amp`,
+          destination: "/:category/:path+",
+          permanent: true,
+        },
+        {
+          source: `/${section}/:category/:path+/feed`,
+          destination: "/:category/:path+",
+          permanent: true,
+        },
+        {
+          source: `/${section}/:category/:path+`,
+          destination: "/:category/:path+",
+          permanent: true,
+        },
+      ]),
+      {
+        source: "/:category/:path+/amp",
+        destination: "/:category/:path+",
+        permanent: true,
+      },
+      {
+        source: "/:category/:path+/feed",
+        destination: "/:category/:path+",
+        permanent: true,
+      },
       {
         source: "/:path*",
         has: [{ type: "host", value: "techjournal.it" }],
@@ -92,12 +131,7 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    ...(usePassthroughImageLoader
-      ? {
-          loader: "custom" as const,
-          loaderFile: "./lib/passthrough-image-loader.ts",
-        }
-      : {}),
+    unoptimized: usePassthroughImages,
     remotePatterns: [
       { protocol: "https", hostname: "www.techjournal.it", pathname: "/**" },
       { protocol: "https", hostname: "api.techjournal.it", pathname: "/**" },

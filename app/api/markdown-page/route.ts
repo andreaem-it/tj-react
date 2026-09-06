@@ -5,6 +5,8 @@ export const revalidate = 300;
 
 const MARKDOWN_CACHE_CONTROL =
   "public, s-maxage=300, stale-while-revalidate=86400";
+const UPSTREAM_TIMEOUT_MS = 8_000;
+const MAX_UPSTREAM_HTML_BYTES = 2 * 1024 * 1024;
 
 function stripNonContentTags(html: string): string {
   return html
@@ -26,43 +28,67 @@ function extractTitle(html: string): string {
 
 function resolveOrigin(request: Request): string {
   const url = new URL(request.url);
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  if (forwardedHost) {
-    const proto = forwardedProto || "https";
-    return `${proto}://${forwardedHost}`;
-  }
-  return `${url.protocol}//${url.host}`;
+  return url.origin;
+}
+
+function isInternalPath(path: string): boolean {
+  const pathname = path.split(/[?#]/, 1)[0].toLowerCase();
+  return pathname === "/api" || pathname.startsWith("/api/") ||
+    pathname === "/_next" || pathname.startsWith("/_next/") ||
+    pathname === "/.well-known" || pathname.startsWith("/.well-known/");
 }
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const path = url.searchParams.get("path");
 
-  if (!path || !path.startsWith("/")) {
+  if (!path || !path.startsWith("/") || path.startsWith("//") || isInternalPath(path)) {
     return NextResponse.json({ error: "Missing or invalid path parameter." }, { status: 400 });
   }
 
   const targetUrl = `${resolveOrigin(request)}${path}`;
-  const upstream = await fetch(targetUrl, {
-    headers: {
-      Accept: "text/html",
-      "x-skip-markdown-rewrite": "1",
-    },
-    next: { revalidate: 300 },
-  });
-
-  if (!upstream.ok) {
-    return new NextResponse("Not Found", {
-      status: upstream.status === 404 ? 404 : 502,
-      headers: { "content-type": "text/plain; charset=utf-8" },
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+  let upstream: Response;
+  let html: string;
+  try {
+    upstream = await fetch(targetUrl, {
+      headers: {
+        Accept: "text/html",
+        "x-skip-markdown-rewrite": "1",
+      },
+      next: { revalidate: 300 },
+      signal: controller.signal,
     });
-  }
 
-  const html = await upstream.text();
+    if (!upstream.ok) {
+      return new NextResponse("Not Found", {
+        status: upstream.status === 404 ? 404 : 502,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+
+    const declaredLength = Number(upstream.headers.get("content-length"));
+    if (Number.isFinite(declaredLength) && declaredLength > MAX_UPSTREAM_HTML_BYTES) {
+      return NextResponse.json({ error: "Upstream page too large" }, { status: 502 });
+    }
+
+    html = await upstream.text();
+    if (new TextEncoder().encode(html).byteLength > MAX_UPSTREAM_HTML_BYTES) {
+      return NextResponse.json({ error: "Upstream page too large" }, { status: 502 });
+    }
+  } catch (error) {
+    const timedOut = error instanceof Error && error.name === "AbortError";
+    return NextResponse.json(
+      { error: timedOut ? "Upstream timeout" : "Upstream unavailable" },
+      { status: timedOut ? 504 : 502 },
+    );
+  } finally {
+    clearTimeout(timeoutId);
+  }
+  const title = extractTitle(html);
   const focusedHtml = extractMainHtml(html);
   const cleanedHtml = stripNonContentTags(focusedHtml);
-  const title = extractTitle(cleanedHtml);
   const markdownBody = htmlToMarkdown(cleanedHtml);
   const markdown = [`# ${title}`, "", `Source: ${path}`, "", markdownBody].join("\n").trim();
 

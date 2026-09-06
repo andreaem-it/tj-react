@@ -22,7 +22,11 @@ export default function AppShell({
       <Suspense fallback={<HeaderSkeleton />}>
         <Header />
       </Suspense>
-      <main className="flex-1 flex w-full max-w-full justify-center min-w-0 min-h-0 overflow-x-clip px-[10px] sm:px-4 xl:px-12 gap-6 xl:gap-10">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 flex w-full max-w-full justify-center min-w-0 min-h-0 overflow-x-clip px-[10px] sm:px-4 xl:px-12 gap-6 xl:gap-10"
+      >
         <BannerPlaceholder
           side="left"
           width={160}

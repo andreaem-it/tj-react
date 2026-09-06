@@ -18,8 +18,8 @@ function TechJournalLogo() {
   if (useRasterBrand) {
     return (
       <>
-        <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-9 w-auto object-contain dark:hidden" priority aria-hidden />
-        <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-9 w-auto object-contain dark:block" priority aria-hidden />
+        <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-9 w-auto object-contain max-[359px]:h-7 dark:hidden" priority aria-hidden />
+        <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-9 w-auto object-contain max-[359px]:h-7 dark:block" priority aria-hidden />
       </>
     );
   }
@@ -28,7 +28,7 @@ function TechJournalLogo() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 2048 408"
-      className="techjournal-logo h-9 w-auto object-contain"
+      className="techjournal-logo h-9 w-auto object-contain max-[359px]:h-7"
       role="img"
       aria-label="TechJournal"
     >
@@ -65,23 +65,27 @@ function TechJournalLogo() {
 function DesktopNavFallback() {
   return (
     <nav className="hidden md:flex items-center gap-6 py-3 border-t border-border flex-wrap">
-      <Link href="/" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Ultime Notizie
       </Link>
-      <Link href="/apple" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/apple" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Apple
       </Link>
-      <Link href="/apps" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/apps" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Apps
       </Link>
-      <Link href="/tech" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/tech" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Tech
       </Link>
-      <Link href="/gaming" className="text-foreground hover:text-accent transition-colors text-base font-medium py-1">
+      <Link href="/gaming" className="inline-flex min-h-11 items-center text-foreground hover:text-accent transition-colors text-base font-medium py-2">
         Gaming
       </Link>
-      <Link href="/search" className="ml-auto text-foreground hover:text-accent transition-colors p-1" aria-label="Cerca">
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <Link
+        href="/search"
+        className="ml-auto inline-flex h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        aria-label="Cerca"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </Link>
@@ -94,13 +98,13 @@ const NavBar = dynamic(() => import("./NavBar"), {
 });
 const ThemeToggle = dynamic(() => import("./ThemeToggle"), {
   loading: () => (
-    <span
-      className="inline-flex items-center justify-center rounded-full border border-border bg-surface-overlay p-2 text-foreground"
-      aria-hidden
-    >
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-      </svg>
+    <span className="flex items-center gap-1" aria-hidden>
+      <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-overlay text-foreground">
+        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </span>
+      <span className="inline-flex h-11 w-11 rounded-full border border-border bg-surface-overlay" />
     </span>
   ),
 });
@@ -115,7 +119,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="md:hidden flex items-center justify-center p-2 text-foreground hover:text-accent transition-colors shrink-0"
+            className="flex h-11 w-11 shrink-0 items-center justify-center text-foreground transition-colors hover:text-accent md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Apri menu"
             aria-expanded={mobileMenuOpen}
           >
@@ -123,7 +127,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="TechJournal">
+          <Link href="/" className="flex h-11 items-center shrink-0 min-w-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="TechJournal">
             <TechJournalLogo />
           </Link>
           <div className="flex items-center gap-3 shrink-0">
@@ -131,7 +135,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               href="https://www.facebook.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:inline-flex text-foreground hover:text-accent transition-colors"
+              className="hidden h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent md:inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="Facebook"
             >
               <span className="text-lg font-semibold">f</span>
@@ -140,7 +144,7 @@ export default function HeaderClient({ categoryLinks, megamenuBySlug }: HeaderCl
               href="https://www.instagram.com/techjournal.it"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:inline-flex text-foreground hover:text-accent transition-colors"
+              className="hidden h-11 w-11 items-center justify-center text-foreground transition-colors hover:text-accent md:inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               aria-label="Instagram"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>

@@ -18,6 +18,7 @@ import {
 } from "@/lib/priceRadar/offers";
 import PriceRadarCard from "./PriceRadarCard";
 import { getBetaOffers } from "@/lib/priceRadarBetaData";
+import ProductSuggestionForm from "@/components/priceRadar/ProductSuggestionForm";
 
 const TECHRADAR_OFFERS_URL = `${TECHRADAR_API_BASE}/offers.php`;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minuti
@@ -98,7 +99,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 function PriceRadarComingSoon() {
   return (
-    <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-0 py-10 md:px-4">
       <header className="mb-10">
         <h1 className="text-foreground text-3xl md:text-4xl font-bold mb-2">Price Radar</h1>
         <p className="text-muted text-lg mb-8">
@@ -123,8 +124,20 @@ function PriceRadarComingSoon() {
 
 export default function PriceRadarContent({
   initialData,
+  /**
+   * Blocco renderizzato subito sotto l'intestazione.
+   *
+   * Arriva come `children` e non come import perché è un Server Component che
+   * carica i propri dati: passarlo dall'esterno lo lascia sul server, mentre
+   * importarlo qui lo trascinerebbe nel bundle del browser. È anche l'unico modo
+   * di collocarlo *dopo* l'H1 senza spezzare la gerarchia dei titoli — messo
+   * come fratello della pagina finirebbe prima, e per giunta affiancato, dato
+   * che in `AppShell` i children stanno in un contenitore flex.
+   */
+  headerSlot,
 }: {
   initialData: PriceRadarInitialData;
+  headerSlot?: React.ReactNode;
 }) {
   const [offers, setOffers] = useState<TechRadarOffer[]>(initialData.offers);
   // I dati arrivano già renderizzati dal server: partire da `true` rimetterebbe
@@ -140,6 +153,7 @@ export default function PriceRadarContent({
   const [category, setCategory] = useState("");
   const [brands, setBrands] = useState<string[]>(initialData.brands);
   const [categories, setCategories] = useState<string[]>(initialData.categories);
+  const loadRequestId = useRef(0);
 
   /**
    * Il primo giro dell'effetto corrisponde ai filtri di default, che il server
@@ -150,6 +164,7 @@ export default function PriceRadarContent({
   const skipInitialLoad = useRef(!initialData.failed);
 
   const loadOffers = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
     setLoading(true);
     setError(null);
     try {
@@ -158,12 +173,14 @@ export default function PriceRadarContent({
         : PRICE_RADAR_ENABLED
           ? await fetchLiveOffers()
           : await fetchBetaOffers();
+      if (requestId !== loadRequestId.current) return;
       setOffers(data);
     } catch (e) {
+      if (requestId !== loadRequestId.current) return;
       setError(e instanceof Error ? e.message : "Errore nel caricamento");
       setOffers([]);
     } finally {
-      setLoading(false);
+      if (requestId === loadRequestId.current) setLoading(false);
     }
   }, [search, sort, brand, category]);
 
@@ -202,6 +219,11 @@ export default function PriceRadarContent({
       return;
     }
     void loadOffers();
+    return () => {
+      // Invalida la risposta in volo quando cambiano i filtri o il componente
+      // viene smontato: solo l'ultima richiesta può aggiornare la UI.
+      loadRequestId.current += 1;
+    };
   }, [loadOffers]);
 
   const filteredAndSorted = useMemo(() => {
@@ -227,10 +249,10 @@ export default function PriceRadarContent({
 
   if (loading && offers.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-0 py-10 md:px-4">
         <div className="mb-8 animate-pulse">
           <div className="h-10 w-64 bg-content-bg rounded mb-2" />
-          <div className="h-5 w-96 bg-content-bg/60 rounded" />
+          <div className="h-5 w-full max-w-96 bg-content-bg/60 rounded" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -250,13 +272,13 @@ export default function PriceRadarContent({
 
   if (error && offers.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-0 py-10 md:px-4">
         <div className="text-center py-16">
           <p className="text-muted text-lg mb-4">{error}</p>
           <button
             type="button"
             onClick={loadOffers}
-            className="px-6 py-3 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors"
+            className="min-h-11 px-6 py-3 bg-accent hover:bg-accent/90 text-foreground font-semibold rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Riprova
           </button>
@@ -266,9 +288,9 @@ export default function PriceRadarContent({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-0 md:px-4 py-10">
+    <div className="mx-auto w-full min-w-0 max-w-7xl px-0 py-10 md:px-4">
       <header className="mb-10">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="mb-2 flex flex-wrap items-center gap-3">
           <h1 className="text-foreground text-3xl md:text-4xl font-bold">Price Radar</h1>
           {PRICE_RADAR_SQLITE_ENABLED && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/35">
@@ -290,6 +312,12 @@ export default function PriceRadarContent({
           Offerte selezionate di prodotti tech su Amazon, aggiornate periodicamente.
         </p>
       </header>
+
+      <div className="mb-10">
+        <ProductSuggestionForm />
+      </div>
+
+      {headerSlot && <div className="mb-10">{headerSlot}</div>}
 
       {/* Barra filtri */}
       <div className="flex flex-col gap-4 mb-8">
@@ -319,7 +347,7 @@ export default function PriceRadarContent({
           <button
             type="button"
             onClick={() => setSearch(searchInput)}
-            className="px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground hover:bg-sidebar-bg transition-colors sm:self-stretch"
+            className="min-h-11 px-4 py-3 bg-content-bg border border-border rounded-lg text-foreground hover:bg-sidebar-bg transition-colors sm:self-stretch focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             Cerca
           </button>

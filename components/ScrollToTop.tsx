@@ -16,14 +16,14 @@ export default function ScrollToTop() {
     <button
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className={`fixed bottom-6 right-6 z-40 w-12 h-12 rounded-lg bg-sidebar-bg text-foreground border border-border flex items-center justify-center shadow-lg hover:bg-content-bg hover:text-accent transition-all duration-200 ${
+      className={`fixed bottom-6 right-6 z-40 w-12 h-12 rounded-lg bg-sidebar-bg text-foreground border border-border flex items-center justify-center shadow-lg hover:bg-content-bg hover:text-accent transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
         visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
       aria-label="Torna su"
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
     >
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
       </svg>
     </button>

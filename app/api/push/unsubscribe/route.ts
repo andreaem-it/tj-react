@@ -1,0 +1,51 @@
+import { NextRequest, NextResponse } from "next/server";
+import { proxyToTjApi } from "@/lib/tjApiProxy";
+
+export const dynamic = "force-dynamic";
+const MAX_UNSUBSCRIBE_PAYLOAD_BYTES = 8 * 1024;
+
+/**
+ * Rimuove una sottoscrizione push. Corpo: `PushUnsubscribeBody`
+ * (`lib/push/types.ts`) — solo `endpoint`.
+ *
+ * `POST`, non `DELETE`: alcuni service worker/browser non allegano un body
+ * a `DELETE` in modo affidabile, e qui serve indicare *quale* sottoscrizione
+ * rimuovere. tj-api deve esporre `POST /api/push/unsubscribe` e cancellare per
+ * `endpoint`; un endpoint sconosciuto è un no-op (200), non un errore — il
+ * browser può chiamarlo anche se la sottoscrizione lato server non esiste più.
+ */
+export async function POST(request: NextRequest) {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+    return NextResponse.json({ error: "Content-Type non supportato" }, { status: 415 });
+  }
+  let body: unknown;
+  try {
+    const raw = await request.clone().text();
+    if (Buffer.byteLength(raw, "utf8") > MAX_UNSUBSCRIBE_PAYLOAD_BYTES) {
+      return NextResponse.json({ error: "Payload troppo grande" }, { status: 413 });
+    }
+    body = JSON.parse(raw);
+  } catch {
+    return NextResponse.json({ error: "Payload JSON non valido" }, { status: 400 });
+  }
+  const endpointValue =
+    typeof body === "object" && body !== null && "endpoint" in body
+      ? (body as { endpoint?: unknown }).endpoint
+      : null;
+  let endpoint: URL;
+  try {
+    endpoint = new URL(typeof endpointValue === "string" ? endpointValue : "");
+  } catch {
+    return NextResponse.json({ error: "Endpoint push non valido" }, { status: 400 });
+  }
+  const endpointValid =
+    endpoint.protocol === "https:" &&
+    endpoint.href.length <= 4096 &&
+    endpoint.username === "" &&
+    endpoint.password === "" &&
+    endpoint.hash === "";
+  if (!endpointValid) {
+    return NextResponse.json({ error: "Endpoint push non valido" }, { status: 400 });
+  }
+  return proxyToTjApi(request, { timeoutMs: 15_000 });
+}

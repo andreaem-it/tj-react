@@ -8,6 +8,7 @@ import {
   fetchCompatibilityOsList,
 } from "@/lib/compatibility/serverApi";
 import type { DeviceType } from "@/lib/compatibility/types";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { SITE_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +37,7 @@ const DEVICE_LIST_THUMB_STYLE: CSSProperties = {
 
 function TypeFilter({ active }: { active?: DeviceType }) {
   const base =
-    "rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm transition hover:bg-[var(--surface-overlay)]";
+    "inline-flex min-h-11 items-center rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm transition hover:bg-[var(--surface-overlay)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent";
   const activeCls = "bg-[var(--accent)]/20 border-[var(--accent)] text-[var(--foreground)]";
   return (
     <div className="flex flex-wrap gap-2">
@@ -79,13 +80,20 @@ export default async function CompatibilityIndexPage({
   const showGroups = !type;
 
   return (
-    <div className="w-full max-w-4xl py-8 px-2 sm:px-0">
+    <div className="w-full min-w-0 max-w-4xl py-8 px-2 sm:px-0">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Compatibilità" }]} />
       <h1 className="text-2xl font-bold tracking-tight text-[var(--foreground)] mb-2">
         Compatibilità dispositivi Apple
       </h1>
-      <p className="text-[var(--muted)] text-sm mb-6 max-w-2xl">
+      <p className="text-[var(--muted)] text-sm mb-2 max-w-2xl">
         Scopri se il tuo dispositivo Apple è compatibile con un sistema operativo, quali sono supportati e quali no.
       </p>
+      <Link
+        href="/compatibility/confronta"
+        className="mb-6 inline-flex min-h-11 items-center gap-1 rounded text-sm text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        Confronta due dispositivi →
+      </Link>
 
       <TypeFilter active={type} />
 
@@ -104,7 +112,7 @@ export default async function CompatibilityIndexPage({
                       <li key={d.id}>
                         <Link
                           href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                          className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
+                          className="flex min-h-11 items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                         >
                           {d.imageUrl ? (
                             <Image
@@ -142,7 +150,7 @@ export default async function CompatibilityIndexPage({
                     <li key={d.id}>
                       <Link
                         href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                        className="flex items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition"
+                        className="flex min-h-11 items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         {d.imageUrl ? (
                           <Image
@@ -172,28 +180,36 @@ export default async function CompatibilityIndexPage({
 
         {devices.length === 0 && (
           <p className="text-[var(--muted)] text-sm">
-            Nessun dispositivo in elenco. I dati si gestiscono dal pannello TechJournal Admin (voce
-            Compatibilità).
+            {/* Testo rivolto al lettore e non alla redazione: il messaggio
+                precedente rimandava al pannello di amministrazione, ed è
+                esattamente quello che il pubblico ha letto per tutto il tempo in
+                cui le chiamate lato server fallivano. */}
+            L&apos;elenco dei dispositivi non è al momento disponibile. Riprova fra poco.
           </p>
         )}
       </div>
 
       <div className="mt-12 pt-6 border-t border-[var(--border)]">
-        <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">Sistemi operativi</h2>
+        <h2 className="text-sm font-semibold text-[var(--muted)] mb-2">
+          Quali dispositivi supporta una versione
+        </h2>
         {operatingSystems.length === 0 ? (
           <p className="text-sm text-[var(--muted)]">Nessun OS definito.</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
-            {operatingSystems.slice(0, 32).map((os) => (
+            {[...operatingSystems]
+              .sort((a, b) => (b.releaseYear ?? 0) - (a.releaseYear ?? 0))
+              .slice(0, 32)
+              .map((os) => (
               <li key={os.id}>
                 <Link
                   href={`/compatibility/os/${encodeURIComponent(os.slug)}`}
-                  className="inline-block rounded border border-[var(--border)] px-2 py-1 text-xs hover:bg-[var(--surface-overlay)]"
+                  className="inline-flex min-h-11 items-center rounded border border-[var(--border)] px-2 py-1 text-xs hover:bg-[var(--surface-overlay)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   {os.name}
                 </Link>
               </li>
-            ))}
+              ))}
             {operatingSystems.length > 32 && (
               <li className="text-xs text-[var(--muted)] self-center">…</li>
             )}

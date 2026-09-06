@@ -23,7 +23,7 @@ export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, loadE
               type="button"
               onClick={onLoadMore}
               disabled={isLoading}
-              className="px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity"
+              className="min-h-11 px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {isLoading ? "Caricamento..." : loadError ? "Riprova" : "Carica altri articoli"}
             </button>
@@ -60,7 +60,7 @@ export default function PostsGrid({ posts, hasMore, onLoadMore, isLoading, loadE
             type="button"
             onClick={onLoadMore}
             disabled={isLoading}
-            className="px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity"
+            className="min-h-11 px-6 py-3 bg-accent text-gray-900 font-semibold rounded hover:opacity-90 disabled:opacity-60 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {isLoading ? "Caricamento..." : loadError ? "Riprova" : "Carica altri articoli"}
           </button>

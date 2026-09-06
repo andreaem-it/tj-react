@@ -21,7 +21,7 @@ export default function DocsPage() {
   ];
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-10">
+    <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="text-foreground text-3xl font-bold mb-4">TechJournal API Docs</h1>
       <p className="text-muted mb-6">
         Documentation and machine-readable descriptors for API and AI agent integrations.
@@ -37,6 +37,6 @@ export default function DocsPage() {
           </li>
         ))}
       </ul>
-    </main>
+    </div>
   );
 }

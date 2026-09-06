@@ -10,7 +10,10 @@ export async function GET() {
       keys: [],
     },
     {
-      headers: { "content-type": "application/jwk-set+json; charset=utf-8" },
+      headers: {
+        "content-type": "application/jwk-set+json; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
     }
   );
 }

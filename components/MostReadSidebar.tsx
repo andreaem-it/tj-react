@@ -10,7 +10,7 @@ export default function MostReadSidebar({ posts, title = "Più letti" }: MostRea
   if (!posts.length) return null;
 
   return (
-    <aside className="bg-sidebar-bg rounded-lg p-6 w-full lg:w-[320px] shrink-0">
+    <aside className="w-full shrink-0 rounded-surface bg-sidebar-bg p-panel lg:w-[320px]">
       <h2 className="text-foreground font-bold text-lg mb-4">{title}</h2>
       <ol className="space-y-3">
         {posts.map((post, index) => (
@@ -22,7 +22,7 @@ export default function MostReadSidebar({ posts, title = "Più letti" }: MostRea
               <Link
                 href={`/${getCategoryUrlSlugFromWpSlug(post.categorySlug)}/${post.slug}`}
                 prefetch={false}
-                className="group block"
+                className="group flex min-h-11 flex-col justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <p className="text-muted text-xs font-semibold uppercase tracking-wide">
                   {post.categoryName}
@@ -43,4 +43,3 @@ export default function MostReadSidebar({ posts, title = "Più letti" }: MostRea
     </aside>
   );
 }
-

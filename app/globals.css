@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Keep assistive-only content hidden even when the generated utility sheet is
+   trimmed by the deployment build. WebMCP forms still need to remain in the
+   document, so `display: none` is intentionally avoided. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 :root {
   /* Tema chiaro (default) */
   --background: #f9fafb;
@@ -15,6 +30,15 @@
   --border: rgba(0, 0, 0, 0.12);
   --surface-overlay: rgba(0, 0, 0, 0.06);
   --surface-overlay-strong: rgba(0, 0, 0, 0.1);
+  /* Token geometrici semantici: evitano che card equivalenti divergano. */
+  --space-panel: 1.5rem;
+  --space-section: 2rem;
+  --radius-surface: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-dialog: 1rem;
+  --shadow-card: 0 4px 12px rgba(17, 24, 39, 0.08);
+  --shadow-card-raised: 0 12px 28px rgba(17, 24, 39, 0.14);
+  --shadow-overlay: 0 20px 50px rgba(17, 24, 39, 0.22);
 }
 
 :root.dark {
@@ -32,6 +56,28 @@
   --border: rgba(255, 255, 255, 0.1);
   --surface-overlay: rgba(255, 255, 255, 0.05);
   --surface-overlay-strong: rgba(255, 255, 255, 0.1);
+  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --shadow-card-raised: 0 14px 32px rgba(0, 0, 0, 0.38);
+  --shadow-overlay: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+:root.glass {
+  color-scheme: dark;
+  --background: transparent;
+  --foreground: #ffffff;
+  --muted: #d7d9e4;
+  --accent: #ffbd38;
+  --accent-text: #ffd36a;
+  --header-bg: rgba(20, 18, 40, 0.44);
+  --content-bg: rgba(32, 29, 57, 0.38);
+  --sidebar-bg: rgba(24, 22, 48, 0.42);
+  --article-text: #f1f2f8;
+  --border: rgba(255, 255, 255, 0.24);
+  --surface-overlay: rgba(255, 255, 255, 0.11);
+  --surface-overlay-strong: rgba(255, 255, 255, 0.18);
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.34), inset 0 -1px 0 rgba(255, 255, 255, 0.06), 0 18px 46px rgba(4, 3, 16, 0.24);
+  --shadow-card-raised: inset 0 1px 0 rgba(255, 255, 255, 0.42), inset 0 -1px 0 rgba(255, 255, 255, 0.08), 0 28px 68px rgba(4, 3, 16, 0.36);
+  --shadow-overlay: inset 0 1px 0 rgba(255, 255, 255, 0.44), 0 34px 90px rgba(3, 2, 14, 0.48);
 }
 
 @theme inline {
@@ -46,6 +92,14 @@
   --color-border: var(--border);
   --color-surface-overlay: var(--surface-overlay);
   --color-surface-overlay-strong: var(--surface-overlay-strong);
+  --spacing-panel: var(--space-panel);
+  --spacing-section: var(--space-section);
+  --radius-surface: var(--radius-surface);
+  --radius-card: var(--radius-card);
+  --radius-dialog: var(--radius-dialog);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-raised: var(--shadow-card-raised);
+  --shadow-overlay: var(--shadow-overlay);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -55,6 +109,106 @@ body {
   max-width: 100%;
   overflow-x: hidden;
   overscroll-behavior-x: none;
+}
+
+.liquid-glass-filter {
+  position: fixed;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+html.glass body {
+  isolation: isolate;
+  background: #15112b;
+}
+
+html.glass body::before,
+html.glass body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+html.glass body::before {
+  z-index: -2;
+  inset: -7%;
+  background:
+    radial-gradient(ellipse 82% 68% at 15% 7%, rgba(242, 66, 148, 0.96) 0%, rgba(183, 46, 159, 0.58) 28%, transparent 61%),
+    radial-gradient(ellipse 72% 72% at 88% 18%, rgba(79, 102, 238, 0.92) 0%, rgba(70, 52, 185, 0.56) 34%, transparent 68%),
+    radial-gradient(ellipse 86% 76% at 72% 94%, rgba(247, 137, 69, 0.92) 0%, rgba(181, 75, 117, 0.46) 36%, transparent 67%),
+    linear-gradient(145deg, #301442 0%, #281641 37%, #141836 68%, #101326 100%);
+  background-attachment: fixed;
+  transform-origin: 50% 48%;
+  animation: glass-wallpaper-pan 56s ease-in-out infinite alternate;
+}
+
+html.glass body::after {
+  z-index: -1;
+  opacity: 0.78;
+  background:
+    radial-gradient(circle at 25% 28%, rgba(255, 255, 255, 0.12), transparent 24%),
+    radial-gradient(circle at 78% 68%, rgba(135, 214, 255, 0.14), transparent 28%);
+  filter: blur(24px) saturate(130%);
+  animation: glass-wallpaper-drift 38s ease-in-out infinite alternate;
+}
+
+@keyframes glass-wallpaper-pan {
+  0% { transform: scale(1.035) translate3d(-2.8%, -1.7%, 0) rotate(-0.35deg); }
+  50% { transform: scale(1.085) translate3d(0.8%, 1.4%, 0) rotate(0.2deg); }
+  100% { transform: scale(1.055) translate3d(2.7%, -0.6%, 0) rotate(0.45deg); }
+}
+
+@keyframes glass-wallpaper-drift {
+  0% { transform: scale(1.04) translate3d(-2.2%, 1.2%, 0); }
+  50% { transform: scale(1.1) translate3d(1.8%, -1.7%, 0); }
+  100% { transform: scale(1.06) translate3d(2.6%, 1%, 0); }
+}
+
+html.glass .bg-header-bg,
+html.glass .bg-content-bg,
+html.glass .bg-sidebar-bg,
+html.glass .bg-surface-overlay,
+html.glass .bg-surface-overlay-strong {
+  background-color: var(--content-bg) !important;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.045)) !important;
+  border-color: var(--border) !important;
+  box-shadow: var(--shadow-card);
+  -webkit-backdrop-filter: url("#liquid-glass") blur(7px) saturate(180%);
+  backdrop-filter: url("#liquid-glass") blur(7px) saturate(180%);
+}
+
+html.glass .bg-header-bg {
+  background-color: var(--header-bg) !important;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08), 0 14px 38px rgba(4, 3, 16, 0.2);
+}
+
+html.glass .bg-sidebar-bg {
+  background-color: var(--sidebar-bg) !important;
+}
+
+html.glass .glass-theme-button[aria-pressed="true"] {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.52);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.42), 0 10px 28px rgba(4, 3, 16, 0.28);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html.glass .bg-header-bg,
+  html.glass .bg-content-bg,
+  html.glass .bg-sidebar-bg,
+  html.glass .bg-surface-overlay,
+  html.glass .bg-surface-overlay-strong {
+    background-color: rgba(31, 27, 55, 0.9) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.glass body::before,
+  html.glass body::after {
+    animation: none;
+  }
 }
 
 @supports (overflow: clip) {
@@ -128,13 +282,45 @@ body {
   margin-bottom: 0.5rem;
 }
 
+/* Ancore degli heading iniettate da `lib/content/toc.ts`: l'header del sito è
+   sticky, quindi senza offset il titolo di sezione finisce coperto e il lettore
+   atterra su un punto apparentemente sbagliato. */
+.article-body-wrapper .article-content h2,
+.article-body-wrapper .article-content h3 {
+  scroll-margin-top: 5rem;
+}
+
+/* Nessuno `scroll-behavior: smooth` su `html`: con l'App Router quella regola
+   non riguarda solo i salti alle ancore ma anche il ritorno in cima a ogni
+   cambio di route, che diventa un'animazione a scorrimento su articoli lunghi.
+   Il salto istantaneo all'ancora è il compromesso corretto. */
+
 .article-body-wrapper .article-content a {
-  color: var(--accent);
+  /* `--accent-text`, non `--accent`: l'arancione di brand su fondo bianco sta
+     attorno a 2:1 di contrasto, sotto il minimo WCAG AA per il testo. La
+     variante scura vale 5:1 in tema chiaro e resta l'arancione in tema scuro,
+     dove il contrasto è già sufficiente. */
+  color: var(--accent-text);
   text-decoration: none;
 }
 
 .article-body-wrapper .article-content a:hover {
   text-decoration: underline;
+}
+
+/* Link interni generati automaticamente verso hub e archivi
+   (`lib/content/internalLinks.ts`). Sottolineatura tratteggiata sempre visibile:
+   il lettore distingue il rimando editoriale dal link a una fonte esterna, e in
+   redazione si vede a occhio quanti ne sta inserendo il sistema. */
+.article-body-wrapper .article-content a.tj-entity-link {
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.article-body-wrapper .article-content a.tj-entity-link:hover {
+  text-decoration-style: solid;
 }
 
 .article-body-wrapper .article-content strong {
@@ -221,8 +407,207 @@ body {
   font-weight: 600;
 }
 
+/*
+ * Blocchi editoriali (§58): markup fisso che un editor (o l'autoposter, in
+ * futuro) può inserire dentro il corpo articolo per segnalare un'informazione
+ * fuori dal flusso normale del testo. Non un componente React: il contenuto
+ * arriva come HTML già pronto (WordPress/autoposter), sanificato da
+ * `lib/sanitizeRichHtml.ts` — che già permette `div`+`class`, nessuna modifica
+ * al sanitizzatore necessaria per questo.
+ *
+ * Markup atteso:
+ *   <div class="tj-callout tj-callout--update">
+ *     <p class="tj-callout__label">Aggiornamento</p>
+ *     <p>...testo...</p>
+ *   </div>
+ *
+ * Varianti: tj-callout--update (Aggiornamento), tj-callout--info (Da sapere),
+ * tj-callout--tip (TechJournal consiglia), tj-callout--fact (Dato),
+ * tj-callout--warning (Attenzione), tj-callout--rumor (Rumor),
+ * tj-callout--confirmed (Confermato). Senza variante riconosciuta, ricade sui
+ * colori neutri di --info: un blocco con classe sbagliata resta leggibile,
+ * non sparisce e non rompe il layout.
+ */
+.article-body-wrapper .article-content .tj-callout {
+  margin: 1.5em 0;
+  padding: 0.9em 1.1em;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 0.375rem;
+  background: var(--surface-overlay);
+}
+
+.article-body-wrapper .article-content .tj-callout > :first-child {
+  margin-top: 0;
+}
+
+.article-body-wrapper .article-content .tj-callout > :last-child {
+  margin-bottom: 0;
+}
+
+.article-body-wrapper .article-content .tj-callout__label {
+  margin: 0 0 0.3em;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* Aggiornamento / Da sapere / TechJournal consiglia: stesso accento di brand, tre sfumature editoriali diverse. */
+.article-body-wrapper .article-content .tj-callout--update,
+.article-body-wrapper .article-content .tj-callout--info,
+.article-body-wrapper .article-content .tj-callout--tip {
+  border-left-color: var(--accent);
+}
+.article-body-wrapper .article-content .tj-callout--update .tj-callout__label,
+.article-body-wrapper .article-content .tj-callout--info .tj-callout__label,
+.article-body-wrapper .article-content .tj-callout--tip .tj-callout__label {
+  color: var(--accent-text);
+}
+
+/* Confermato: stesso verde di ReliabilityBadge "official" — coerenza fra i due segnali di affidabilità. */
+.article-body-wrapper .article-content .tj-callout--confirmed {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+.article-body-wrapper .article-content .tj-callout--confirmed .tj-callout__label {
+  color: #059669;
+}
+:root.dark .article-body-wrapper .article-content .tj-callout--confirmed .tj-callout__label {
+  color: #34d399;
+}
+
+/* Attenzione / Rumor: stesso ambra di ReliabilityBadge "rumor" — un rumor non è un errore, è cautela. */
+.article-body-wrapper .article-content .tj-callout--warning,
+.article-body-wrapper .article-content .tj-callout--rumor {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+.article-body-wrapper .article-content .tj-callout--warning .tj-callout__label,
+.article-body-wrapper .article-content .tj-callout--rumor .tj-callout__label {
+  color: #b45309;
+}
+:root.dark .article-body-wrapper .article-content .tj-callout--warning .tj-callout__label,
+:root.dark .article-body-wrapper .article-content .tj-callout--rumor .tj-callout__label {
+  color: #fbbf24;
+}
+
+/* Dato: neutro, per un numero/statistica che non richiede né urgenza né cautela. */
+.article-body-wrapper .article-content .tj-callout--fact {
+  border-left-color: var(--muted);
+}
+
 .article-body-wrapper .article-content tbody tr:nth-child(even) td {
   background: var(--surface-overlay);
+}
+
+/**
+ * Blocchi editoriali nel contenuto (§58): "Aggiornamento", "Da sapere",
+ * "TechJournal consiglia", "Dato", "Attenzione", "Rumor", "Confermato".
+ *
+ * Nessuna sintassi nuova da imparare in redazione: si applica aggiungendo la
+ * classe (es. `tj-callout tj-callout--rumor`) nel pannello "Avanzate" di un
+ * blocco Gutenberg, campo "Classi CSS aggiuntive" — un meccanismo nativo
+ * dell'editor, non qualcosa costruito apposta qui. `sanitizeRichHtml`
+ * mantiene `class` fra gli attributi consentiti, quindi arriva intatta.
+ * L'etichetta è generata via `::before`: la redazione scrive solo il testo
+ * del blocco, non l'etichetta.
+ */
+.article-body-wrapper .article-content .tj-callout {
+  display: block;
+  margin: 0 0 1.25em;
+  padding: 0.85em 1em;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--surface-overlay);
+  font-size: 0.95em;
+}
+
+.article-body-wrapper .article-content .tj-callout::before {
+  display: block;
+  margin-bottom: 0.35em;
+  font-size: 0.72em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.article-body-wrapper .article-content .tj-callout--aggiornamento {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(59, 130, 246, 0.08);
+}
+.article-body-wrapper .article-content .tj-callout--aggiornamento::before {
+  content: "Aggiornamento";
+  color: #2563eb;
+}
+
+.article-body-wrapper .article-content .tj-callout--da-sapere {
+  border-color: rgba(124, 58, 237, 0.3);
+  background: rgba(139, 92, 246, 0.08);
+}
+.article-body-wrapper .article-content .tj-callout--da-sapere::before {
+  content: "Da sapere";
+  color: #7c3aed;
+}
+
+.article-body-wrapper .article-content .tj-callout--consiglio {
+  border-color: rgba(146, 88, 0, 0.35);
+  background: rgba(245, 166, 35, 0.1);
+}
+.article-body-wrapper .article-content .tj-callout--consiglio::before {
+  content: "TechJournal consiglia";
+  color: var(--accent-text);
+}
+
+.article-body-wrapper .article-content .tj-callout--dato {
+  border-color: var(--border);
+  background: var(--surface-overlay);
+}
+.article-body-wrapper .article-content .tj-callout--dato::before {
+  content: "Dato";
+  color: var(--muted);
+}
+
+.article-body-wrapper .article-content .tj-callout--attenzione {
+  border-color: rgba(217, 119, 6, 0.4);
+  background: rgba(245, 158, 11, 0.1);
+}
+.article-body-wrapper .article-content .tj-callout--attenzione::before {
+  content: "Attenzione";
+  color: #b45309;
+}
+
+.article-body-wrapper .article-content .tj-callout--rumor {
+  border-color: rgba(217, 119, 6, 0.4);
+  background: rgba(245, 158, 11, 0.1);
+}
+.article-body-wrapper .article-content .tj-callout--rumor::before {
+  content: "Rumor";
+  color: #b45309;
+}
+
+.article-body-wrapper .article-content .tj-callout--confermato {
+  border-color: rgba(5, 150, 105, 0.4);
+  background: rgba(16, 185, 129, 0.1);
+}
+.article-body-wrapper .article-content .tj-callout--confermato::before {
+  content: "Confermato";
+  color: #047857;
+}
+
+:root.dark .article-body-wrapper .article-content .tj-callout--aggiornamento::before {
+  color: #60a5fa;
+}
+:root.dark .article-body-wrapper .article-content .tj-callout--da-sapere::before {
+  color: #a78bfa;
+}
+:root.dark .article-body-wrapper .article-content .tj-callout--attenzione::before,
+:root.dark .article-body-wrapper .article-content .tj-callout--rumor::before {
+  color: #fbbf24;
+}
+:root.dark .article-body-wrapper .article-content .tj-callout--confermato::before {
+  color: #34d399;
 }
 
 /* Livelli dimensione: 0 = 16px, 1 = 18px (+2pt base), 2 = 20px */

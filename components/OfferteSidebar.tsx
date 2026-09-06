@@ -11,7 +11,7 @@ export default function OfferteSidebar({ posts }: OfferteSidebarProps) {
   if (posts.length === 0) return null;
 
   return (
-    <aside className="bg-sidebar-bg rounded-lg p-6 w-full lg:w-[320px] shrink-0">
+    <aside className="w-full shrink-0 rounded-surface bg-sidebar-bg p-panel lg:w-[320px]">
       <h2 className="text-foreground font-bold text-lg mb-4">Offerte</h2>
       <div className="space-y-3">
         {posts.slice(0, 5).map((post) => (
