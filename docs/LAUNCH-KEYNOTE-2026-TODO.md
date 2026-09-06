@@ -70,6 +70,8 @@ Smoke pubblico 5 settembre 2026: `www.techjournal.it`, categoria Apple, Topic Hu
 
 SEO tecnico pubblico 5 settembre 2026: `robots.txt`, `sitemap.xml` e `feed.xml` rispondono 200; la categoria Apple espone canonical e due blocchi JSON-LD. Restano da verificare le sitemap segmentate e le pagine articolo.
 
+Compatibilità permalink 6 settembre 2026: aggiunti redirect permanenti dalle URL WordPress annidate e dalle varianti AMP/feed agli URL canonici; la suite verifica i casi Apple, App, Gaming e la conservazione dei parametri di query.
+
 ## P1 — UI, accessibilità e responsive
 
 - [x] Aggiungere tema opzionale Liquid Glass con selettore dedicato, wallpaper fisso, movimento ambientale lento ma percepibile su due piani, rifrazione SVG, fallback e reduced motion.
