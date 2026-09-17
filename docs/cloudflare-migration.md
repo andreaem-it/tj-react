@@ -171,3 +171,15 @@ rigenerare e ricontrollare dopo il ripristino del backend prima della pubblicazi
   modifica DNS e mantiene Vercel come origine immediata di rollback.
 - Comando e rollback sono fissati in
   `../tj-api/docs/cloudflare-switch-runbook.md`. Nessuno dei due è stato eseguito.
+
+## Switch completato — 17 settembre 2026
+
+- Attivate le Worker Routes di sito, admin e API e i cinque Cron Trigger.
+- Corretto durante lo smoke il redirect host generato da Next/OpenNext che
+  restituiva `308 /:path*`; la versione web attiva è
+  `332a264e-9fff-4d94-8e66-62f8e552fb82`.
+- Verificati sul dominio reale home, articolo, ricerca, Price Radar,
+  Compatibility, sitemap, feed, immagini R2, API pubbliche, protezioni e flussi
+  admin autenticati. I tail di errore dei tre Worker sono rimasti vuoti durante
+  il controllo.
+- Il rollback verso l'origine Vercel resta disponibile senza modificare DNS.

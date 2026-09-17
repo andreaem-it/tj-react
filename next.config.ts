@@ -58,12 +58,6 @@ const nextConfig: NextConfig = {
         destination: "/:category/:path+",
         permanent: true,
       },
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "techjournal.it" }],
-        destination: "https://www.techjournal.it/:path*",
-        permanent: true,
-      },
     ];
   },
   async rewrites() {
