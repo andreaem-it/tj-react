@@ -11,7 +11,16 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test \"tests/**/*.test.ts\""
+    "test": "node --import tsx --test \"tests/**/*.test.ts\"",
+    "cf:build": "TJ_API_BASE_URL=${TJ_API_BUILD_BASE_URL:-https://tj-api-edge-preview.andreaem.workers.dev} CLOUDFLARE_PREVIEW=1 opennextjs-cloudflare build --config wrangler.preview.jsonc && CLOUDFLARE_PREVIEW=1 node scripts/configure-cloudflare-headers.mjs",
+    "cf:build:production": "TJ_API_BASE_URL=${TJ_API_BUILD_BASE_URL:-https://tj-api-edge-preview.andreaem.workers.dev} CLOUDFLARE_PREVIEW=0 opennextjs-cloudflare build --config wrangler.production.jsonc && CLOUDFLARE_PREVIEW=0 node scripts/configure-cloudflare-headers.mjs",
+    "cf:preview": "opennextjs-cloudflare preview --config wrangler.preview.jsonc",
+    "cf:deploy:preview": "npm run cf:check:preview && opennextjs-cloudflare deploy --config wrangler.preview.jsonc",
+    "cf:dry-run": "wrangler deploy --dry-run --config wrangler.preview.jsonc",
+    "cf:dry-run:production": "npm run cf:check:production && wrangler deploy --dry-run --config wrangler.production.jsonc",
+    "cf:typegen": "wrangler types --config wrangler.preview.jsonc --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "cf:check:preview": "node scripts/check-cloudflare-preview.mjs",
+    "cf:check:production": "node scripts/check-cloudflare-production.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
@@ -19,12 +28,13 @@
     "@fortawesome/react-fontawesome": "^3.2.0",
     "@mep-agency/next-iubenda": "1.0.0-alpha5",
     "@microsoft/clarity": "^1.0.2",
+    "@opennextjs/cloudflare": "^1.20.6",
     "@types/bcryptjs": "^2.4.6",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.2",
-    "next": "^16.3.0",
+    "next": "^16.3.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sanitize-html": "^2.17.5",
@@ -38,9 +48,10 @@
     "@types/react-dom": "^19.2.4",
     "@types/sanitize-html": "^2.16.1",
     "eslint": "^9",
-    "eslint-config-next": "^16.3.0",
+    "eslint-config-next": "^16.3.5",
     "tailwindcss": "^4",
     "tsx": "^4.19.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.131.2"
   }
 }

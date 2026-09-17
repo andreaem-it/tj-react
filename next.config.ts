@@ -9,6 +9,13 @@ import type { NextConfig } from "next";
 const usePassthroughImages = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
 
 const nextConfig: NextConfig = {
+  // The home aggregates several cached upstream reads. Cloudflare builds must
+  // tolerate a transient slow origin without failing the whole release.
+  staticPageGenerationTimeout: 180,
+  // Avoid overwhelming the shared content API during preview prerendering.
+  ...(process.env.CLOUDFLARE_PREVIEW === "1" ? {
+    experimental: { cpus: 2, staticGenerationMaxConcurrency: 2 },
+  } : {}),
   transpilePackages: ["@mep-agency/next-iubenda"],
   async redirects() {
     return [
@@ -79,6 +86,7 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     const securityHeaders = [
+      ...(process.env.CLOUDFLARE_PREVIEW === "1" ? [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] : []),
       { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
       {
         key: "Strict-Transport-Security",

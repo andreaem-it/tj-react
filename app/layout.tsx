@@ -142,7 +142,7 @@ export default function RootLayout({
         <GoogleAnalyticsPageView />
         <AdSenseScript />
         <AppShell>{children}</AppShell>
-        <DeferredTelemetry />
+        {process.env.CLOUDFLARE_PREVIEW !== "1" && <DeferredTelemetry />}
       </body>
     </html>
   );

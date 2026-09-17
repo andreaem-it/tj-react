@@ -135,6 +135,14 @@ function buildEnrichedPayload(
  * fallire l'intera richiesta.
  */
 export async function POST(request: NextRequest) {
+  const isPreview = process.env.CLOUDFLARE_PREVIEW === "1";
+  if (isPreview) {
+    const expected = process.env.WP_WEBHOOK_SECRET?.trim();
+    const received = request.headers.get("x-tj-webhook-secret");
+    if (!expected || !received || !secretMatches(received, expected)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
   const contentLength = Number(request.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_WEBHOOK_BODY_BYTES) {
     return NextResponse.json(
@@ -166,6 +174,15 @@ export async function POST(request: NextRequest) {
   }
 
   const enriched = buildEnrichedPayload(payload, post);
+
+  // Preview webhooks exercise local cache invalidation only. Never duplicate
+  // social posts or push notifications through the production backend.
+  if (isPreview) {
+    return NextResponse.json(
+      { preview: true, forwarded: false },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
 
   return proxyToTjApi(request, {
     timeoutMs: 120_000,

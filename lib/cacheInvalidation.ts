@@ -101,6 +101,9 @@ export type PurgeOutcome =
  * Il token richiede il permesso "Zone → Cache Purge → Purge".
  */
 export async function purgeCloudflare(paths: string[]): Promise<PurgeOutcome> {
+  if (process.env.CLOUDFLARE_PREVIEW === "1") {
+    return { status: "skipped", reason: "preview isolata dalla cache di produzione" };
+  }
   const zoneId = process.env.CLOUDFLARE_ZONE_ID?.trim();
   const token = process.env.CLOUDFLARE_PURGE_TOKEN?.trim();
   if (!zoneId || !token) {
