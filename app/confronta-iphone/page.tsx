@@ -10,6 +10,7 @@ import {
   type UpgradeReason,
   type UpgradeVerdict,
 } from "@/lib/iphoneUpgrade";
+import { withOfficialComparatorDevices } from "@/lib/iphoneUpgradeCatalog";
 import { SITE_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -222,7 +223,8 @@ export default async function IphoneUpgradePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const fromSlug = (params.da ?? "").trim();
   const toSlug = (params.a ?? "").trim();
-  const devices = await fetchCompatibilityDevices("iphone").catch(() => []);
+  const catalogDevices = await fetchCompatibilityDevices("iphone").catch(() => []);
+  const devices = withOfficialComparatorDevices(catalogDevices);
   const orderedDevices = [...devices].sort((a, b) => (b.releaseYear ?? 0) - (a.releaseYear ?? 0) || b.id - a.id);
   const from = orderedDevices.find((device) => device.slug === fromSlug) ?? null;
   const to = orderedDevices.find((device) => device.slug === toSlug) ?? null;
