@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchPostsPageFromWordPress } from "@/lib/api";
 import { proxyToTjApi } from "@/lib/tjApiProxy";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,34 @@ export async function GET(
     return NextResponse.json({ error: "Invalid page" }, { status: 400 });
   }
   const upstream = await proxyToTjApi(request);
+
+  // Il backend Cloudflare normalmente media WordPress, ma un guasto nella
+  // subrequest edge-to-edge non deve bloccare la paginazione del sito quando
+  // l'origine WordPress è ancora sana. Il fallback scatta soltanto sui 5xx:
+  // errori client e risposte valide continuano a provenire da tj-api.
+  if (upstream.status >= 500) {
+    const rawCategory = request.nextUrl.searchParams.get("category");
+    const categoryId = rawCategory == null ? undefined : Number(rawCategory);
+    const validCategoryId =
+      categoryId !== undefined && Number.isInteger(categoryId) && categoryId > 0
+        ? categoryId
+        : undefined;
+    try {
+      const payload = await fetchPostsPageFromWordPress(
+        Number(page),
+        10,
+        validCategoryId,
+      );
+      return NextResponse.json(payload, {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+          "X-TechJournal-Upstream": "wordpress-direct-fallback",
+        },
+      });
+    } catch (error) {
+      console.error("[posts proxy] fallback WordPress diretto fallito", error);
+    }
+  }
 
   // Solo risposte JSON riuscite vengono alleggerite: errori, redirect e
   // payload non-JSON passano intatti, con status e header originali.
