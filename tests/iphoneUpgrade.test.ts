@@ -102,6 +102,30 @@ test("segnala la perdita di ProMotion", () => {
   assert.equal(result.verdict, "wait");
 });
 
+test("un modello tecnologicamente inferiore non viene descritto come un cambio da rimandare", () => {
+  const iphone14Pro = iphone({
+    name: "iPhone 14 Pro",
+    releaseYear: 2022,
+    chipset: "Apple A16 Bionic",
+    specs: { ramGB: 6, display: '6.1" Super Retina XDR OLED ProMotion', connector: "Lightning" },
+  });
+  const iphoneSe3 = iphone({
+    name: "iPhone SE (3rd generation)",
+    releaseYear: 2022,
+    chipset: "Apple A15 Bionic",
+    specs: { ramGB: 4, display: '4.7" Retina HD IPS LCD', connector: "Lightning" },
+  });
+
+  const result = assessIphoneUpgrade(iphone14Pro, iphoneSe3);
+
+  assert.equal(result.verdict, "downgrade");
+  assert.equal(result.title, "Il modello scelto è tecnologicamente inferiore");
+  assert.ok(result.cautions.some((item) => item.id === "older-chip"));
+  assert.ok(result.cautions.some((item) => item.id === "lose-oled"));
+  assert.ok(result.cautions.some((item) => item.id === "lose-promotion"));
+  assert.ok(result.cautions.some((item) => item.id === "less-ram"));
+});
+
 test("la fine del supporto aumenta la convenienza del cambio", () => {
   const old = iphone({
     name: "iPhone X",

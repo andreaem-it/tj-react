@@ -89,6 +89,11 @@ function verdictFromScore(score: number): Exclude<UpgradeVerdict, "downgrade"> {
   return "wait";
 }
 
+function appleChipGeneration(device: Device): number | null {
+  const match = device.chipset?.match(/\bA(\d+)\b/i);
+  return match ? Number.parseInt(match[1], 10) : null;
+}
+
 const VERDICT_TITLE: Record<Exclude<UpgradeVerdict, "downgrade">, string> = {
   strong: "Sì, il salto è importante",
   good: "Sì, è un aggiornamento sensato",
@@ -133,6 +138,7 @@ export function assessIphoneUpgrade(from: Device, to: Device): IphoneUpgradeAsse
   }
 
   let score = 0;
+  let regressionWeight = 0;
   if (generationGap != null) {
     if (generationGap >= 5) score += add(benefits, "age-major", "Un salto di più generazioni", `Fra i due modelli passano ${generationGap} anni: il miglioramento complessivo sarà chiaramente percepibile.`, 55);
     else if (generationGap >= 3) score += add(benefits, "age-clear", "Un salto generazionale netto", `I ${generationGap} anni di distanza sommano più evoluzioni hardware e allungano la vita utile del telefono.`, 38);
@@ -148,15 +154,34 @@ export function assessIphoneUpgrade(from: Device, to: Device): IphoneUpgradeAsse
     const ramDelta = target.ramGB - current.ramGB;
     if (ramDelta >= 4) score += add(benefits, "ram-major", "Più margine per app e funzioni future", `La memoria passa da ${current.ramGB} GB a ${target.ramGB} GB, con più respiro nel multitasking.`, 14);
     else if (ramDelta >= 2) score += add(benefits, "ram", "Più memoria disponibile", `La memoria passa da ${current.ramGB} GB a ${target.ramGB} GB.`, 8);
+    else if (ramDelta <= -2) {
+      const weight = add(cautions, "less-ram", "Meno memoria disponibile", `La memoria scende da ${current.ramGB} GB a ${target.ramGB} GB, riducendo il margine per multitasking e funzioni future.`, -10);
+      score += weight;
+      regressionWeight += Math.abs(weight);
+    }
   }
 
   if (current.hasOled === false && target.hasOled === true) {
     score += add(benefits, "oled", "Schermo OLED", "Neri più profondi, contrasto superiore e una resa più incisiva rispetto al pannello LCD.", 12);
+  } else if (current.hasOled === true && target.hasOled === false) {
+    const weight = add(cautions, "lose-oled", "Passeresti da OLED a LCD", "Il display del modello scelto offre contrasto e neri meno profondi rispetto al tuo iPhone attuale.", -16);
+    score += weight;
+    regressionWeight += Math.abs(weight);
   }
   if (!current.hasPromotion && target.hasPromotion) {
     score += add(benefits, "promotion", "Scorrimento più fluido", "ProMotion rende animazioni, pagine e giochi sensibilmente più fluidi.", 12);
   } else if (current.hasPromotion && !target.hasPromotion) {
-    score += add(cautions, "lose-promotion", "Perderesti ProMotion", "Il nuovo modello non offre la stessa fluidità del display del tuo iPhone attuale.", -18);
+    const weight = add(cautions, "lose-promotion", "Perderesti ProMotion", "Il modello scelto non offre la stessa fluidità del display del tuo iPhone attuale.", -18);
+    score += weight;
+    regressionWeight += Math.abs(weight);
+  }
+
+  const currentChip = appleChipGeneration(from);
+  const targetChip = appleChipGeneration(to);
+  if (currentChip != null && targetChip != null && targetChip < currentChip) {
+    const weight = add(cautions, "older-chip", "Chip di una generazione precedente", `${to.name} usa ${to.chipset}, meno recente di ${from.chipset}.`, -18);
+    score += weight;
+    regressionWeight += Math.abs(weight);
   }
 
   if (current.connector && target.connector && current.connector !== target.connector) {
@@ -188,6 +213,19 @@ export function assessIphoneUpgrade(from: Device, to: Device): IphoneUpgradeAsse
   }
 
   score = Math.max(0, Math.min(100, score));
+  if (regressionWeight >= 35 && score < 25) {
+    return {
+      verdict: "downgrade",
+      impact: "low",
+      score,
+      title: "Il modello scelto è tecnologicamente inferiore",
+      summary: `Passare da ${from.name} a ${to.name} comporterebbe rinunce importanti nell’esperienza quotidiana. Può avere senso soltanto se cerchi un formato specifico o vuoi ridurre la spesa.`,
+      benefits: benefits.sort((a, b) => b.weight - a.weight),
+      cautions,
+      isPreliminary: isUnconfirmedIphone(to),
+      generationGap,
+    };
+  }
   const verdict = verdictFromScore(score);
   const isPreliminary = isUnconfirmedIphone(to);
   const impact: UpgradeImpact = score >= 65 ? "high" : score >= 35 ? "medium" : "low";
