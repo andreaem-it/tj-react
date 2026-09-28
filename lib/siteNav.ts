@@ -45,6 +45,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { label: "Ultime Notizie", href: "/" },
   ...PRIMARY_NAV_CATEGORIES,
   { label: "Price Radar", href: "/price-radar" },
+  { label: "Confronta iPhone", href: "/confronta-iphone" },
   { label: "Compatibilità", href: "/compatibility" },
 ];
 

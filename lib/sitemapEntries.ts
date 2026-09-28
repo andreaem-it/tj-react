@@ -218,6 +218,7 @@ export async function buildPageEntries(): Promise<SitemapEntry[]> {
   entries.push({ url: `${b}/docs`, lastModified: now, changeFrequency: "monthly", priority: 0.35 });
 
   entries.push(
+    { url: `${b}/confronta-iphone`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${b}/chi-siamo`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     { url: `${b}/contatti`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     { url: `${b}/lavora-con-noi`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
