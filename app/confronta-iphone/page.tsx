@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import TjLink from "@/components/TjLink";
 import { fetchCompatibilityDevices } from "@/lib/compatibility/serverApi";
 import type { Device } from "@/lib/compatibility/types";
 import {
@@ -11,6 +12,10 @@ import {
   type UpgradeVerdict,
 } from "@/lib/iphoneUpgrade";
 import { withOfficialComparatorDevices } from "@/lib/iphoneUpgradeCatalog";
+import { findAmazonIphoneOffer } from "@/lib/iphonePriceRadar";
+import { loadProductList } from "@/lib/priceRadar/productServer";
+import { formatEuro } from "@/lib/priceRadar/rating";
+import type { PriceRadarProductListItem } from "@/lib/priceRadar/types";
 import { SITE_URL } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -187,7 +192,47 @@ function TechnicalSnapshot({ from, to }: { from: Device; to: Device }) {
   );
 }
 
-function Result({ from, to, assessment }: { from: Device; to: Device; assessment: IphoneUpgradeAssessment }) {
+function AmazonPriceOffer({ product }: { product: PriceRadarProductListItem }) {
+  return (
+    <aside className="rounded-xl border border-accent/35 bg-accent/10 p-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
+      <div>
+        <p className="text-sm font-semibold text-foreground">Disponibile su Amazon</p>
+        <p className="mt-1 text-2xl font-bold text-foreground">
+          {formatEuro(product.current_price!, product.currency || "EUR")}
+        </p>
+        <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted">{product.title}</p>
+      </div>
+      <div className="mt-4 flex shrink-0 flex-wrap gap-3 sm:mt-0">
+        <TjLink
+          href={`/price-radar/${product.asin}`}
+          className="inline-flex min-h-11 items-center rounded-lg border border-border bg-content-bg px-4 py-2 text-sm font-semibold text-foreground hover:border-accent"
+        >
+          Vedi storico
+        </TjLink>
+        <a
+          href={product.url}
+          target="_blank"
+          rel="nofollow sponsored noopener noreferrer"
+          className="inline-flex min-h-11 items-center rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-gray-950 hover:brightness-95"
+        >
+          Vedi su Amazon ↗
+        </a>
+      </div>
+    </aside>
+  );
+}
+
+function Result({
+  from,
+  to,
+  assessment,
+  amazonOffer,
+}: {
+  from: Device;
+  to: Device;
+  assessment: IphoneUpgradeAssessment;
+  amazonOffer: PriceRadarProductListItem | null;
+}) {
   return (
     <div className="mt-10 space-y-8" aria-live="polite">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-border bg-content-bg p-4 sm:gap-6 sm:p-6">
@@ -208,6 +253,8 @@ function Result({ from, to, assessment }: { from: Device; to: Device; assessment
         <p className="mt-3 max-w-2xl text-base leading-7 text-foreground/85">{assessment.summary}</p>
       </section>
 
+      {amazonOffer && <AmazonPriceOffer product={amazonOffer} />}
+
       <ReasonList title="Perché potrebbe valerne la pena" reasons={assessment.benefits} />
       <ReasonList title="Cosa valutare prima di cambiare" reasons={assessment.cautions} caution />
       <TechnicalSnapshot from={from} to={to} />
@@ -223,13 +270,17 @@ export default async function IphoneUpgradePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const fromSlug = (params.da ?? "").trim();
   const toSlug = (params.a ?? "").trim();
-  const catalogDevices = await fetchCompatibilityDevices("iphone").catch(() => []);
+  const [catalogDevices, priceRadarProducts] = await Promise.all([
+    fetchCompatibilityDevices("iphone").catch(() => []),
+    toSlug ? loadProductList().catch(() => []) : Promise.resolve([]),
+  ]);
   const devices = withOfficialComparatorDevices(catalogDevices);
   const orderedDevices = [...devices].sort((a, b) => (b.releaseYear ?? 0) - (a.releaseYear ?? 0) || b.id - a.id);
   const from = orderedDevices.find((device) => device.slug === fromSlug) ?? null;
   const to = orderedDevices.find((device) => device.slug === toSlug) ?? null;
   const sameDevice = Boolean(from && to && from.id === to.id);
   const assessment = from && to && !sameDevice ? assessIphoneUpgrade(from, to) : null;
+  const amazonOffer = to ? findAmazonIphoneOffer(to, priceRadarProducts) : null;
 
   return (
     <main className="w-full min-w-0 max-w-5xl px-2 py-8 sm:px-0 sm:py-10">
@@ -270,7 +321,9 @@ export default async function IphoneUpgradePage({ searchParams }: PageProps) {
           Seleziona entrambi i modelli per ottenere il verdetto.
         </p>
       )}
-      {from && to && assessment && <Result from={from} to={to} assessment={assessment} />}
+      {from && to && assessment && (
+        <Result from={from} to={to} assessment={assessment} amazonOffer={amazonOffer} />
+      )}
 
       {!fromSlug && !toSlug && devices.length > 0 && (
         <section className="mt-10 border-t border-border pt-8">
