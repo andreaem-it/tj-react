@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { assessIphoneUpgrade, normalizeIphone } from "@/lib/iphoneUpgrade";
+import { assessIphoneUpgrade, isUnconfirmedIphone, normalizeIphone } from "@/lib/iphoneUpgrade";
 import type { Device } from "@/lib/compatibility/types";
 
 function iphone(overrides: Partial<Device> & Pick<Device, "name" | "releaseYear">): Device {
@@ -72,6 +72,22 @@ test("un salto da iPhone 13 a iPhone 18 è consigliato", () => {
   assert.equal(result.isPreliminary, true);
   assert.ok(result.benefits.some((item) => item.id === "usb-c"));
   assert.ok(result.benefits.some((item) => item.id === "apple-intelligence"));
+});
+
+test("iPhone 18 Pro e Pro Max sono confermati anche se la nota pre-lancio è rimasta nel catalogo", () => {
+  for (const slug of ["iphone-18-pro", "iphone-18-pro-max"]) {
+    const released = iphone({
+      name: slug === "iphone-18-pro" ? "iPhone 18 Pro" : "iPhone 18 Pro Max",
+      slug,
+      releaseYear: 2026,
+      notes: "Versione Pro prevista con specifiche ipotetiche.",
+    });
+    assert.equal(isUnconfirmedIphone(released), false);
+  }
+});
+
+test("gli altri modelli iPhone 18 non annunciati restano preliminari", () => {
+  assert.equal(isUnconfirmedIphone(IPHONE_18), true);
 });
 
 test("un solo anno con poche differenze invita ad aspettare", () => {

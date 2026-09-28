@@ -66,7 +66,20 @@ export function normalizeIphone(device: Device): NormalizedIphone {
   };
 }
 
+/**
+ * Modelli la cui disponibilità è confermata dal produttore ma che conservano
+ * nel catalogo una nota editoriale scritta prima del lancio. Il registro evita
+ * che una descrizione rimasta indietro trasformi un prodotto in vendita in una
+ * previsione. Gli altri iPhone 18 restano preliminari finché non vengono
+ * presentati ufficialmente.
+ */
+const OFFICIALLY_RELEASED_IPHONES = new Set([
+  "iphone-18-pro",
+  "iphone-18-pro-max",
+]);
+
 export function isUnconfirmedIphone(device: Device): boolean {
+  if (OFFICIALLY_RELEASED_IPHONES.has(device.slug)) return false;
   const source = `${device.name} ${device.notes ?? ""}`;
   return /previst|ipotetic|indiscrezion|rumor|non ufficial/i.test(source);
 }
