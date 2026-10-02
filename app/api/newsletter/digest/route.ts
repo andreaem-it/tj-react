@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SITE_URL } from "@/lib/constants";
-import { isPriceRadarAdminRequest } from "@/lib/priceRadar/adminAuth";
 import { DEFAULT_WINDOW_HOURS, loadDigest } from "@/lib/newsletter/loadDigest";
 import { loadPriceDigest, MIN_PRICE_DIGEST_ITEMS } from "@/lib/newsletter/loadPriceDigest";
 import {
@@ -46,6 +45,14 @@ export const dynamic = "force-dynamic";
 const MAX_WINDOW_HOURS = 24 * 7;
 const MAX_ITEMS = 12;
 
+function isNewsletterDigestRequest(request: Request): boolean {
+  const secret =
+    process.env.NEWSLETTER_DIGEST_SECRET?.trim() ||
+    process.env.PRICE_RADAR_ADMIN_SECRET?.trim();
+  if (!secret) return false;
+  return request.headers.get("authorization") === `Bearer ${secret}`;
+}
+
 function clampInt(raw: string | null, fallback: number, min: number, max: number): number {
   if (raw === null || !/^\d+$/.test(raw)) return fallback;
   const parsed = Number(raw);
@@ -54,7 +61,7 @@ function clampInt(raw: string | null, fallback: number, min: number, max: number
 }
 
 export async function GET(request: NextRequest) {
-  if (!isPriceRadarAdminRequest(request)) {
+  if (!isNewsletterDigestRequest(request)) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 

@@ -45,7 +45,7 @@ import type { Metadata } from "next";
  * on-demand dal webhook di pubblicazione (`/api/webhooks/wp-post-published`).
  * Se il webhook non è configurato o fallisce, si riallinea entro un'ora.
  */
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const siteUrl = SITE_URL.replace(/\/$/, "");
 
@@ -221,44 +221,9 @@ export default async function HomePage() {
   let signalPool = emptyPosts;
 
   const loadFromPostsFallback = async () => {
-    let sawUpstreamError = false;
-    for (const delay of RETRY_DELAYS_MS) {
-      await waitMs(delay);
-      const { posts, totalPages: tp, error } = await fetchPosts({
-        perPage: INITIAL_POSTS_TARGET,
-        page: 1,
-      });
-      if (error) {
-        sawUpstreamError = true;
-        console.error("[Home] fetchPosts fallback in errore upstream, retry...");
-      }
-      if (!posts?.length) continue;
-      initialPosts = posts;
-      totalPages = tp;
-      pagesConsumed = 1;
-      break;
-    }
-    if (!initialPosts.length) {
-      // Distinzione esplicita per il monitoring: home vuota per errore API
-      // (anomalia) vs catalogo realmente senza post (stato legittimo).
-      if (sawUpstreamError) {
-        console.error(
-          "[Home] render senza articoli: errore upstream persistente dopo i retry (NON è un catalogo vuoto)"
-        );
-      } else {
-        console.error("[Home] render senza articoli: la API ha risposto con lista vuota");
-      }
-      return;
-    }
-    const [offerte, mostRead, trendingByPeriod] = await Promise.all([
-      fetchPostsByCategorySlug("offerte", 5).catch(() => emptyPosts),
-      fetchMostReadPosts({ limit: 5 }).catch(() => emptyPosts),
-      fetchTrendingWeekAndMonth({ limit: 5 }).catch(() => ({ week: emptyPosts, month: emptyPosts })),
-    ]);
-    offertePosts = offerte;
-    mostReadPosts = mostRead;
-    weekTrendingPosts = trendingByPeriod.week ?? emptyPosts;
-    monthTrendingPosts = trendingByPeriod.month ?? emptyPosts;
+    // Nessun ripiego su WordPress: una home degradata deve restare osservabile,
+    // non mostrare articoli di una sorgente che l'operatore ha disattivato.
+    console.error("[Home] backend.techjournal.it non disponibile: fallback WordPress disabilitato");
   };
 
   try {

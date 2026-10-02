@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import TjLink from "@/components/TjLink";
 import { fetchCompatibilityDevices } from "@/lib/compatibility/serverApi";
@@ -37,6 +38,11 @@ export const metadata: Metadata = {
 
 interface PageProps {
   searchParams: Promise<{ da?: string; a?: string }>;
+  redirectToCleanUrl?: boolean;
+}
+
+function buildComparisonPath(fromSlug: string, toSlug: string) {
+  return `/confronta-iphone/${encodeURIComponent(fromSlug)}/${encodeURIComponent(toSlug)}/`;
 }
 
 const VERDICT_STYLE: Record<UpgradeVerdict, string> = {
@@ -266,10 +272,15 @@ function Result({
   );
 }
 
-export default async function IphoneUpgradePage({ searchParams }: PageProps) {
+export default async function IphoneUpgradePage({ searchParams, redirectToCleanUrl = true }: PageProps) {
   const params = await searchParams;
   const fromSlug = (params.da ?? "").trim();
   const toSlug = (params.a ?? "").trim();
+
+  if (redirectToCleanUrl && fromSlug && toSlug) {
+    permanentRedirect(buildComparisonPath(fromSlug, toSlug));
+  }
+
   const [catalogDevices, priceRadarProducts] = await Promise.all([
     fetchCompatibilityDevices("iphone").catch(() => []),
     toSlug ? loadProductList().catch(() => []) : Promise.resolve([]),
@@ -293,7 +304,7 @@ export default async function IphoneUpgradePage({ searchParams }: PageProps) {
         </p>
       </div>
 
-      <form method="get" className="mt-8 rounded-2xl border border-border bg-content-bg p-4 shadow-card sm:p-6">
+      <form method="get" action="/confronta-iphone" className="mt-8 rounded-2xl border border-border bg-content-bg p-4 shadow-card sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <DeviceSelect name="da" label="Il tuo iPhone" value={fromSlug} devices={orderedDevices} />
           <span className="hidden pb-3 text-muted sm:block"><ArrowIcon /></span>

@@ -1,0 +1,3 @@
+{
+  "/api/oauth/authorize/route": "app/api/oauth/authorize/route.js"
+}

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTjApiBaseUrl } from "@/lib/config/tjApi";
 
 export type ProxyToTjApiOptions = {
+  /** Percorso backend alternativo, mantenendo comunque backend.techjournal.it. */
+  pathOverride?: string;
   /** Es. PATCH in ingresso → PUT verso tj-api (articoli). */
   methodOverride?: string;
   /** Timeout fetch verso tj-api (ms). Default 10s; webhook lunghi es. 120000. */
@@ -102,7 +104,7 @@ export async function proxyToTjApi(
     );
   }
 
-  const path = request.nextUrl.pathname + request.nextUrl.search;
+  const path = options?.pathOverride ?? (request.nextUrl.pathname + request.nextUrl.search);
   const url = `${base}${path}`;
 
   const method = options?.methodOverride ?? request.method;

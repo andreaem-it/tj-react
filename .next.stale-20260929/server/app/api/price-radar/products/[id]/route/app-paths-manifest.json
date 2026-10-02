@@ -1,0 +1,3 @@
+{
+  "/api/price-radar/products/[id]/route": "app/api/price-radar/products/[id]/route.js"
+}

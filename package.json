@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"tests/**/*.test.ts\"",
     "cf:build": "TJ_API_BASE_URL=${TJ_API_BUILD_BASE_URL:-https://tj-api-edge-preview.andreaem.workers.dev} CLOUDFLARE_PREVIEW=1 opennextjs-cloudflare build --config wrangler.preview.jsonc && CLOUDFLARE_PREVIEW=1 node scripts/configure-cloudflare-headers.mjs",
-    "cf:build:production": "TJ_API_BASE_URL=${TJ_API_BUILD_BASE_URL:-https://tj-api-edge-preview.andreaem.workers.dev} CLOUDFLARE_PREVIEW=0 opennextjs-cloudflare build --config wrangler.production.jsonc && CLOUDFLARE_PREVIEW=0 node scripts/configure-cloudflare-headers.mjs",
+    "cf:build:production": "TJ_API_BASE_URL=${TJ_API_BUILD_BASE_URL:-https://backend.techjournal.it} CLOUDFLARE_PREVIEW=0 opennextjs-cloudflare build --config wrangler.production.jsonc && CLOUDFLARE_PREVIEW=0 node scripts/configure-cloudflare-headers.mjs",
     "cf:preview": "opennextjs-cloudflare preview --config wrangler.preview.jsonc",
     "cf:deploy:preview": "npm run cf:check:preview && opennextjs-cloudflare deploy --config wrangler.preview.jsonc",
     "cf:dry-run": "wrangler deploy --dry-run --config wrangler.preview.jsonc",

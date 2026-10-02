@@ -112,7 +112,7 @@ export default async function CompatibilityIndexPage({
                       <li key={d.id}>
                         <Link
                           href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                          className="flex min-h-11 items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                          className="flex min-h-32 items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                         >
                           {d.imageUrl ? (
                             <Image
@@ -150,7 +150,7 @@ export default async function CompatibilityIndexPage({
                     <li key={d.id}>
                       <Link
                         href={`/compatibility/device/${encodeURIComponent(d.slug)}`}
-                        className="flex min-h-11 items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        className="flex min-h-32 items-start gap-3 rounded-lg border border-[var(--border)] bg-[var(--content-bg)] px-4 py-3 hover:bg-[var(--surface-overlay)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         {d.imageUrl ? (
                           <Image

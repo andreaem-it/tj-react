@@ -1,0 +1,3 @@
+{
+  "/.well-known/openid-configuration/route": "app/.well-known/openid-configuration/route.js"
+}

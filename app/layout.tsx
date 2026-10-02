@@ -7,7 +7,7 @@ import MicrosoftClarity from "@/components/MicrosoftClarity";
 import AdSenseScript from "@/components/AdSenseScript";
 import AppShell from "@/components/AppShell";
 import SiteStructuredData from "@/components/SiteStructuredData";
-import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
+import AnalyticsEvents from "@/components/AnalyticsEvents";
 import DeferredTelemetry from "@/components/DeferredTelemetry";
 import { shouldProxyThirdPartyScripts } from "@/lib/thirdPartyScriptUrls";
 import { SITE_THEME_BOOTSTRAP_SCRIPT } from "@/lib/siteTheme";
@@ -139,7 +139,7 @@ export default function RootLayout({
         <SiteStructuredData />
         <GoogleAnalytics />
         <MicrosoftClarity />
-        <GoogleAnalyticsPageView />
+        <AnalyticsEvents />
         <AdSenseScript />
         <AppShell>{children}</AppShell>
         {process.env.CLOUDFLARE_PREVIEW !== "1" && <DeferredTelemetry />}

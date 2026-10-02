@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import Image from "next/image";
 import TjLink from "@/components/TjLink";
 import { fetchPostBySlugDetailed, getCategoryUrlSlugFromWpSlug } from "@/lib/api";
 import { brandedSeoTitle } from "@/lib/seo";
@@ -71,35 +72,39 @@ export default async function ReaderPage({ params }: ReaderPageProps) {
   });
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-2 py-3 md:px-4 flex items-center justify-between gap-4">
-        <TjLink
-          href={articleHref}
-          className="text-muted hover:text-accent text-sm font-medium transition-colors"
-        >
-          ← Torna all&apos;articolo
-        </TjLink>
-        <span className="text-muted text-xs">Modalità lettura</span>
-      </div>
-      <article className="flex-1 w-full max-w-2xl mx-auto px-2 md:px-4 py-8 md:py-12">
-        <header className="mb-8">
-          <TjLink
-            href={`/${postCategoryUrlSlug}`}
-            className="text-accent text-sm font-semibold uppercase tracking-wide hover:underline"
-          >
-            {post.categoryName}
+    <main className="min-h-screen bg-background text-foreground">
+      <article className="w-full max-w-3xl mx-auto px-4 py-8 md:px-6 md:py-12">
+        <header className="mb-10 border-b border-border pb-8">
+          <TjLink href="/" aria-label="TechJournal" className="inline-flex items-center">
+            <Image
+              src="/techjournal-logo.png"
+              alt="TechJournal"
+              width={1645}
+              height={265}
+              className="h-9 w-auto object-contain"
+              priority
+            />
           </TjLink>
-          <h1 className="text-foreground text-2xl md:text-3xl font-bold mt-2 mb-3 leading-tight">
+          <h1 className="text-foreground text-3xl md:text-5xl font-bold mt-10 mb-5 leading-tight wrap-anywhere">
             {post.title}
           </h1>
-          <p className="text-muted text-sm">
-            {post.authorName} · {formatDate(post.date)}
-          </p>
+          {post.excerpt && (
+            <p className="text-muted text-lg md:text-xl leading-relaxed wrap-anywhere">
+              {post.excerpt}
+            </p>
+          )}
+          <p className="mt-5 text-muted text-sm">{formatDate(post.date)}</p>
+          <TjLink
+            href={articleHref}
+            className="mt-5 inline-flex min-h-10 items-center text-sm font-medium text-accent hover:underline"
+          >
+            Torna all&apos;articolo completo
+          </TjLink>
         </header>
         <div className="article-body-wrapper" data-font-size="1">
           <ArticleBody safeHtml={safeHtml} postId={post.id} />
         </div>
       </article>
-    </div>
+    </main>
   );
 }

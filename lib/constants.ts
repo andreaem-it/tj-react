@@ -1,5 +1,5 @@
 const DEFAULT_SITE_URL = "https://www.techjournal.it";
-const DEFAULT_API_BASE = "https://api.techjournal.it";
+const DEFAULT_API_BASE = "https://backend.techjournal.it";
 
 /**
  * Legge una env pubblica: stringa vuota o solo spazi conta come assente.
@@ -18,11 +18,8 @@ export const SITE_URL = publicEnvUrl("NEXT_PUBLIC_SITE_URL", DEFAULT_SITE_URL);
 /** Base per tutte le API dati (WordPress tj/v1, TechRadar). Le chiamate dati devono andare qui, non su www. */
 export const API_BASE = publicEnvUrl("NEXT_PUBLIC_API_BASE", DEFAULT_API_BASE);
 
-/** Base REST plugin tj/v1 (singolo post, liste, categorie). */
-export const WP_BASE = publicEnvUrl(
-  "NEXT_PUBLIC_WP_BASE",
-  `${API_BASE}/wp-json/tj/v1`
-);
+/** Alias legacy: resta vincolato all'API canonica, mai direttamente a WordPress. */
+export const WP_BASE = `${API_BASE}/api`;
 
 /**
  * Header per le chiamate server-side a `api.techjournal.it/wp-json/tj/v1/*`.

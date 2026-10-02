@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "functions": {
+    "/[slug]/[articleSlug]": {
+      "maxDuration": 60
+    },
+    "/api/admin/analytics": {},
+    "/api/admin/articles": {},
+    "/api/admin/articles/[id]": {},
+    "/api/admin/media": {},
+    "/api/admin/price-radar/products": {},
+    "/api/admin/price-radar/products/[id]": {},
+    "/api/admin/price-radar/status": {},
+    "/api/admin/upload": {},
+    "/api/auth/login": {},
+    "/api/auth/logout": {},
+    "/api/posts/[page]": {},
+    "/api/webhooks/wp-post-published": {
+      "maxDuration": 120
+    }
+  }
+}

@@ -1,0 +1,11 @@
+var R=require("../../chunks/[turbopack]_runtime.js")("server/app/sitemap-topics.xml/route.js")
+R.c("server/chunks/_1cq6t0m._.js")
+R.c("server/chunks/lib_priceRadar_productServer_ts_127vsm8._.js")
+R.c("server/chunks/[root-of-the-server]__1codq2v._.js")
+R.c("server/chunks/[root-of-the-server]__15bjnu5._.js")
+R.c("server/chunks/_0lczxhg._.js")
+R.c("server/chunks/node_modules_next_dist_201403r._.js")
+R.c("server/chunks/lib_18jyh6s._.js")
+R.c("server/chunks/_next-internal_server_app_sitemap-topics_xml_route_actions_1121wzq.js")
+R.m(34331)
+module.exports=R.m(34331).exports

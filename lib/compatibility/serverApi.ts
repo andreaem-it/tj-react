@@ -128,10 +128,23 @@ export async function fetchDeviceDetail(slug: string): Promise<DeviceDetailPaylo
   const enc = encodeURIComponent(slug);
   // Senza politica di cache esplicita il fetch sarebbe `no-store`, che renderebbe
   // dinamica l'intera pagina annullandone il `revalidate`.
-  return fetchCompatibilityJson<DeviceDetailPayload>(
+  const cached = await fetchCompatibilityJson<DeviceDetailPayload>(
     `/api/compatibility/device/${enc}`,
     `${CTX}/device`,
     { revalidate: DEVICE_DETAIL_REVALIDATE_S },
+  );
+  if (cached) return cached;
+
+  /**
+   * Fallback anticache: se una singola scheda ha avuto una 404/timeout
+   * transitoria durante ISR, la risposta nulla può rimanere nella Data Cache e
+   * far scattare `notFound()` anche quando l'API è tornata valida. Prima di
+   * dichiarare davvero assente il dispositivo, riproviamo live.
+   */
+  return fetchCompatibilityJson<DeviceDetailPayload>(
+    `/api/compatibility/device/${enc}`,
+    `${CTX}/device-live-fallback`,
+    "no-store",
   );
 }
 

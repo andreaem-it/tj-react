@@ -1,0 +1,21 @@
+1:"$Sreact.fragment"
+3:I[97367,["/_next/static/chunks/2t8uhswsh31f_.js","/_next/static/chunks/1yytauyeg27de.js","/_next/static/chunks/267samsfbo0j9.js"],"OutletBoundary"]
+4:"$Sreact.suspense"
+8:I[97367,["/_next/static/chunks/2t8uhswsh31f_.js","/_next/static/chunks/1yytauyeg27de.js","/_next/static/chunks/267samsfbo0j9.js"],"ViewportBoundary"]
+9:I[97367,["/_next/static/chunks/2t8uhswsh31f_.js","/_next/static/chunks/1yytauyeg27de.js","/_next/static/chunks/267samsfbo0j9.js"],"MetadataBoundary"]
+a:I[27201,["/_next/static/chunks/2t8uhswsh31f_.js","/_next/static/chunks/1yytauyeg27de.js","/_next/static/chunks/267samsfbo0j9.js"],"IconMark"]
+c:I[39756,["/_next/static/chunks/2t8uhswsh31f_.js","/_next/static/chunks/1yytauyeg27de.js","/_next/static/chunks/267samsfbo0j9.js"],"default"]
+d:I[37457,["/_next/static/chunks/2t8uhswsh31f_.js","/_next/static/chunks/1yytauyeg27de.js","/_next/static/chunks/267samsfbo0j9.js"],"default"]
+7:X
+f:X
+f:C
+0:{"buildId":"9TlFmGfeM2r8bkklJXHxo","data":[{"rsc":["$","$1","c",{"children":["$L2",null,["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"isPartial":"$@6","staleTime":"$7","varyParams":null},{"rsc":["$","$1","h",{"children":[null,["$","$L8",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1, viewport-fit=cover"}],["$","meta","2",{"name":"theme-color","content":"#f9fafb","media":"(prefers-color-scheme: light)"}],["$","meta","3",{"name":"theme-color","content":"#1a1a1a","media":"(prefers-color-scheme: dark)"}]]}],["$","div",null,{"hidden":true,"children":["$","$L9",null,{"children":["$","$4",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"TechJournal - Notizie su Apple, Tech e Gadget"}],["$","meta","1",{"name":"description","content":"Ultime notizie su Apple, iPhone, Mac, app e tecnologia."}],["$","meta","2",{"name":"application-name","content":"TechJournal"}],["$","link","3",{"rel":"manifest","href":"/manifest.webmanifest"}],["$","link","4",{"rel":"alternate","type":"application/rss+xml","href":"https://www.techjournal.it/feed.xml"}],["$","meta","5",{"name":"mobile-web-app-capable","content":"yes"}],["$","meta","6",{"name":"apple-mobile-web-app-title","content":"TechJournal"}],["$","meta","7",{"name":"apple-mobile-web-app-status-bar-style","content":"black-translucent"}],["$","meta","8",{"property":"og:title","content":"TechJournal - Notizie su Apple, Tech e Gadget"}],["$","meta","9",{"property":"og:description","content":"Ultime notizie su Apple, iPhone, Mac, app e tecnologia."}],["$","meta","10",{"property":"og:site_name","content":"TechJournal"}],["$","meta","11",{"property":"og:locale","content":"it_IT"}],["$","meta","12",{"property":"og:type","content":"website"}],["$","meta","13",{"name":"twitter:card","content":"summary_large_image"}],["$","meta","14",{"name":"twitter:title","content":"TechJournal - Notizie su Apple, Tech e Gadget"}],["$","meta","15",{"name":"twitter:description","content":"Ultime notizie su Apple, iPhone, Mac, app e tecnologia."}],["$","link","16",{"rel":"shortcut icon","href":"/techjournal-favicon.png","type":"image/png"}],["$","link","17",{"rel":"icon","href":"/techjournal-favicon.png","type":"image/png","sizes":"1135x1069"}],["$","link","18",{"rel":"apple-touch-icon","href":"/techjournal-favicon.png","type":"image/png","sizes":"1135x1069"}],["$","$La","19",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"isPartial":"$@b","staleTime":"$7","varyParams":null},{"rsc":["$","$1","c",{"children":[null,["$","$Lc",null,{"parallelRouterKey":"children","template":["$","$Ld",null,{}]}]]}],"isPartial":"$@e","staleTime":"$7","varyParams":"$f"}],"isUpgradeableISRFallback":false,"a":"$@10","rootVaryParams":null,"needsRuntimeRequest":"$@11"}
+2:E{"digest":"NEXT_REDIRECT;replace;/privacy;307;"}
+5:null
+11:true
+7:300
+7:C
+10:0
+b:"$undefined"
+e:"$undefined"
+6:"$undefined"

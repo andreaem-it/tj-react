@@ -188,24 +188,31 @@ export default async function DeviceCompatibilityPage({ params }: Props) {
   const answer = describeDeviceSupport(device, insight);
   const predictionsNote = describePredictions(insight.predictedCount, rows.length);
 
+  const canonical = `${SITE_URL.replace(/\/$/, "")}/compatibility/device/${encodeURIComponent(slug)}`;
+
   /**
-   * `Product` con `releaseDate` e `model`: sono dati presenti e visibili in
-   * pagina. Nessun `offers` e nessun `aggregateRating` — il prezzo sta sulla
-   * scheda Price Radar, e una valutazione qui sarebbe inventata.
+   * Non dichiariamo `Product`: per i rich result Google richiede almeno uno tra
+   * `offers`, `review` o `aggregateRating`. Questa è una scheda informativa di
+   * compatibilità, non una recensione con voto né una pagina di vendita; marcare
+   * una `Review` fittizia renderebbe il dato strutturato fuorviante.
    */
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Product",
-    name: device.name,
-    category: typeLabelOf(device),
-    ...(device.imageUrl && isAbsoluteHttpUrl(device.imageUrl) ? { image: device.imageUrl } : {}),
-    ...(device.chipset ? { model: device.chipset } : {}),
-    ...(device.releaseYear != null ? { releaseDate: String(device.releaseYear) } : {}),
+    "@type": "ItemPage",
+    "@id": canonical,
+    url: canonical,
+    name: `${device.name}: compatibilità e scheda tecnica`,
     ...(answer ? { description: answer } : {}),
-    brand: { "@type": "Brand", name: "Apple" },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${SITE_URL.replace(/\/$/, "")}/compatibility/device/${encodeURIComponent(slug)}`,
+    primaryImageOfPage:
+      device.imageUrl && isAbsoluteHttpUrl(device.imageUrl)
+        ? { "@type": "ImageObject", url: device.imageUrl }
+        : undefined,
+    about: {
+      "@type": "Thing",
+      name: device.name,
+      description: [typeLabelOf(device), device.releaseYear, device.chipset].filter(Boolean).join(" · "),
+      ...(device.imageUrl && isAbsoluteHttpUrl(device.imageUrl) ? { image: device.imageUrl } : {}),
+      brand: { "@type": "Brand", name: "Apple" },
     },
   };
 

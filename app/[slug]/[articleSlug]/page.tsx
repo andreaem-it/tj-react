@@ -5,7 +5,6 @@ import {
   fetchAuthorBySlug,
   fetchMostReadPosts,
   fetchPostBySlugDetailed,
-  fetchPosts,
   fetchTrendingWeekAndMonth,
   getCategoryUrlSlugFromWpSlug,
   type PostWithMeta,
@@ -41,6 +40,9 @@ import { loadArticleRelated } from "@/lib/content/articleRelated";
 import type { Metadata } from "next";
 import ArticleAudioPlayer from "@/components/article/ArticleAudioPlayer";
 import { isFeatureEnabled } from "@/lib/featureFlags";
+import TopicPage, {
+  generateMetadata as generateTopicMetadata,
+} from "@/app/topic/[slug]/page";
 
 /**
  * Volutamente più basso di home e categorie (3600s).
@@ -56,15 +58,9 @@ export const dynamicParams = true;
 export const maxDuration = 60;
 
 export async function generateStaticParams() {
-  try {
-    const { posts } = await fetchPosts({ perPage: 150, page: 1 });
-    return posts.map((post) => ({
-      slug: getCategoryUrlSlugFromWpSlug(post.categorySlug),
-      articleSlug: post.slug,
-    }));
-  } catch {
-    return [];
-  }
+  // Gli URL sono risolti a runtime dal backend canonico; prerenderizzare da
+  // WordPress reintrodurrebbe una sorgente disattivata nel build.
+  return [];
 }
 
 interface ArticlePageProps {
@@ -90,7 +86,10 @@ function formatDate(dateStr: string): string {
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  const { articleSlug } = await params;
+  const { slug: categoryUrlSlug, articleSlug } = await params;
+  if (categoryUrlSlug === "topic") {
+    return generateTopicMetadata({ params: Promise.resolve({ slug: articleSlug }) });
+  }
   const result = await fetchPostBySlugDetailed(articleSlug);
   if (result.status !== "found") {
     // Post inesistente o errore upstream: in entrambi i casi la pagina non va
@@ -133,6 +132,9 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug: categoryUrlSlug, articleSlug } = await params;
+  if (categoryUrlSlug === "topic") {
+    return TopicPage({ params: Promise.resolve({ slug: articleSlug }) });
+  }
   const result = await fetchPostBySlugDetailed(articleSlug);
   // Post inesistente: 404 vero (evita soft-404 indicizzati).
   if (result.status === "not_found") notFound();
@@ -300,6 +302,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               )}
               <ShareButtons title={post.title} url={shareUrl} variant="light" />
               <SaveArticleButton id={post.id} path={articleHref} title={post.title} />
+              <TjLink
+                href={`${articleHref}/reader`}
+                className="inline-flex min-h-10 items-center rounded-md border border-border px-3 text-sm font-medium text-muted transition-colors hover:border-accent hover:text-accent"
+              >
+                Reader
+              </TjLink>
             </div>
 
             <Changelog updatedIso={updatedIso} entries={post.changelog} />

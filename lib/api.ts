@@ -1,6 +1,7 @@
 import https from "node:https";
 import { unstable_cache } from "next/cache";
-import { buildWpTjRequestHeaders, WP_BASE, logApiUrl } from "@/lib/constants";
+import { fetchWithTimeout } from "@/lib/http/fetchWithTimeout";
+import { API_BASE, buildWpTjRequestHeaders, WP_BASE, logApiUrl } from "@/lib/constants";
 import { resolveCategoryByUrlSlug } from "@/lib/categorySlugs";
 export {
   getCategoryUrlSlug,
@@ -15,6 +16,9 @@ export {
  * webhook non è configurato o fallisce.
  */
 export const TJ_FETCH_REVALIDATE = 3600;
+/** La home editoriale viene aggiornata dal middleware: non deve restare un'ora
+ * su una risposta precedente, né degradare a una sorgente diversa. */
+export const TJ_HOME_FETCH_REVALIDATE = 60;
 
 /**
  * TTL del fetch del *singolo* articolo, volutamente più corto.
@@ -185,6 +189,7 @@ function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
         let body = "";
         let bodyBytes = 0;
         res.setEncoding("utf8");
+        res.on("error", reject);
         res.on("data", (chunk: Buffer) => {
           const piece = typeof chunk === "string" ? chunk : chunk.toString();
           body += piece;
@@ -210,16 +215,6 @@ function fetchTjWithNodeHttps<T>(url: string): Promise<T> {
     });
     req.on("error", reject);
   });
-}
-
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 8_000): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...init, signal: controller.signal });
-  } finally {
-    clearTimeout(timeoutId);
-  }
 }
 
 /** Richiede una singola pagina di post a tj/v1. Usato per Load more (route /api/posts/[page]). */
@@ -691,37 +686,20 @@ async function fetchPostBySlugFromApi(slug: string): Promise<PostBySlugResult> {
   };
 
   try {
-    const urlSingle = `${WP_BASE}/post/${encodeURIComponent(raw)}`;
-    logApiUrl(urlSingle);
-    const resSingle = await fetchWithTimeout(urlSingle, fetchOpts);
-    if (resSingle.ok) {
+    // Il middleware è l'unica sorgente pubblica degli articoli. WordPress non
+    // è un fallback: una risposta 404 qui è il 404 reale della pagina.
+    const nativeUrl = `${API_BASE}/api/article/${encodeURIComponent(raw)}`;
+    logApiUrl(nativeUrl);
+    const nativeRes = await fetchWithTimeout(nativeUrl, fetchOpts);
+    if (nativeRes.ok) {
       try {
-        const fromSingle = await parsePost(resSingle);
-        if (fromSingle) return { status: "found", post: fromSingle };
+        const nativePost = await parsePost(nativeRes);
+        if (nativePost) return { status: "found", post: nativePost };
       } catch {
-        // JSON non valido: tentiamo comunque l'endpoint lista.
+        // Continua con il fallback WordPress.
       }
     }
-
-    // Fallback endpoint lista: una risposta 200 con lista vuota è la conferma
-    // definitiva che il post non esiste (≠ errore upstream).
-    const urlList = `${WP_BASE}/posts?${new URLSearchParams({
-      slug: raw,
-      per_page: "1",
-      page: "1",
-    }).toString()}`;
-    logApiUrl(urlList);
-    const resList = await fetchWithTimeout(urlList, fetchOpts);
-    if (!resList.ok) return { status: "error" };
-    try {
-      const fromList = await parsePost(resList);
-      // Verifica difensiva: lo slug tornato dal server deve coincidere con quello
-      // richiesto (il plugin WP potrebbe ignorare il filtro e restituire un post casuale).
-      if (!fromList || fromList.slug !== raw) return { status: "not_found" };
-      return { status: "found", post: fromList };
-    } catch {
-      return { status: "error" };
-    }
+    return nativeRes.status === 404 ? { status: "not_found" } : { status: "error" };
   } catch {
     return { status: "error" };
   }
@@ -815,7 +793,7 @@ async function fetchCategoriesRaw(): Promise<WPCategory[]> {
   }
   const data = (await res.json()) as WPCategory[];
   return Array.isArray(data)
-    ? data.filter((c) => c.id !== 1).map((c) => ({
+    ? data.filter((c) => !["uncategorized", "senza-categoria"].includes(String(c.slug))).map((c) => ({
         ...c,
         id: Number(c.id),
         parent: Number(c.parent) || 0,
@@ -867,11 +845,11 @@ export async function fetchHome(): Promise<TjHomeResponse | null> {
   try {
     return await unstable_cache(
       async () => {
-        const url = `${WP_BASE}/home`;
+        const url = `${process.env.TJ_API_BASE_URL || "https://backend.techjournal.it"}/api/home`;
         logApiUrl(url);
         const res = await fetchWithTimeout(url, {
           headers: buildWpTjRequestHeaders(),
-          next: { revalidate: TJ_FETCH_REVALIDATE },
+          next: { revalidate: TJ_HOME_FETCH_REVALIDATE },
         });
         if (!res.ok) {
           const cfHint =
@@ -906,8 +884,10 @@ export async function fetchHome(): Promise<TjHomeResponse | null> {
           monthTrending: list(raw.monthTrending),
         } satisfies TjHomeResponse;
       },
-      ["tj-home"],
-      { revalidate: TJ_FETCH_REVALIDATE, tags: ["tj-home"] },
+      // Cambio intenzionale della chiave: invalida la risposta legacy rimasta
+      // nella cache distribuita prima della quarantena delle immagini native.
+      ["tj-home-v4"],
+      { revalidate: TJ_HOME_FETCH_REVALIDATE, tags: ["tj-home"] },
     )();
   } catch {
     return null;

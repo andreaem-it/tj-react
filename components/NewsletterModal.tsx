@@ -63,6 +63,9 @@ export default function NewsletterModal() {
       if (res.ok) {
         setStatus("success");
         setMessage("Iscrizione completata! Controlla la tua casella email.");
+        window.gtag?.("event", "sign_up", {
+          method: "newsletter_modal",
+        });
       } else {
         setStatus("error");
         setMessage(

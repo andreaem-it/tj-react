@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>TechJournal</title>
+    <link>https://www.techjournal.it</link>
+    <description>Notizie su Apple, Tech e Gadget</description>
+    <language>it</language>
+    <lastBuildDate>Mon, 28 Sep 2026 14:56:17 GMT</lastBuildDate>
+    <atom:link href="https://www.techjournal.it/feed.xml" rel="self" type="application/rss+xml" />
+<item>
+  <title>Apple condannata a pagare 5,7 miliardi per violazione di brevetti aptici</title>
+  <link>https://www.techjournal.it/tech/apple-condannata-5-7-miliardi-violazione-brevetti-aptici</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-condannata-5-7-miliardi-violazione-brevetti-aptici</guid>
+  <description>Un tribunale federale ha ordinato ad Apple di pagare 5,7 miliardi di dollari a Taction Technology per l’infrazione di due brevetti relativi alla tecnologia aptica.</description>
+  <pubDate>Mon, 28 Sep 2026 14:56:17 GMT</pubDate>
+</item>
+<item>
+  <title>watchOS 27: 12 novità da provare su Apple Watch</title>
+  <link>https://www.techjournal.it/tech/watchos-27-12-novita-da-provare-su-apple-watch</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/watchos-27-12-novita-da-provare-su-apple-watch</guid>
+  <description>watchOS 27 è disponibile dal 14 settembre. Ecco 12 cambiamenti e funzioni da scoprire, tra Siri dedicato, Smart Stack più intelligente, nuove gesture e aggiornamenti per salute e allenamenti.</description>
+  <pubDate>Mon, 28 Sep 2026 14:20:17 GMT</pubDate>
+</item>
+<item>
+  <title>Nuovo iPad mini: il codice Apple svela chip A20 Pro e un dettaglio “preso” dall’iPhone</title>
+  <link>https://www.techjournal.it/ipad/nuovo-ipad-mini-codice-apple-chip-a20-pro-dettaglio-iphone</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ipad/nuovo-ipad-mini-codice-apple-chip-a20-pro-dettaglio-iphone</guid>
+  <description>Dal codice Apple emergono riferimenti al prossimo iPad mini: tra le indicazioni c’è il chip A20 Pro, lo stesso degli iPhone 18 Pro, oltre a un dettaglio riconducibile all’iPhone.</description>
+  <pubDate>Mon, 28 Sep 2026 13:58:01 GMT</pubDate>
+</item>
+<item>
+  <title>Apple TV: gli screensaver potrebbero avere l’audio, si parte da Snoopy</title>
+  <link>https://www.techjournal.it/tech/apple-tv-screensaver-audio-si-parte-da-snoopy</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-tv-screensaver-audio-si-parte-da-snoopy</guid>
+  <description>Nel codice di tvOS 27 sono emerse impostazioni nascoste per attivare effetti sonori nei salvaschermo di Apple TV. Il primo a beneficiarne potrebbe essere quello dedicato a Snoopy.</description>
+  <pubDate>Mon, 28 Sep 2026 13:35:48 GMT</pubDate>
+</item>
+<item>
+  <title>Apple valuta quattro concept per un nuovo headset Vision Pro</title>
+  <link>https://www.techjournal.it/tech/apple-valuta-quattro-concept-nuovo-headset-vision-pro</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-valuta-quattro-concept-nuovo-headset-vision-pro</guid>
+  <description>Apple starebbe esplorando quattro diverse idee per un nuovo headset legato alla linea Vision Pro, con l’obiettivo di definire forme, funzionalità e approcci di prodotto differenti.</description>
+  <pubDate>Mon, 28 Sep 2026 13:00:49 GMT</pubDate>
+</item>
+<item>
+  <title>macOS Golden Gate: cosa sparisce oggi e cosa cambia con macOS 28</title>
+  <link>https://www.techjournal.it/mac/macos-golden-gate-cosa-sparisce-e-cosa-cambia-con-macos-28</link>
+  <guid isPermaLink="true">https://www.techjournal.it/mac/macos-golden-gate-cosa-sparisce-e-cosa-cambia-con-macos-28</guid>
+  <description>Con macOS Golden Gate Apple taglia supporto per Intel, Boot Camp, Rosetta 2 (in modo definitivo) e servizi legacy come AFP, Time Capsule e AirPort Utility. Ulteriori riduzioni sono attese con macOS 28.</description>
+  <pubDate>Sat, 26 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Come controllare la data di produzione del tuo Mac in macOS 27</title>
+  <link>https://www.techjournal.it/guide/come-controllare-data-di-produzione-mac-macos-27</link>
+  <guid isPermaLink="true">https://www.techjournal.it/guide/come-controllare-data-di-produzione-mac-macos-27</guid>
+  <description>Con macOS 27 Golden Gate puoi risalire alla data di produzione del tuo Mac tramite la sezione “Regulatory Certification” nel System Report.</description>
+  <pubDate>Sat, 26 Sep 2026 07:28:00 GMT</pubDate>
+</item>
+<item>
+  <title>Texture e grana degli Stili fotografici solo su iPhone 18 Pro e Duo: Apple aggiorna il comunicato</title>
+  <link>https://www.techjournal.it/ios/texture-grana-stili-fotografici-solo-iphone-18-pro-duo-apple-aggiorna-comunicato</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ios/texture-grana-stili-fotografici-solo-iphone-18-pro-duo-apple-aggiorna-comunicato</guid>
+  <description>Apple ha corretto la nota del comunicato stampa italiano di iPhone 18 Pro: i nuovi controlli per texture e grana degli Stili fotografici non arriveranno su iPhone 16, iPhone 17 e iPhone Air, ma risultano riservati a iPhone 18 Pro e Duo.</description>
+  <pubDate>Sat, 26 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple conferma: aggiornamento di correzione bug per iPhone 18 Pro la prossima settimana</title>
+  <link>https://www.techjournal.it/apple/apple-conferma-aggiornamento-bugfix-iphone-18-pro-prossima-settimana</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/apple-conferma-aggiornamento-bugfix-iphone-18-pro-prossima-settimana</guid>
+  <description>Apple ha confermato l’arrivo di un aggiornamento di correzione bug per iPhone 18 Pro la prossima settimana, con l’obiettivo di migliorare stabilità e prestazioni.</description>
+  <pubDate>Sat, 26 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+<item>
+  <title>Square annuncia l’integrazione con Apple Business per aggiornare i dati</title>
+  <link>https://www.techjournal.it/tech/square-annuncia-integrazione-apple-business</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/square-annuncia-integrazione-apple-business</guid>
+  <description>Square introduce una nuova integrazione con Apple Business per aiutare le attività a mantenere informazioni aggiornate su Apple Maps, Apple Wallet e Siri AI direttamente dal Dashboard.</description>
+  <pubDate>Sat, 26 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>watchOS 27.2: indizi di anteprime screenshot “stile iPhone” su Apple Watch</title>
+  <link>https://www.techjournal.it/tech/watchos-27-2-indizi-anteprime-screenshot-stile-iphone-su-apple-watch</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/watchos-27-2-indizi-anteprime-screenshot-stile-iphone-su-apple-watch</guid>
+  <description>In watchOS 27.2 potrebbero arrivare anteprime degli screenshot su Apple Watch con opzioni per condividerli o eliminarli, in un’esperienza più simile a quella dell’iPhone.</description>
+  <pubDate>Sat, 26 Sep 2026 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Qualcomm rinnova l’accordo globale di licenza brevetti con Apple</title>
+  <link>https://www.techjournal.it/tech/qualcomm-rinnova-accordo-globale-licenza-brevetti-apple-2027</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/qualcomm-rinnova-accordo-globale-licenza-brevetti-apple-2027</guid>
+  <description>Qualcomm ha annunciato il rinnovo dell’accordo globale di licenza brevetti con Apple, con efficacia dal 1° aprile 2027. L’intesa è separata dal contratto per i modem cellulari.</description>
+  <pubDate>Fri, 25 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>OpenAI: ChatGPT in Siri “sottoperforma in modo persistente”</title>
+  <link>https://www.techjournal.it/ia/openai-chatgpt-in-siri-sottoperforma-in-modo-persistente</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/openai-chatgpt-in-siri-sottoperforma-in-modo-persistente</guid>
+  <description>OpenAI valuta negativamente le prestazioni di ChatGPT integrato in Siri, definendole “persistently underperforming”. Un giudizio che riaccende l’attenzione sul livello di qualità dell’esperienza utente.</description>
+  <pubDate>Fri, 25 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Copland di Apple torna a vivere: prova l’OS in emulazione direttamente dal browser</title>
+  <link>https://www.techjournal.it/tech/copland-apple-prova-os-in-browser-emulazione</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/copland-apple-prova-os-in-browser-emulazione</guid>
+  <description>Dopo anni di sviluppo e cancellazione, Copland può finalmente essere provato in emulazione: grazie a modifiche a DingusPPC, è disponibile una versione avviabile nel browser.</description>
+  <pubDate>Fri, 25 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Siri AI in arrivo su HomePod: cosa cambia per l’assistente in casa</title>
+  <link>https://www.techjournal.it/smart-home/siri-ai-arrivo-su-homepod-cosa-cambia-per-l-assistente-in-casa</link>
+  <guid isPermaLink="true">https://www.techjournal.it/smart-home/siri-ai-arrivo-su-homepod-cosa-cambia-per-l-assistente-in-casa</guid>
+  <description>L’arrivo di Siri AI su HomePod punta a rendere l’assistente più capace e reattivo nelle attività quotidiane in casa, rafforzando l’esperienza di interazione vocale.</description>
+  <pubDate>Fri, 25 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia la beta pubblica di iOS 27.2, iPadOS 27.2 e macOS 27.2: arriva l’app Salute</title>
+  <link>https://www.techjournal.it/apple/apple-beta-pubblica-ios-27-2-ipados-27-2-macos-27-2-app-salute</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/apple-beta-pubblica-ios-27-2-ipados-27-2-macos-27-2-app-salute</guid>
+  <description>Disponibile la prima beta pubblica di iOS 27.2, iPadOS 27.2 e macOS 27.2: la nuova app Salute è tra le novità provabili da subito dai tester.</description>
+  <pubDate>Fri, 25 Sep 2026 07:28:00 GMT</pubDate>
+</item>
+<item>
+  <title>Tim Cook incontra Ursula von der Leyen: sul tavolo l’EU Kids Act per limitare i social ai minori</title>
+  <link>https://www.techjournal.it/tech/tim-cook-incontra-ursula-von-der-leyen-eu-kids-act-social-minori</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/tim-cook-incontra-ursula-von-der-leyen-eu-kids-act-social-minori</guid>
+  <description>Tim Cook ha incontrato Ursula von der Leyen a Manhattan. Al centro del colloquio l’EU Kids Act, proposta UE per limitare l’accesso dei minori ai social e imporre nuove tutele alle piattaforme.</description>
+  <pubDate>Fri, 25 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Intelligence supera i 30GB su alcuni Mac con macOS 27 Golden Gate</title>
+  <link>https://www.techjournal.it/ia/apple-intelligence-oltre-30gb-su-alcuni-mac-con-macos-27-golden-gate</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/apple-intelligence-oltre-30gb-su-alcuni-mac-con-macos-27-golden-gate</guid>
+  <description>Dopo l’installazione di macOS 27 Golden Gate, Apple Intelligence può scaricare modelli AI multi‑gigabyte sul Mac. In alcuni casi lo spazio occupato supera i 30GB, anche oltre le soglie indicate da Apple.</description>
+  <pubDate>Fri, 25 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Sports si aggiorna: più campionati di calcio e tabelloni tennis in tempo reale</title>
+  <link>https://www.techjournal.it/apps/apple-sports-aggiornamento-piu-campionati-calcio-tabelloni-tennis-tempo-reale</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apps/apple-sports-aggiornamento-piu-campionati-calcio-tabelloni-tennis-tempo-reale</guid>
+  <description>L’app Apple Sports riceve un aggiornamento con nuovi campionati di calcio e la possibilità, per i fan del tennis, di seguire i tabelloni dei tornei in tempo reale con risultati e incontri per turno.</description>
+  <pubDate>Fri, 25 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia watchOS 27.0.1: fix per riavvii imprevisti</title>
+  <link>https://www.techjournal.it/tech/apple-rilascia-watchos-27-0-1-fix-riavvii-imprevisti</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-rilascia-watchos-27-0-1-fix-riavvii-imprevisti</guid>
+  <description>Apple ha rilasciato watchOS 27.0.1, aggiornamento minore per Apple Watch Series 12 e Apple Watch Ultra 4. Include correzioni di bug e un fix per riavvii inattesi.</description>
+  <pubDate>Fri, 25 Sep 2026 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Mac Studio M5 Max ed M5 Ultra, le prime recensioni: il Mac più potente di sempre, ma il prezzo arriva a cifre altissime</title>
+  <link>https://www.techjournal.it/tech/mac-studio-m5-max-m5-ultra-prime-recensioni-prezzo-altissimo</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/mac-studio-m5-max-m5-ultra-prime-recensioni-prezzo-altissimo</guid>
+  <description>Le prime recensioni di Mac Studio con chip M5 Max e M5 Ultra lo descrivono come il Mac più potente mai realizzato, ma con un listino che può raggiungere cifre molto elevate.</description>
+  <pubDate>Thu, 24 Sep 2026 10:46:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple prepara un rivale di Whoop: braccialetto fitness senza schermo, ma i tempi sono lunghi</title>
+  <link>https://www.techjournal.it/tech/apple-rivale-whoop-braccialetto-fitness-senza-schermo-tempi-lunghi</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-rivale-whoop-braccialetto-fitness-senza-schermo-tempi-lunghi</guid>
+  <description>Apple starebbe lavorando a un braccialetto fitness senza schermo, pensato per competere nel segmento di monitoraggio continuo. Ma l’arrivo sul mercato potrebbe richiedere tempo.</description>
+  <pubDate>Thu, 24 Sep 2026 10:24:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone Duo scalda troppo in 4K: la prima prova indica un punto preciso</title>
+  <link>https://www.techjournal.it/tech/iphone-duo-scalda-troppo-4k-prima-prova-punto-preciso</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/iphone-duo-scalda-troppo-4k-prima-prova-punto-preciso</guid>
+  <description>Le prime verifiche su iPhone Duo durante la registrazione video in 4K segnalano un surriscaldamento anomalo. L’attenzione si concentra su un’area specifica del dispositivo.</description>
+  <pubDate>Thu, 24 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple mette in pausa il progetto del ciondolo AI con fotocamera</title>
+  <link>https://www.techjournal.it/ia/apple-mette-in-pausa-progetto-ciondolo-ai-fotocamera</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/apple-mette-in-pausa-progetto-ciondolo-ai-fotocamera</guid>
+  <description>Apple avrebbe sospeso, almeno temporaneamente, lo sviluppo del ciondolo AI con fotocamera, un dispositivo indossabile pensato per funzioni basate sull’intelligenza artificiale.</description>
+  <pubDate>Thu, 24 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Stili fotografici: “Pelle Morbida” e nuove texture arrivano anche su iPhone precedenti con iOS 27</title>
+  <link>https://www.techjournal.it/ios/stili-fotografici-pelle-morbida-texture-anche-su-iphone-precedenti-ios-27</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ios/stili-fotografici-pelle-morbida-texture-anche-su-iphone-precedenti-ios-27</guid>
+  <description>Con iOS 27 i nuovi controlli per texture e grana degli Stili fotografici, inclusi “Pelle Morbida”, potranno essere usati anche su dispositivi iPhone precedenti.</description>
+  <pubDate>Thu, 24 Sep 2026 07:28:00 GMT</pubDate>
+</item>
+<item>
+  <title>App Switcher torna in watchOS 27.2 Beta con una nuova gesture di lancio</title>
+  <link>https://www.techjournal.it/apps/app-switcher-torna-watchos-27-2-beta-nuova-gesture-lancio</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apps/app-switcher-torna-watchos-27-2-beta-nuova-gesture-lancio</guid>
+  <description>Nella beta di watchOS 27.2 torna l’App Switcher, accompagnato da una nuova gesture per il lancio delle app. Un cambiamento pensato per rendere più rapido il passaggio tra contenuti.</description>
+  <pubDate>Thu, 24 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple: iPhone con tecnologia a doppio display in arrivo nel 2029</title>
+  <link>https://www.techjournal.it/tech/apple-iphone-doppio-display-2029</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-iphone-doppio-display-2029</guid>
+  <description>Apple starebbe pianificando l’introduzione della tecnologia a doppio display, già associata a iPhone, su modelli Pro nel 2029.</description>
+  <pubDate>Thu, 24 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple limita Texture e Grain: niente su iPhone più vecchi</title>
+  <link>https://www.techjournal.it/apple/apple-limita-texture-e-grain-niente-su-iphone-piu-vecchi</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/apple-limita-texture-e-grain-niente-su-iphone-piu-vecchi</guid>
+  <description>I nuovi controlli Texture e Grain per le Photographic Styles in iOS 27 risultano disponibili solo su iPhone 18 Pro e, per iPhone Duo, su specifiche fotocamere. La compatibilità indicata inizialmente per “i modelli che supportano le Photographic Styles” è stata poi ristretta.</description>
+  <pubDate>Thu, 24 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple lavora a una funzione anti-rapina per bloccare gli iPhone rubati</title>
+  <link>https://www.techjournal.it/apple/apple-lavora-funzione-anti-rapina-bloccare-iphone-auto-lock</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/apple-lavora-funzione-anti-rapina-bloccare-iphone-auto-lock</guid>
+  <description>Nelle ultime build di iOS 27.2 emergono riferimenti a una funzione interna chiamata “AutoLock” che, in caso di rapina, potrebbe bloccare l’iPhone e attivare la protezione del dispositivo rubato.</description>
+  <pubDate>Wed, 23 Sep 2026 12:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple avvia le prime beta pubbliche di iOS 27.2 e macOS Golden Gate 27.2</title>
+  <link>https://www.techjournal.it/ios/apple-prime-beta-pubbliche-ios-27-2-macos-golden-gate-27-2</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ios/apple-prime-beta-pubbliche-ios-27-2-macos-golden-gate-27-2</guid>
+  <description>Apple ha rilasciato le prime beta pubbliche di iOS 27.2, iPadOS 27.2, macOS Golden Gate 27.2, tvOS 27.2 e watchOS 27.2. Novità principali: app Salute ridisegnata e nuove opzioni in Apple TV con Siri AI in più lingue.</description>
+  <pubDate>Wed, 23 Sep 2026 10:33:22 GMT</pubDate>
+</item>
+<item>
+  <title>WhatsApp aggiorna iOS e Apple Watch: Instagram e Facebook nelle chat, nuove chat con agenti e emoji complete</title>
+  <link>https://www.techjournal.it/ios/whatsapp-aggiorna-ios-apple-watch-instagram-facebook-nelle-chat-agenti-emoji</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ios/whatsapp-aggiorna-ios-apple-watch-instagram-facebook-nelle-chat-agenti-emoji</guid>
+  <description>WhatsApp sta distribuendo tre novità tra iPhone e Apple Watch: condivisione di storie, post e reel di Instagram/Facebook senza uscire dall’app, chat con agenti di terze parti anche su iOS e un set completo di emoji per le reazioni sull’orologio.</description>
+  <pubDate>Wed, 23 Sep 2026 10:20:25 GMT</pubDate>
+</item>
+<item>
+  <title>I nuovi modelli GPT-6 Sol e Luna di OpenAI portano miglioramenti Astra anche nei piani più economici</title>
+  <link>https://www.techjournal.it/tech/gpt-6-sol-luna-miglioramenti-astra-piani-economici</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/gpt-6-sol-luna-miglioramenti-astra-piani-economici</guid>
+  <description>OpenAI introduce i modelli GPT-6 Sol e Luna, estendendo i miglioramenti legati ad Astra anche ai piani più economici. Una novità pensata per aumentare prestazioni e accessibilità.</description>
+  <pubDate>Wed, 23 Sep 2026 09:20:09 GMT</pubDate>
+</item>
+<item>
+  <title>Shazam per iPhone si aggiorna: nuova icona e sticker per iMessage</title>
+  <link>https://www.techjournal.it/ios/shazam-iphone-aggiornamento-icona-sticker-imessage</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ios/shazam-iphone-aggiornamento-icona-sticker-imessage</guid>
+  <description>Aggiornamento per l’app Shazam su iOS con una nuova icona e un set di sticker da usare in iMessage, anche durante le chiamate FaceTime.</description>
+  <pubDate>Wed, 23 Sep 2026 09:12:41 GMT</pubDate>
+</item>
+<item>
+  <title>HomePad, l’hub per la casa di Apple è già atteso per ottobre: avrà un sistema operativo tutto suo</title>
+  <link>https://www.techjournal.it/smart-home/homepad-hub-casa-apple-ottobre-sistema-operativo-tutto-suo</link>
+  <guid isPermaLink="true">https://www.techjournal.it/smart-home/homepad-hub-casa-apple-ottobre-sistema-operativo-tutto-suo</guid>
+  <description>HomePad, l’hub per la casa di Apple, è atteso per ottobre e sarà dotato di un sistema operativo dedicato, pensato per gestire l’esperienza smart domestica.</description>
+  <pubDate>Wed, 23 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Watch Series 12 e Ultra 4: segnalati riavvii inattesi</title>
+  <link>https://www.techjournal.it/tech/apple-watch-series-12-ultra-4-riavvii-inattesi</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-watch-series-12-ultra-4-riavvii-inattesi</guid>
+  <description>Alcuni proprietari di Apple Watch Series 12 e Ultra 4 segnalano riavvii inattesi. Un problema che, al momento, resta circoscritto alle segnalazioni degli utenti.</description>
+  <pubDate>Wed, 23 Sep 2026 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Tap to Pay su iPhone arriva in 8 nuovi Paesi</title>
+  <link>https://www.techjournal.it/apple/tap-to-pay-su-iphone-arriva-in-8-nuovi-paesi</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/tap-to-pay-su-iphone-arriva-in-8-nuovi-paesi</guid>
+  <description>Apple estende Tap to Pay on iPhone in otto nuovi Paesi: Argentina, Colombia, Costa Rica, Repubblica Dominicana, Guatemala, Honduras, Panama e Perù.</description>
+  <pubDate>Tue, 22 Sep 2026 21:20:17 GMT</pubDate>
+</item>
+<item>
+  <title>Apple punta alle smart glasses: ingresso in un mercato in crescita</title>
+  <link>https://www.techjournal.it/tech/apple-smart-glasses-mercato-in-crescita-2026-09-22</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-smart-glasses-mercato-in-crescita-2026-09-22</guid>
+  <description>Le smart glasses di Apple sarebbero in arrivo, con l’obiettivo di inserirsi in un mercato in rapida espansione e intercettare nuove esigenze di utilizzo quotidiano.</description>
+  <pubDate>Tue, 22 Sep 2026 20:50:09 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Watch Series 10 vs Series 12: guida all’upgrade</title>
+  <link>https://www.techjournal.it/guide/apple-watch-series-10-vs-series-12-guida-aggiornamento</link>
+  <guid isPermaLink="true">https://www.techjournal.it/guide/apple-watch-series-10-vs-series-12-guida-aggiornamento</guid>
+  <description>Apple Watch Series 12 introduce un nuovo chip, RAM doppia, sensori salute ridisegnati, 5G e nuove funzioni audio. Ecco quando conviene davvero passare da Series 10.</description>
+  <pubDate>Tue, 22 Sep 2026 20:20:47 GMT</pubDate>
+</item>
+<item>
+  <title>Apple licenzia parte del team di Fitness+: possibile integrazione in Salute</title>
+  <link>https://www.techjournal.it/apple/apple-licenzia-parte-team-fitness-plus-integrazione-app-salute</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/apple-licenzia-parte-team-fitness-plus-integrazione-app-salute</guid>
+  <description>Apple avrebbe licenziato parte del team di Fitness+. Il servizio potrebbe essere integrato nell’app Salute, con un possibile cambio di strategia per l’esperienza fitness su iPhone e Apple Watch.</description>
+  <pubDate>Tue, 22 Sep 2026 12:17:10 GMT</pubDate>
+</item>
+<item>
+  <title>Non si può più fare downgrade da iOS 27 a iOS 26</title>
+  <link>https://www.techjournal.it/apple/non-si-puo-piu-fare-downgrade-da-ios-27-a-ios-26</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/non-si-puo-piu-fare-downgrade-da-ios-27-a-ios-26</guid>
+  <description>Apple non sta più firmando iOS 26.6.2: dopo l’aggiornamento a iOS 27 non è più possibile tornare a iOS 26. Inoltre non si può passare a iOS 26.7 perché è un aggiornamento OTA senza file di ripristino.</description>
+  <pubDate>Tue, 22 Sep 2026 09:48:25 GMT</pubDate>
+</item>
+<item>
+  <title>Magic Diary: il diario con l’AI che riscrive le giornate in terza persona, restando privato su iPhone</title>
+  <link>https://www.techjournal.it/ia/magic-diary-diario-ai-terza-persona-privato-iphone</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/magic-diary-diario-ai-terza-persona-privato-iphone</guid>
+  <description>Magic Diary trasforma i vostri appunti in un racconto in terza persona: l’AI riscrive le giornate mantenendo l’esperienza focalizzata sulla privacy direttamente su iPhone.</description>
+  <pubDate>Tue, 22 Sep 2026 09:42:17 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 20 Pro: i primi prototipi mostrano display più grandi, più definiti e forse curvi su quattro lati</title>
+  <link>https://www.techjournal.it/tech/iphone-20-pro-primi-prototipi-display-piu-grandi-piu-definiti-forse-curvi-quattro-lati</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/iphone-20-pro-primi-prototipi-display-piu-grandi-piu-definiti-forse-curvi-quattro-lati</guid>
+  <description>I primi prototipi di iPhone 20 Pro suggeriscono un salto sul display: dimensioni maggiori, maggiore definizione e la possibilità di un design curvo su quattro lati.</description>
+  <pubDate>Tue, 22 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>Nuovi Mac mini e Mac Studio in arrivo domani: chip M6, M5 Pro, M5 Max e M5 Ultra</title>
+  <link>https://www.techjournal.it/apple/nuovi-mac-mini-e-mac-studio-in-arrivo-domani-chip-m6-m5-pro-m5-max-m5-ultra</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/nuovi-mac-mini-e-mac-studio-in-arrivo-domani-chip-m6-m5-pro-m5-max-m5-ultra</guid>
+  <description>Apple prepara il lancio dei nuovi Mac mini e Mac Studio per martedì 22 settembre: aggiornamenti di specifiche con chip M6, M5 Pro, M5 Max e M5 Ultra, senza cambiamenti di design rilevanti.</description>
+  <pubDate>Tue, 22 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+<item>
+  <title>Alcuni utenti iPhone 18 Pro segnalano problemi con Face ID</title>
+  <link>https://www.techjournal.it/ios/alcuni-utenti-iphone-18-pro-segnalano-problemi-con-face-id</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ios/alcuni-utenti-iphone-18-pro-segnalano-problemi-con-face-id</guid>
+  <description>Alcuni utenti iPhone 18 Pro segnalano difficoltà legate al funzionamento di Face ID. Al momento si tratta di indiscrezioni e non di un quadro ufficiale.</description>
+  <pubDate>Tue, 22 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia la seconda beta di macOS Golden Gate 27.2 agli sviluppatori</title>
+  <link>https://www.techjournal.it/mac/apple-seconda-beta-macos-golden-gate-27-2-sviluppatori</link>
+  <guid isPermaLink="true">https://www.techjournal.it/mac/apple-seconda-beta-macos-golden-gate-27-2-sviluppatori</guid>
+  <description>Apple sta testando macOS Golden Gate 27.2 e ha reso disponibile agli sviluppatori la seconda beta, a una settimana dalla prima. Novità attesa: Siri AI in nuove lingue.</description>
+  <pubDate>Tue, 22 Sep 2026 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Pin Music in cima alla libreria su Apple Watch: come funziona</title>
+  <link>https://www.techjournal.it/guide/pin-music-in-cima-alla-libreria-su-apple-watch-come-funziona</link>
+  <guid isPermaLink="true">https://www.techjournal.it/guide/pin-music-in-cima-alla-libreria-su-apple-watch-come-funziona</guid>
+  <description>Con watchOS 27 e un abbonamento Apple Music, puoi fissare brani, artisti, album e playlist in cima alla libreria dell’Apple Watch per trovarli e avviarli più velocemente.</description>
+  <pubDate>Mon, 21 Sep 2026 20:57:12 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Smart Home Display in arrivo già il prossimo mese</title>
+  <link>https://www.techjournal.it/smart-home/apple-smart-home-display-in-arrivo-gia-il-prossimo-mese</link>
+  <guid isPermaLink="true">https://www.techjournal.it/smart-home/apple-smart-home-display-in-arrivo-gia-il-prossimo-mese</guid>
+  <description>Apple starebbe preparando un nuovo Smart Home Display, atteso già il prossimo mese. Un dispositivo pensato per la gestione della casa connessa e l’accesso rapido alle funzioni quotidiane.</description>
+  <pubDate>Mon, 21 Sep 2026 20:50:19 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia le seconde beta di watchOS 27.2, tvOS 27.2 e visionOS 27.2</title>
+  <link>https://www.techjournal.it/apple/apple-seconda-beta-watchos-27-2-tvos-27-2-visionos-27-2</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/apple-seconda-beta-watchos-27-2-tvos-27-2-visionos-27-2</guid>
+  <description>A una settimana dalla prima tornata, Apple distribuisce le seconde beta di watchOS 27.2, tvOS 27.2 e visionOS 27.2. In parallelo, iOS 27.2 e watchOS 27.2 introducono test per la nuova app Salute con Insights e Longevity.</description>
+  <pubDate>Mon, 21 Sep 2026 20:34:52 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Watch Series 12 e Ultra 4: possibile memoria flash “nascosta” da 128GB</title>
+  <link>https://www.techjournal.it/tech/apple-watch-series-12-ultra-4-flash-storage-128gb-nascosta</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-watch-series-12-ultra-4-flash-storage-128gb-nascosta</guid>
+  <description>Apple Watch Series 12 e Ultra 4 potrebbero montare una memoria NAND da 128GB, anche se la capacità ufficiale disponibile è di 64GB. L’ipotesi: una parte riservata a buffer di durata o a dati intensivi dei sensori.</description>
+  <pubDate>Mon, 21 Sep 2026 20:20:41 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia la seconda beta di iOS 27.2 e aggiorna anche iPadOS</title>
+  <link>https://www.techjournal.it/ia/apple-seconda-beta-ios-27-2</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/apple-seconda-beta-ios-27-2</guid>
+  <description>Apple ha distribuito la seconda beta di iOS 27.2 agli sviluppatori, a una settimana dalla prima. Presente anche una beta di iPadOS 27.2, con novità su app Salute e Siri.</description>
+  <pubDate>Mon, 21 Sep 2026 20:12:43 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 14 Pro vs iPhone 18 Pro: guida all’upgrade</title>
+  <link>https://www.techjournal.it/guide/iphone-14-pro-vs-iphone-18-pro-guida-alla-upgrade</link>
+  <guid isPermaLink="true">https://www.techjournal.it/guide/iphone-14-pro-vs-iphone-18-pro-guida-alla-upgrade</guid>
+  <description>Dopo quattro generazioni, iPhone 18 Pro porta display più grandi, USB‑C, ricarica più rapida, nuove fotocamere, più autonomia e supporto ad Apple Intelligence. Ecco quando conviene davvero passare da iPhone 14 Pro.</description>
+  <pubDate>Mon, 21 Sep 2026 19:50:24 GMT</pubDate>
+</item>
+<item>
+  <title>Sito per il settlement Siri AI ora online: Apple pagherà alcuni proprietari di iPhone</title>
+  <link>https://www.techjournal.it/ia/sito-settlement-siri-ai-ora-online-apple-paghera-alcuni-proprietari-iphone</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/sito-settlement-siri-ai-ora-online-apple-paghera-alcuni-proprietari-iphone</guid>
+  <description>È online il sito dedicato al settlement legato a Siri AI: Apple prevede pagamenti ad alcuni proprietari di iPhone. Ecco cosa significa per gli utenti.</description>
+  <pubDate>Mon, 21 Sep 2026 10:47:18 GMT</pubDate>
+</item>
+<item>
+  <title>iFixit pubblica il teardown di iPhone 18 Pro: ecco cosa emerge</title>
+  <link>https://www.techjournal.it/guide/ifixit-pubblica-teardown-iphone-18-pro-nuove-funzionalita</link>
+  <guid isPermaLink="true">https://www.techjournal.it/guide/ifixit-pubblica-teardown-iphone-18-pro-nuove-funzionalita</guid>
+  <description>Un teardown di iPhone 18 Pro offre uno sguardo ravvicinato all’hardware e alle novità interne del dispositivo, con l’analisi di iFixit sulle componenti e sulla struttura del telefono.</description>
+  <pubDate>Mon, 21 Sep 2026 10:25:09 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Pencil più corto per iPhone Duo: progetto cancellato, supporto al modello USB‑C in arrivo</title>
+  <link>https://www.techjournal.it/tech/apple-pencil-piu-corto-iphone-duo-progetto-cancellato-supporto-usb-c-in-arrivo</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-pencil-piu-corto-iphone-duo-progetto-cancellato-supporto-usb-c-in-arrivo</guid>
+  <description>Un Apple Pencil più corto pensato per iPhone Duo era in sviluppo, ma Apple lo avrebbe cancellato per problemi tecnici legati alla produzione. In alternativa, iPhone Duo riceverà più avanti il supporto all’Apple Pencil USB‑C esistente.</description>
+  <pubDate>Mon, 21 Sep 2026 07:50:25 GMT</pubDate>
+</item>
+<item>
+  <title>Risultato Geekbench per un presunto M6 Pro: possibile falso</title>
+  <link>https://www.techjournal.it/tech/risultato-geekbench-presunto-m6-pro-possibile-falso</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/risultato-geekbench-presunto-m6-pro-possibile-falso</guid>
+  <description>Un presunto risultato Geekbench relativo a un chip M6 Pro non ancora rilasciato è emerso online, ma presenta incongruenze che fanno pensare a un possibile falso.</description>
+  <pubDate>Sun, 20 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Top Stories: iOS 27 e macOS Golden Gate disponibili, Siri AI in waitlist e altro</title>
+  <link>https://www.techjournal.it/ia/top-stories-ios-27-macos-golden-gate-siri-ai-waitlist</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/top-stories-ios-27-macos-golden-gate-siri-ai-waitlist</guid>
+  <description>Disponibili iOS 27 e macOS Golden Gate con Siri AI e nuove funzioni. Siri AI richiede una waitlist, iPhone 18 Pro Max negli USA usa un modem diverso e iCloud+ si amplia in oltre 100 paesi.</description>
+  <pubDate>Sun, 20 Sep 2026 07:28:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 18 Pro Max USA con modem Qualcomm Snapdragon X80: cosa cambia</title>
+  <link>https://www.techjournal.it/tech/iphone-18-pro-max-usa-modem-qualcomm-snapdragon-x80</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/iphone-18-pro-max-usa-modem-qualcomm-snapdragon-x80</guid>
+  <description>Un teardown conferma che la variante statunitense di iPhone 18 Pro Max monta il modem Qualcomm Snapdragon X80. Nel resto del mondo, invece, Apple usa il modem C2.</description>
+  <pubDate>Sun, 20 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>Riparare iPhone 18 Pro e Pro Max costa fino a 1.059€: listino italiano e differenze con AppleCare+</title>
+  <link>https://www.techjournal.it/apple/riparare-iphone-18-pro-pro-max-costa-fino-a-1059-euro-listino-italiano-applecare-plus</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/riparare-iphone-18-pro-pro-max-costa-fino-a-1059-euro-listino-italiano-applecare-plus</guid>
+  <description>Con l’arrivo di iPhone 18 Pro e iPhone 18 Pro Max in Italia, Apple ha aggiornato il listino delle riparazioni fuori garanzia: sostituzione batteria, display, vetro posteriore e fotocamere con costi fino a 1.059€. Ecco cosa cambia con AppleCare+.</description>
+  <pubDate>Sun, 20 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+<item>
+  <title>Benchmark GPU: M5 Ultra e M6 mostrano balzi nella performance Metal</title>
+  <link>https://www.techjournal.it/tech/benchmark-gpu-m5-ultra-m6-metal</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/benchmark-gpu-m5-ultra-m6-metal</guid>
+  <description>I primi risultati GPU su Geekbench 7 indicano un incremento marcato per M5 Ultra e M6: Metal fino a +59% e +34% rispetto alle generazioni precedenti, con OpenCL del chip Ultra vicino a GeForce RTX 4080.</description>
+  <pubDate>Sun, 20 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Watch Series 12: stesso design, nuovi sensori e ricarica più rapida</title>
+  <link>https://www.techjournal.it/tech/apple-watch-series-12-stesso-design-nuovi-sensori-ricarica-piu-rapida</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-watch-series-12-stesso-design-nuovi-sensori-ricarica-piu-rapida</guid>
+  <description>Hands-on con Apple Watch Series 12: invariato il look rispetto alla Serie 11, ma arrivano nuovi sensori per il battito, un chip S11 più veloce, letture più frequenti e una ricarica migliorata.</description>
+  <pubDate>Sun, 20 Sep 2026 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone Duo, il capo dell’hardware Apple fiducioso sulla piega dello schermo: “Giudicateci pure su questo”</title>
+  <link>https://www.techjournal.it/apple/iphone-duo-capo-hardware-fiducioso-piega-schermo-giudicateci-pure</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/iphone-duo-capo-hardware-fiducioso-piega-schermo-giudicateci-pure</guid>
+  <description>iPhone Duo arriverà il mese prossimo. Tom Marieb, responsabile dell’hardware Apple, si concentra su piega, cerniera e resistenza, invitando a valutarli direttamente.</description>
+  <pubDate>Sat, 19 Sep 2026 10:46:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 18 Pro Max: “Prepare to Ship” limita la batteria sotto 20Wh prima della spedizione</title>
+  <link>https://www.techjournal.it/ios/iphone-18-pro-max-prepare-to-ship-limita-batteria-sotto-20wh</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ios/iphone-18-pro-max-prepare-to-ship-limita-batteria-sotto-20wh</guid>
+  <description>Per rispettare i requisiti di trasporto, iPhone 18 Pro Max usa una soluzione firmware che limita la capacità della batteria sotto 20Wh fino all’attivazione. Per spedizioni successive è disponibile “Prepare to Ship”.</description>
+  <pubDate>Sat, 19 Sep 2026 10:15:21 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 18 Pro: la nuova lente a diaframma variabile spiegata</title>
+  <link>https://www.techjournal.it/tech/iphone-18-pro-lente-diaframma-variabile</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/iphone-18-pro-lente-diaframma-variabile</guid>
+  <description>L’iPhone 18 Pro e Pro Max introducono un diaframma variabile sulla fotocamera principale: da f/1.48 a f/4.0. Ecco come funziona e come impostarlo manualmente.</description>
+  <pubDate>Sat, 19 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Xcode 27.1 beta è disponibile: gli sviluppatori possono iniziare ad adattare le app per iPhone Duo</title>
+  <link>https://www.techjournal.it/apple/xcode-27-1-beta-disponibile-adattare-app-iphone-duo</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/xcode-27-1-beta-disponibile-adattare-app-iphone-duo</guid>
+  <description>Apple ha rilasciato Xcode 27.1 beta 1, la versione degli strumenti di sviluppo pensata per iniziare ad adattare le app al nuovo iPhone Duo. Il dispositivo arriverà a ottobre, ma lo sviluppo può partire ora.</description>
+  <pubDate>Sat, 19 Sep 2026 09:53:10 GMT</pubDate>
+</item>
+<item>
+  <title>“Design the Next iPhone”: crea un iPhone virtuale con componenti a piacere</title>
+  <link>https://www.techjournal.it/apps/design-the-next-iphone-crea-un-iphone-virtuale-con-componenti-a-piacere</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apps/design-the-next-iphone-crea-un-iphone-virtuale-con-componenti-a-piacere</guid>
+  <description>Un sito interattivo permette di progettare un iPhone virtuale in 3D: drag-and-drop di componenti, accessori anche improbabili, personalizzazione di colori e wallpaper e un’anteprima in stile presentazione prodotto.</description>
+  <pubDate>Sat, 19 Sep 2026 07:28:00 GMT</pubDate>
+</item>
+<item>
+  <title>Teardown iPhone 18 Pro: Apple riduce la Dynamic Island spostando Face ID</title>
+  <link>https://www.techjournal.it/tech/teardown-iphone-18-pro-apple-riduce-dynamic-island</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/teardown-iphone-18-pro-apple-riduce-dynamic-island</guid>
+  <description>Un teardown dell’iPhone 18 Pro mostra come Apple abbia ridotto la Dynamic Island: Face ID viene riposizionato sotto lo schermo, con pixel dedicati per far passare la luce infrarossa.</description>
+  <pubDate>Sat, 19 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>Fornitore Apple valuta una fabbrica USA di memoria flash NAND</title>
+  <link>https://www.techjournal.it/tech/fornitore-apple-valuta-fabbrica-usa-memoria-flash-nand</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/fornitore-apple-valuta-fabbrica-usa-memoria-flash-nand</guid>
+  <description>La controllata di SK Hynix, Solidigm, starebbe valutando una fabbrica di NAND negli Stati Uniti. Tra le opzioni, lo Stato di New York sarebbe in cima alla lista per ridurre la dipendenza dallo stabilimento cinese.</description>
+  <pubDate>Sat, 19 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+<item>
+  <title>Le cover iPhone 17 Pro sono compatibili con iPhone 18 Pro? La risposta di Apple</title>
+  <link>https://www.techjournal.it/tech/compatibilita-cover-iphone-17-pro-iphone-18-pro</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/compatibilita-cover-iphone-17-pro-iphone-18-pro</guid>
+  <description>Apple indica che le cover per iPhone 17 Pro non sarebbero compatibili con iPhone 18 Pro, ma test pratici suggeriscono che nella maggior parte dei casi lo scambio funziona.</description>
+  <pubDate>Sat, 19 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple accetta prezzi più alti per RAM e storage da Samsung nel 2027</title>
+  <link>https://www.techjournal.it/tech/apple-accetta-prezzi-piu-alti-ram-storage-samsung-2027</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-accetta-prezzi-piu-alti-ram-storage-samsung-2027</guid>
+  <description>Secondo quanto riferito, Apple avrebbe accettato con Samsung prezzi ancora più alti per chip DRAM e NAND a partire dal primo trimestre 2027, in un contesto di carenza di memoria legata alla crescita dei data center.</description>
+  <pubDate>Sat, 19 Sep 2026 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 18 Pro, Apple alza il costo della sostituzione batteria: 149 euro</title>
+  <link>https://www.techjournal.it/apple/iphone-18-pro-apple-alza-costo-sostituzione-batteria-149-euro</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/iphone-18-pro-apple-alza-costo-sostituzione-batteria-149-euro</guid>
+  <description>In Italia la sostituzione fuori garanzia della batteria su iPhone 18 Pro e iPhone 18 Pro Max passa a 149 euro, da 135 euro dei modelli precedenti.</description>
+  <pubDate>Fri, 18 Sep 2026 17:50:27 GMT</pubDate>
+</item>
+<item>
+  <title>Le memorie di iPhone e Mac potrebbero essere prodotte negli Stati Uniti</title>
+  <link>https://www.techjournal.it/tech/memorie-iphone-mac-prodotte-negli-stati-uniti</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/memorie-iphone-mac-prodotte-negli-stati-uniti</guid>
+  <description>Nuove ipotesi puntano a spostare parte della produzione delle memorie per iPhone e Mac negli Stati Uniti, con possibili ricadute su filiera e disponibilità dei componenti.</description>
+  <pubDate>Fri, 18 Sep 2026 10:24:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 18 Pro Unboxing: nuove colorazioni, foto migliori e Dynamic Island più piccola</title>
+  <link>https://www.techjournal.it/tech/iphone-18-pro-unboxing-nuove-colorazioni-foto-migliori-dynamic-island-piu-piccola</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/iphone-18-pro-unboxing-nuove-colorazioni-foto-migliori-dynamic-island-piu-piccola</guid>
+  <description>Nel nostro unboxing di iPhone 18 Pro emergono nuove colorazioni, un comparto fotografico pensato per risultati migliori e una Dynamic Island più compatta.</description>
+  <pubDate>Fri, 18 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 15 Pro vs iPhone 18 Pro: guida all’upgrade</title>
+  <link>https://www.techjournal.it/guide/iphone-15-pro-vs-iphone-18-pro-guida-aggiornamento</link>
+  <guid isPermaLink="true">https://www.techjournal.it/guide/iphone-15-pro-vs-iphone-18-pro-guida-aggiornamento</guid>
+  <description>Tre generazioni di cambiamenti separano iPhone 15 Pro e iPhone 18 Pro: display più grandi, design rinnovato, fotocamere migliorate, autonomia più lunga e ricarica più rapida. Ecco quando conviene davvero passare al nuovo modello.</description>
+  <pubDate>Fri, 18 Sep 2026 07:33:40 GMT</pubDate>
+</item>
+<item>
+  <title>watchOS 27 toglie una funzione: doppio clic sulla Digital Crown cambia comportamento</title>
+  <link>https://www.techjournal.it/tech/watchos-27-toglie-funzione-doppio-clic-digital-crown</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/watchos-27-toglie-funzione-doppio-clic-digital-crown</guid>
+  <description>Con watchOS 27 Apple introduce Live Rewind sui modelli più recenti, ma il doppio clic sulla Digital Crown perde la funzione di salto tra app: succede sia ai nuovi Apple Watch sia a chi aggiorna modelli precedenti.</description>
+  <pubDate>Fri, 18 Sep 2026 07:28:00 GMT</pubDate>
+</item>
+<item>
+  <title>Nuovi iPhone 18 Pro e Apple Watch: aggiornamento “day one” richiesto</title>
+  <link>https://www.techjournal.it/iphone/nuovi-iphone-18-pro-apple-watch-aggiornamento-day-one-richiesto</link>
+  <guid isPermaLink="true">https://www.techjournal.it/iphone/nuovi-iphone-18-pro-apple-watch-aggiornamento-day-one-richiesto</guid>
+  <description>Chi riceve iPhone 18 Pro, iPhone 18 Pro Max, Apple Watch Series 12 o Apple Watch Ultra 4 dovrà installare subito un aggiornamento software durante la configurazione.</description>
+  <pubDate>Fri, 18 Sep 2026 07:25:41 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 18 Pro Max: test di ricarica più rapida da 0% a 100%</title>
+  <link>https://www.techjournal.it/tech/iphone-18-pro-max-test-ricarica-0-100-piu-rapida</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/iphone-18-pro-max-test-ricarica-0-100-piu-rapida</guid>
+  <description>Un test mostra tempi di ricarica più rapidi per iPhone 18 Pro Max, con passaggio da 0% a 100% in modo significativamente più efficiente rispetto alle attese.</description>
+  <pubDate>Fri, 18 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 18 Pro: domani il lancio con 10 novità chiave</title>
+  <link>https://www.techjournal.it/apple/iphone-18-pro-lancio-10-novita</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/iphone-18-pro-lancio-10-novita</guid>
+  <description>Dall’A20 Pro al nuovo sistema di raffreddamento, fino a controlli avanzati in Camera e storage da 2TB: ecco le principali novità di iPhone 18 Pro e iPhone 18 Pro Max.</description>
+  <pubDate>Fri, 18 Sep 2026 07:03:28 GMT</pubDate>
+</item>
+<item>
+  <title>macOS Golden Gate: 50 novità tra Siri, app Apple e interfaccia</title>
+  <link>https://www.techjournal.it/ia/macos-golden-gate-50-novita-siri-app-interfaccia</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/macos-golden-gate-50-novita-siri-app-interfaccia</guid>
+  <description>macOS 27 Golden Gate porta un’esperienza Siri rinnovata, nuove funzioni in Safari, Foto, Mail e Calendario, miglioramenti all’interfaccia e aggiornamenti per AirDrop, i widget e molto altro.</description>
+  <pubDate>Fri, 18 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia le prime beta di watchOS 27.2, tvOS 27.2 e visionOS 27.2</title>
+  <link>https://www.techjournal.it/apple/apple-prime-beta-watchos-27-2-tvos-27-2-visionos-27-2</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/apple-prime-beta-watchos-27-2-tvos-27-2-visionos-27-2</guid>
+  <description>Apple ha reso disponibili le prime versioni beta di watchOS 27.2, tvOS 27.2 e visionOS 27.2, aprendo la fase di test per le piattaforme dedicate a Apple Watch, Apple TV e Vision Pro.</description>
+  <pubDate>Fri, 18 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia la prima beta di macOS Golden Gate 27.2 agli sviluppatori</title>
+  <link>https://www.techjournal.it/mac/apple-prima-beta-macos-golden-gate-27-2-sviluppatori</link>
+  <guid isPermaLink="true">https://www.techjournal.it/mac/apple-prima-beta-macos-golden-gate-27-2-sviluppatori</guid>
+  <description>Apple avvia la beta di macOS Golden Gate 27.2 per gli sviluppatori. Il test arriva a pochi giorni dal rilascio di macOS Golden Gate 27.0 e riaccende le attese su funzioni di Apple Intelligence e su Suggestions in Messaggi.</description>
+  <pubDate>Fri, 18 Sep 2026 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>Kids Act UE: stop ai social per under 13 e limiti per chatbot AI</title>
+  <link>https://www.techjournal.it/tech/kids-act-ue-stop-social-under-13-chatbot-ai</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/kids-act-ue-stop-social-under-13-chatbot-ai</guid>
+  <description>L’UE prepara il Kids Act: divieto di social media per i minori di 13 anni senza supervisione, regole più stringenti tra 13 e 15 e obblighi di tutela anche per gaming e chatbot AI.</description>
+  <pubDate>Thu, 17 Sep 2026 11:08:00 GMT</pubDate>
+</item>
+<item>
+  <title>Reminder: macOS 27 interrompe i backup Time Machine su AirPort Time Capsule</title>
+  <link>https://www.techjournal.it/mac/macos-27-interrompe-backup-time-machine-airport-time-capsule</link>
+  <guid isPermaLink="true">https://www.techjournal.it/mac/macos-27-interrompe-backup-time-machine-airport-time-capsule</guid>
+  <description>Con macOS 27, Time Machine non potrà più eseguire backup su AirPort Time Capsule: viene rimosso il supporto AFP e i backup passano esclusivamente a SMB.</description>
+  <pubDate>Thu, 17 Sep 2026 10:46:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 18 Pro, Apple Reference Image: il “negativo digitale” per attestare lo scatto</title>
+  <link>https://www.techjournal.it/ia/iphone-18-pro-apple-reference-image-negativo-digitale</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/iphone-18-pro-apple-reference-image-negativo-digitale</guid>
+  <description>Con iPhone 18 Pro e iPhone 18 Pro Max, Apple introduce Apple Reference Image: una modalità che mira a dimostrare che una foto è stata scattata davvero con un iPhone e non è stata modificata.</description>
+  <pubDate>Thu, 17 Sep 2026 10:24:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple Watch Ultra 3 vs Ultra 4: guida all’acquisto</title>
+  <link>https://www.techjournal.it/guide/apple-watch-ultra-3-vs-ultra-4-guida-all-acquisto</link>
+  <guid isPermaLink="true">https://www.techjournal.it/guide/apple-watch-ultra-3-vs-ultra-4-guida-all-acquisto</guid>
+  <description>Ultra 4 in pre-order: nuovo sistema di rilevazione della salute, più memoria e autonomia estesa. Confronto completo con Ultra 3 e consigli per scegliere.</description>
+  <pubDate>Thu, 17 Sep 2026 10:24:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple potrebbe tornare nel mercato server con tecnologia Nvidia</title>
+  <link>https://www.techjournal.it/tech/apple-tornare-mercato-server-tecnologia-nvidia</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/apple-tornare-mercato-server-tecnologia-nvidia</guid>
+  <description>Apple valuta un ritorno nel mercato dei server integrando tecnologie Nvidia, con un possibile focus su infrastrutture per l’AI e data center.</description>
+  <pubDate>Thu, 17 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Fornitore di memoria di Apple valuta produzione negli Stati Uniti con Intel</title>
+  <link>https://www.techjournal.it/tech/fornitore-memoria-apple-valuta-produzione-usa-con-intel</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/fornitore-memoria-apple-valuta-produzione-usa-con-intel</guid>
+  <description>SK Hynix, fornitore di memoria per Apple, sarebbe in colloqui esplorativi con Intel per produrre chip di memoria negli Stati Uniti. Ipotesi: leasing di parte dell’impianto in Ohio o joint venture con cloud provider.</description>
+  <pubDate>Thu, 17 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Primo benchmark per il chip M5 Ultra: boost prestazionale in evidenza</title>
+  <link>https://www.techjournal.it/ia/primo-benchmark-chip-m5-ultra-boost-prestazionale</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/primo-benchmark-chip-m5-ultra-boost-prestazionale</guid>
+  <description>Il primo risultato di benchmark relativo al chip M5 Ultra mostra un incremento delle prestazioni, offrendo un primo assaggio della nuova generazione di silicio orientata all’AI.</description>
+  <pubDate>Thu, 17 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>iOS 27 e Siri AI: lista d’attesa e come attivarla su iPhone</title>
+  <link>https://www.techjournal.it/ia/ios-27-siri-ai-lista-attesa-come-attivarla</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/ios-27-siri-ai-lista-attesa-come-attivarla</guid>
+  <description>Dopo l’aggiornamento a iOS 27, Siri AI e l’app dedicata non sono immediatamente disponibili per tutti: serve iscriversi alla lista d’attesa. Ecco i passaggi e i requisiti dei modelli compatibili.</description>
+  <pubDate>Thu, 17 Sep 2026 07:28:00 GMT</pubDate>
+</item>
+<item>
+  <title>Benchmark Geekbench 7: chip Apple M6 in evidenza prima del nuovo Mac mini</title>
+  <link>https://www.techjournal.it/tech/benchmark-geekbench-7-chip-apple-m6-prima-del-nuovo-mac-mini</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/benchmark-geekbench-7-chip-apple-m6-prima-del-nuovo-mac-mini</guid>
+  <description>Un primo risultato Geekbench 7 non verificato mostra le prestazioni del nuovo chip Apple M6: 4.071 in single-core e 22.783 in multi-core. Atteso il debutto sul nuovo Mac mini.</description>
+  <pubDate>Thu, 17 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>AirPods 5 in prova: cancellazione del rumore migliore e prezzo più basso</title>
+  <link>https://www.techjournal.it/offerte/airpods-5-hands-on-migliore-cancellazione-rumore-prezzo-basso</link>
+  <guid isPermaLink="true">https://www.techjournal.it/offerte/airpods-5-hands-on-migliore-cancellazione-rumore-prezzo-basso</guid>
+  <description>Hands-on con AirPods 5: ANC migliorata grazie a nuova architettura acustica, microfoni a basso rumore e prezzo d’ingresso con cancellazione attiva a 129 dollari.</description>
+  <pubDate>Thu, 17 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone 16 Pro vs. iPhone 18 Pro: Buyer’s Guide, vale l’upgrade?</title>
+  <link>https://www.techjournal.it/guide/iphone-16-pro-vs-iphone-18-pro-buyers-guide-valga-lupgrade</link>
+  <guid isPermaLink="true">https://www.techjournal.it/guide/iphone-16-pro-vs-iphone-18-pro-buyers-guide-valga-lupgrade</guid>
+  <description>Apple ha introdotto iPhone 18 Pro e iPhone 18 Pro Max due anni dopo i 16 Pro. Tra chip A20 Pro, fotocamera con apertura variabile, modem C2 e soprattutto autonomia record, ecco quando conviene davvero passare.</description>
+  <pubDate>Thu, 17 Sep 2026 06:22:00 GMT</pubDate>
+</item>
+<item>
+  <title>iPhone Duo: cosa può (e cosa non può) fare la fotocamera</title>
+  <link>https://www.techjournal.it/apps/iphone-duo-cosa-puo-e-cosa-non-puo-fare-la-fotocamera</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apps/iphone-duo-cosa-puo-e-cosa-non-puo-fare-la-fotocamera</guid>
+  <description>Con il design pieghevole a doppio display, l’app Fotocamera introduce funzioni dedicate: Smart Take, Kid Cue, Duo Preview e Duo FaceTime. Ma mancano alcune opzioni tipiche dei modelli Pro.</description>
+  <pubDate>Thu, 17 Sep 2026 06:00:00 GMT</pubDate>
+</item>
+<item>
+  <title>iCloud+ si espande: Apple TV, Apple Arcade e nuove stazioni Apple Music in oltre 100 Paesi</title>
+  <link>https://www.techjournal.it/apple/icloud-plus-apple-tv-apple-arcade-oltre-100-paesi</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apple/icloud-plus-apple-tv-apple-arcade-oltre-100-paesi</guid>
+  <description>Apple porta i contenuti di Apple TV e Apple Arcade dentro i piani iCloud+ in più di 100 Paesi, includendo anche Apple Music Select. Accesso automatico per gli abbonati esistenti.</description>
+  <pubDate>Wed, 16 Sep 2026 10:46:00 GMT</pubDate>
+</item>
+<item>
+  <title>Chiavi auto in Apple Wallet: in arrivo tre nuovi marchi</title>
+  <link>https://www.techjournal.it/tech/iphone-car-keys-apple-wallet-tre-nuovi-marchi</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/iphone-car-keys-apple-wallet-tre-nuovi-marchi</guid>
+  <description>Apple Wallet per le chiavi digitali dell’auto si amplia: nel codice emerso compaiono Lincoln, Lucid Motors e Freelander. Nessuna finestra temporale è indicata.</description>
+  <pubDate>Wed, 16 Sep 2026 10:24:00 GMT</pubDate>
+</item>
+<item>
+  <title>L’ultimo iMac Intel da 21,5” 4K del 2019 entra nella lista Vintage Apple</title>
+  <link>https://www.techjournal.it/tech/ultimo-imac-intel-21-5-2019-vintage-apple</link>
+  <guid isPermaLink="true">https://www.techjournal.it/tech/ultimo-imac-intel-21-5-2019-vintage-apple</guid>
+  <description>Apple ha aggiunto l’iMac 2019 21,5” 4K alla lista dei prodotti Vintage: le riparazioni sono possibili solo se sono disponibili i ricambi.</description>
+  <pubDate>Wed, 16 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple aggiorna i trade-in: tagli agli iPhone, aumenti per iPad e Mac</title>
+  <link>https://www.techjournal.it/offerte/apple-aggiorna-trade-in-tagli-iphone-aumenti-ipad-mac</link>
+  <guid isPermaLink="true">https://www.techjournal.it/offerte/apple-aggiorna-trade-in-tagli-iphone-aumenti-ipad-mac</guid>
+  <description>Aggiornate le stime di trade-in negli Stati Uniti: valori più bassi per tutti gli iPhone idonei, mentre iPad e Mac vedono aumenti. Debutta anche un nuovo sistema di valutazione delle condizioni.</description>
+  <pubDate>Wed, 16 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia watchOS 27: Siri AI, nuove watch face e miglioramenti a Smart Stack</title>
+  <link>https://www.techjournal.it/ia/apple-rilascia-watchos-27-siri-ai-nuove-watch-face-smart-stack</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ia/apple-rilascia-watchos-27-siri-ai-nuove-watch-face-smart-stack</guid>
+  <description>watchOS 27 arriva con Siri AI, una nuova watch face e aggiornamenti a Smart Stack, per rendere più immediato l’accesso alle informazioni direttamente dal polso.</description>
+  <pubDate>Wed, 16 Sep 2026 10:02:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia iOS 26.7: aggiornamento di sicurezza per iOS 26</title>
+  <link>https://www.techjournal.it/ios/apple-rilascia-ios-26-7-aggiornamento-di-sicurezza</link>
+  <guid isPermaLink="true">https://www.techjournal.it/ios/apple-rilascia-ios-26-7-aggiornamento-di-sicurezza</guid>
+  <description>Apple ha rilasciato iOS 26.7 insieme a iOS 27. L’update di iOS 26.7 è dedicato alle correzioni di sicurezza e non introduce nuove funzioni.</description>
+  <pubDate>Wed, 16 Sep 2026 07:28:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple rilascia macOS Tahoe 26.7 e macOS Sequoia 15.8</title>
+  <link>https://www.techjournal.it/mac/apple-rilascia-macos-tahoe-26-7-e-macos-sequoia-15-8</link>
+  <guid isPermaLink="true">https://www.techjournal.it/mac/apple-rilascia-macos-tahoe-26-7-e-macos-sequoia-15-8</guid>
+  <description>Apple ha pubblicato macOS Tahoe 26.7 e macOS Sequoia 15.8. Gli aggiornamenti includono correzioni di sicurezza e si scaricano da Impostazioni di Sistema &gt; Aggiornamento software.</description>
+  <pubDate>Wed, 16 Sep 2026 07:06:00 GMT</pubDate>
+</item>
+<item>
+  <title>Apple chiede alla Corte Suprema di annullare la decisione sul Contempt per l’App Store</title>
+  <link>https://www.techjournal.it/apps/apple-chiede-alla-corte-suprema-di-annullare-la-decisione-sul-contempt-per-lapp-store</link>
+  <guid isPermaLink="true">https://www.techjournal.it/apps/apple-chiede-alla-corte-suprema-di-annullare-la-decisione-sul-contempt-per-lapp-store</guid>
+  <description>Apple ha presentato richiesta alla Corte Suprema per far annullare una decisione che la riguarda in relazione a un ruling di contempt legato all’App Store.</description>
+  <pubDate>Wed, 16 Sep 2026 06:44:00 GMT</pubDate>
+</item>
+  </channel>
+</rss>

@@ -86,8 +86,9 @@ export default function HomeContent({
   rankingsSlot,
 }: HomeContentProps) {
   const HERO_POSTS_TARGET = 4;
-  const heroPosts = initialPosts.slice(0, HERO_POSTS_TARGET);
-  const initialGridPosts = initialPosts.slice(HERO_POSTS_TARGET);
+  const heroPosts = initialPosts.filter((post) => Boolean(post.imageUrl)).slice(0, HERO_POSTS_TARGET);
+  const heroIds = new Set(heroPosts.map((post) => post.id));
+  const initialGridPosts = initialPosts.filter((post) => !heroIds.has(post.id));
   const emptyGridIsExpected = initialPosts.length > 0 && initialPosts.length <= HERO_POSTS_TARGET;
   const homeSidebarSlot =
     process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME_SIDEBAR ??

@@ -1,0 +1,3 @@
+{
+  "/.well-known/api-catalog/route": "app/.well-known/api-catalog/route.js"
+}

@@ -136,7 +136,7 @@ const nextConfig: NextConfig = {
     unoptimized: usePassthroughImages,
     remotePatterns: [
       { protocol: "https", hostname: "www.techjournal.it", pathname: "/**" },
-      { protocol: "https", hostname: "api.techjournal.it", pathname: "/**" },
+      { protocol: "https", hostname: "backend.techjournal.it", pathname: "/**" },
       { protocol: "https", hostname: "static.techjournal.it", pathname: "/**" },
       { protocol: "https", hostname: "secure.gravatar.com", pathname: "/**" },
       { protocol: "https", hostname: "0.gravatar.com", pathname: "/**" },
