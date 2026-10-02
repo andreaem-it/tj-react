@@ -325,16 +325,44 @@ export default async function HomePage() {
   const spotlightSection = sectionById("spotlight");
   const spotlightSlug = spotlightSection ? hottestTopicSlug(heatItems, now) : null;
   const spotlightTopic = spotlightSlug ? getTopic(spotlightSlug) : undefined;
-  const spotlightPosts = spotlightTopic
-    ? displayItems
-        .filter(
-          (item) =>
-            !heroIds.has(item.post.id) &&
-            item.classification.topics.some((topic) => topic.slug === spotlightTopic.slug),
-        )
-        .slice(0, spotlightSection?.limit ?? 4)
-        .map((item) => item.post)
+  const spotlightLimit = spotlightSection?.limit ?? 4;
+  let spotlightItems = spotlightTopic
+    ? displayItems.filter(
+        (item) =>
+          !heroIds.has(item.post.id) &&
+          item.classification.topics.some((topic) => topic.slug === spotlightTopic.slug),
+      )
     : [];
+
+  // Lo speciale deve avere sempre una griglia completa. Se il batch della home
+  // contiene meno articoli dello stesso topic, allunghiamo il filtro temporale
+  // leggendo le pagine successive dell'archivio, fino a trovare il necessario.
+  // Il recupero è circoscritto al caso incompleto, così non appesantisce la home
+  // quando i quattro articoli sono già nel primo batch.
+  if (spotlightTopic && spotlightItems.length < spotlightLimit) {
+    const knownIds = new Set(initialPosts.map((post) => post.id));
+    const maxAdditionalPages = 4;
+    for (let page = 2; page <= maxAdditionalPages && spotlightItems.length < spotlightLimit; page += 1) {
+      const { posts: olderPosts } = await fetchPosts({ perPage: 100, page }).catch(() => ({ posts: [] }));
+      if (olderPosts.length === 0) break;
+
+      const olderItems = prepareItems(
+        olderPosts.filter((post) => {
+          if (knownIds.has(post.id)) return false;
+          knownIds.add(post.id);
+          return true;
+        }),
+      );
+      spotlightItems = [
+        ...spotlightItems,
+        ...olderItems.filter((item) =>
+          item.classification.topics.some((topic) => topic.slug === spotlightTopic.slug),
+        ),
+      ].slice(0, spotlightLimit);
+    }
+  }
+
+  const spotlightPosts = spotlightItems.slice(0, spotlightLimit).map((item) => item.post);
 
   /**
    * Fonte del breaking (§12): i post reali che arrivano già in questo
