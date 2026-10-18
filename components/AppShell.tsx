@@ -4,6 +4,7 @@ import HeaderSkeleton from "@/components/HeaderSkeleton";
 import Footer from "@/components/Footer";
 import BannerPlaceholder from "@/components/BannerPlaceholder";
 import NonCriticalWidgets from "@/components/NonCriticalWidgets";
+import AdBlockNotice from "@/components/AdBlockNotice";
 
 export default function AppShell({
   children,
@@ -22,6 +23,7 @@ export default function AppShell({
       <Suspense fallback={<HeaderSkeleton />}>
         <Header />
       </Suspense>
+      <AdBlockNotice />
       <main
         id="main-content"
         tabIndex={-1}
