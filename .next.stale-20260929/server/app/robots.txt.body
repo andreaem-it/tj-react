@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Content-Signal: ai-train=no, search=yes, ai-input=yes
-Sitemap: https://www.techjournal.it/sitemap.xml

@@ -1,3 +1,0 @@
-{
-  "/api/webhooks/wp-post-published/route": "app/api/webhooks/wp-post-published/route.js"
-}

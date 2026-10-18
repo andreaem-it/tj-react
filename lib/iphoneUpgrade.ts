@@ -22,53 +22,17 @@ export interface IphoneUpgradeAssessment {
   generationGap: number | null;
 }
 
-export type NormalizedIphone = {
+type NormalizedIphone = {
   ramGB: number | null;
-  display: string | null;
   displayInches: number | null;
   hasOled: boolean | null;
   hasPromotion: boolean;
-  refreshRateHz: number | null;
-  resolution: string | null;
   connector: string | null;
   biometrics: string | null;
-  storageOptionsGB: number[];
   baseStorageGB: number | null;
   maxStorageGB: number | null;
-  appleIntelligence: boolean | null;
-  processorCooling: string | null;
-  cameraMainMP: number | null;
-  cameraUltraWideMP: number | null;
-  cameraTelephotoMP: number | null;
-  frontCameraMP: number | null;
-  telephotoOpticalZoom: string | null;
-  mainCameraVariableAperture: boolean | null;
-  underDisplayFaceTimeCamera: boolean | null;
-  batteryVideoPlaybackHours: number | null;
-  innerBatteryVideoPlaybackHours: number | null;
-  outerBatteryVideoPlaybackHours: number | null;
-  wirelessCharging: string | null;
-  frame: string | null;
-  sim: string | null;
-  foldable: boolean | null;
-  formFactor: string | null;
-  features: string[];
+  appleIntelligence: boolean;
 };
-
-export interface IphoneComparisonRow {
-  id: string;
-  label: string;
-  fromValue: string | null;
-  toValue: string | null;
-  differs: boolean;
-  incomplete: boolean;
-}
-
-export interface IphoneComparisonSection {
-  id: string;
-  title: string;
-  rows: IphoneComparisonRow[];
-}
 
 function numberValue(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -83,11 +47,6 @@ function storageValues(value: unknown): number[] {
   return value.filter((item): item is number => typeof item === "number" && Number.isFinite(item));
 }
 
-function stringValues(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
-}
-
 export function normalizeIphone(device: Device): NormalizedIphone {
   const specs = device.specs ?? {};
   const display = stringValue(specs.display);
@@ -96,169 +55,15 @@ export function normalizeIphone(device: Device): NormalizedIphone {
 
   return {
     ramGB,
-    display,
     displayInches: display ? numberValue(Number.parseFloat(display.replace(",", "."))) : null,
     hasOled: display ? /oled/i.test(display) : null,
     hasPromotion: display ? /promotion/i.test(display) : false,
-    refreshRateHz: numberValue(specs.displayRefreshRateHz) ?? (display && /promotion/i.test(display) ? 120 : null),
-    resolution: stringValue(specs.resolution),
     connector: stringValue(specs.connector),
     biometrics: stringValue(specs.biometrics),
-    storageOptionsGB: storage,
     baseStorageGB: storage.length > 0 ? Math.min(...storage) : null,
     maxStorageGB: storage.length > 0 ? Math.max(...storage) : null,
-    appleIntelligence: typeof specs.appleIntelligence === "boolean" ? specs.appleIntelligence : null,
-    processorCooling: stringValue(specs.processorCooling),
-    cameraMainMP: numberValue(specs.cameraMainMP),
-    cameraUltraWideMP: numberValue(specs.cameraUltraWideMP),
-    cameraTelephotoMP: numberValue(specs.cameraTelephotoMP),
-    frontCameraMP: numberValue(specs.frontCameraMP),
-    telephotoOpticalZoom: stringValue(specs.telephotoOpticalZoom),
-    mainCameraVariableAperture: typeof specs.mainCameraVariableAperture === "boolean" ? specs.mainCameraVariableAperture : null,
-    underDisplayFaceTimeCamera: typeof specs.underDisplayFaceTimeCamera === "boolean" ? specs.underDisplayFaceTimeCamera : null,
-    batteryVideoPlaybackHours: numberValue(specs.batteryVideoPlaybackHours),
-    innerBatteryVideoPlaybackHours: numberValue(specs.innerBatteryVideoPlaybackHours),
-    outerBatteryVideoPlaybackHours: numberValue(specs.outerBatteryVideoPlaybackHours),
-    wirelessCharging: stringValue(specs.wirelessCharging),
-    frame: stringValue(specs.frame),
-    sim: stringValue(specs.sim),
-    foldable: typeof specs.foldable === "boolean"
-      ? specs.foldable
-      : stringValue(specs.formFactor)
-        ? /pieghevole/i.test(stringValue(specs.formFactor) ?? "")
-        : null,
-    formFactor: stringValue(specs.formFactor),
-    features: stringValues(specs.features),
+    appleIntelligence: specs.appleIntelligence === true,
   };
-}
-
-type ComparisonField = {
-  id: string;
-  label: string;
-  value: (device: Device, normalized: NormalizedIphone) => string | null;
-};
-
-type ComparisonSectionDefinition = {
-  id: string;
-  title: string;
-  fields: ComparisonField[];
-};
-
-function text(value: unknown): string | null {
-  if (value == null || value === "") return null;
-  return String(value);
-}
-
-function yesNo(value: boolean | null): string | null {
-  return value == null ? null : value ? "Sì" : "No";
-}
-
-function numberWithUnit(value: number | null, unit: string): string | null {
-  return value == null ? null : `${value.toLocaleString("it-IT")} ${unit}`;
-}
-
-const COMPARISON_SECTIONS: ComparisonSectionDefinition[] = [
-  {
-    id: "overview",
-    title: "Generale",
-    fields: [
-      { id: "release-year", label: "Anno di uscita", value: (device) => text(device.releaseYear) },
-      { id: "chip", label: "Chip", value: (device) => device.chipset },
-      { id: "support-end", label: "Fine supporto indicata", value: (device) => text(device.endOfSupportYear) },
-    ],
-  },
-  {
-    id: "display",
-    title: "Schermo",
-    fields: [
-      { id: "display", label: "Pannello", value: (_device, normalized) => normalized.display },
-      { id: "resolution", label: "Risoluzione", value: (_device, normalized) => normalized.resolution },
-      { id: "refresh-rate", label: "Frequenza massima", value: (_device, normalized) => numberWithUnit(normalized.refreshRateHz, "Hz") },
-    ],
-  },
-  {
-    id: "performance",
-    title: "Prestazioni e memoria",
-    fields: [
-      { id: "ram", label: "Memoria RAM", value: (_device, normalized) => numberWithUnit(normalized.ramGB, "GB") },
-      { id: "cooling", label: "Raffreddamento", value: (_device, normalized) => normalized.processorCooling },
-      { id: "apple-intelligence", label: "Apple Intelligence", value: (_device, normalized) => yesNo(normalized.appleIntelligence) },
-    ],
-  },
-  {
-    id: "camera",
-    title: "Fotocamere",
-    fields: [
-      { id: "camera-main", label: "Fotocamera principale", value: (_device, normalized) => numberWithUnit(normalized.cameraMainMP, "MP") },
-      { id: "camera-ultrawide", label: "Ultra-grandangolo", value: (_device, normalized) => numberWithUnit(normalized.cameraUltraWideMP, "MP") },
-      { id: "camera-telephoto", label: "Teleobiettivo", value: (_device, normalized) => numberWithUnit(normalized.cameraTelephotoMP, "MP") },
-      { id: "camera-front", label: "Fotocamera frontale", value: (_device, normalized) => numberWithUnit(normalized.frontCameraMP, "MP") },
-      { id: "optical-zoom", label: "Zoom ottico", value: (_device, normalized) => normalized.telephotoOpticalZoom },
-      { id: "variable-aperture", label: "Apertura variabile", value: (_device, normalized) => yesNo(normalized.mainCameraVariableAperture) },
-      { id: "under-display-camera", label: "Fotocamera sotto lo schermo", value: (_device, normalized) => yesNo(normalized.underDisplayFaceTimeCamera) },
-    ],
-  },
-  {
-    id: "battery",
-    title: "Batteria e ricarica",
-    fields: [
-      { id: "video-playback", label: "Riproduzione video dichiarata", value: (_device, normalized) => numberWithUnit(normalized.batteryVideoPlaybackHours, "ore") },
-      { id: "inner-video-playback", label: "Autonomia con schermo interno", value: (_device, normalized) => numberWithUnit(normalized.innerBatteryVideoPlaybackHours, "ore") },
-      { id: "outer-video-playback", label: "Autonomia con schermo esterno", value: (_device, normalized) => numberWithUnit(normalized.outerBatteryVideoPlaybackHours, "ore") },
-      { id: "wireless-charging", label: "Ricarica wireless", value: (_device, normalized) => normalized.wirelessCharging },
-    ],
-  },
-  {
-    id: "design",
-    title: "Design e sicurezza",
-    fields: [
-      { id: "frame", label: "Scocca", value: (_device, normalized) => normalized.frame },
-      { id: "form-factor", label: "Formato", value: (_device, normalized) => normalized.formFactor ?? (normalized.foldable === true ? "Pieghevole" : null) },
-      { id: "biometrics", label: "Sicurezza biometrica", value: (_device, normalized) => normalized.biometrics },
-    ],
-  },
-  {
-    id: "connectivity",
-    title: "Connettività",
-    fields: [
-      { id: "connector", label: "Connettore", value: (_device, normalized) => normalized.connector },
-      { id: "sim", label: "SIM", value: (_device, normalized) => normalized.sim },
-    ],
-  },
-  {
-    id: "storage-features",
-    title: "Capacità e funzioni",
-    fields: [
-      { id: "storage", label: "Capacità disponibili", value: (_device, normalized) => normalized.storageOptionsGB.length > 0 ? normalized.storageOptionsGB.map((value) => `${value} GB`).join(" · ") : null },
-      { id: "features", label: "Funzioni distintive", value: (_device, normalized) => normalized.features.length > 0 ? normalized.features.join(" · ") : null },
-    ],
-  },
-];
-
-export function buildIphoneComparisonSections(
-  from: Device,
-  to: Device,
-): IphoneComparisonSection[] {
-  const current = normalizeIphone(from);
-  const target = normalizeIphone(to);
-
-  return COMPARISON_SECTIONS.flatMap((section) => {
-    const rows = section.fields.flatMap((field): IphoneComparisonRow[] => {
-      const fromValue = field.value(from, current);
-      const toValue = field.value(to, target);
-      if (fromValue == null && toValue == null) return [];
-      const bothPresent = fromValue != null && toValue != null;
-      return [{
-        id: field.id,
-        label: field.label,
-        fromValue,
-        toValue,
-        differs: bothPresent && fromValue !== toValue,
-        incomplete: (fromValue == null) !== (toValue == null),
-      }];
-    });
-    return rows.length > 0 ? [{ id: section.id, title: section.title, rows }] : [];
-  });
 }
 
 /**
@@ -400,7 +205,7 @@ export function assessIphoneUpgrade(from: Device, to: Device): IphoneUpgradeAsse
     }
   }
 
-  if (current.appleIntelligence !== true && target.appleIntelligence === true) {
+  if (!current.appleIntelligence && target.appleIntelligence) {
     score += add(benefits, "apple-intelligence", "Supporto ad Apple Intelligence", "Il nuovo modello può usare le funzioni Apple Intelligence compatibili con la sua generazione.", 12);
   }
 
@@ -409,64 +214,6 @@ export function assessIphoneUpgrade(from: Device, to: Device): IphoneUpgradeAsse
   }
   if (current.maxStorageGB != null && target.maxStorageGB != null && target.maxStorageGB < current.maxStorageGB) {
     score += add(cautions, "max-storage", "Meno capacità massima", `La configurazione più capiente scende da ${current.maxStorageGB} GB a ${target.maxStorageGB} GB.`, -5);
-  } else if (current.maxStorageGB != null && target.maxStorageGB != null && target.maxStorageGB > current.maxStorageGB) {
-    score += add(benefits, "max-storage-up", "Più capacità disponibile", `La configurazione più capiente sale da ${current.maxStorageGB} GB a ${target.maxStorageGB} GB.`, 4);
-  }
-
-  if (
-    current.batteryVideoPlaybackHours != null &&
-    target.batteryVideoPlaybackHours != null &&
-    target.batteryVideoPlaybackHours > current.batteryVideoPlaybackHours
-  ) {
-    const delta = target.batteryVideoPlaybackHours - current.batteryVideoPlaybackHours;
-    score += add(
-      benefits,
-      "battery-video",
-      "Più autonomia dichiarata",
-      `La riproduzione video dichiarata aumenta di ${delta} ${delta === 1 ? "ora" : "ore"}, da ${current.batteryVideoPlaybackHours} a ${target.batteryVideoPlaybackHours}.`,
-      delta >= 5 ? 8 : 4,
-    );
-  } else if (
-    current.batteryVideoPlaybackHours != null &&
-    target.batteryVideoPlaybackHours != null &&
-    target.batteryVideoPlaybackHours < current.batteryVideoPlaybackHours
-  ) {
-    const weight = add(
-      cautions,
-      "battery-video-down",
-      "Autonomia dichiarata inferiore",
-      `La riproduzione video dichiarata scende da ${current.batteryVideoPlaybackHours} a ${target.batteryVideoPlaybackHours} ore.`,
-      -6,
-    );
-    score += weight;
-    regressionWeight += Math.abs(weight);
-  }
-
-  if (current.mainCameraVariableAperture !== true && target.mainCameraVariableAperture === true) {
-    score += add(
-      benefits,
-      "variable-aperture",
-      "Fotocamera con apertura variabile",
-      "L’apertura variabile aggiunge controllo sulla luce e sulla profondità di campo nelle situazioni supportate.",
-      6,
-    );
-  }
-
-  if (current.foldable !== true && target.foldable === true) {
-    score += add(
-      benefits,
-      "foldable-display",
-      "Più spazio con il display pieghevole",
-      "Il formato pieghevole offre uno schermo interno più ampio mantenendo un display esterno utilizzabile da chiuso.",
-      6,
-    );
-    add(
-      cautions,
-      "foldable-format",
-      "Un formato diverso da valutare",
-      "Dimensioni, peso e utilizzo quotidiano cambiano più di quanto accada con un iPhone tradizionale.",
-      0,
-    );
   }
 
   if (current.displayInches != null && target.displayInches != null) {

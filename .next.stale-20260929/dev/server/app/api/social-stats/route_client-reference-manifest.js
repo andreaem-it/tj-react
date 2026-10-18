@@ -1,1 +1,0 @@
-globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/api/social-stats/route"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"/Users/andreaemili/Projects/techjournal/techjournal-clone/app/api/social-stats/route":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}};
