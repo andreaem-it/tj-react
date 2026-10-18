@@ -7,8 +7,9 @@ import { fetchCompatibilityDevices } from "@/lib/compatibility/serverApi";
 import type { Device } from "@/lib/compatibility/types";
 import {
   assessIphoneUpgrade,
-  normalizeIphone,
+  buildIphoneComparisonSections,
   type IphoneUpgradeAssessment,
+  type IphoneComparisonSection,
   type UpgradeReason,
   type UpgradeVerdict,
 } from "@/lib/iphoneUpgrade";
@@ -161,38 +162,100 @@ function ReasonList({ title, reasons, caution = false }: { title: string; reason
   );
 }
 
-function TechnicalSnapshot({ from, to }: { from: Device; to: Device }) {
-  const a = normalizeIphone(from);
-  const b = normalizeIphone(to);
-  const rows = [
-    ["Anno", from.releaseYear, to.releaseYear],
-    ["Chip", from.chipset, to.chipset],
-    ["Display", from.specs?.display, to.specs?.display],
-    ["Memoria RAM", a.ramGB != null ? `${a.ramGB} GB` : null, b.ramGB != null ? `${b.ramGB} GB` : null],
-    ["Connettore", a.connector, b.connector],
-    ["Capacità iniziale", a.baseStorageGB != null ? `${a.baseStorageGB} GB` : null, b.baseStorageGB != null ? `${b.baseStorageGB} GB` : null],
-  ].filter((row) => row[1] != null || row[2] != null);
+function DesktopComparisonSection({
+  section,
+  from,
+  to,
+}: {
+  section: IphoneComparisonSection;
+  from: Device;
+  to: Device;
+}) {
+  return (
+    <div className="hidden overflow-hidden rounded-xl border border-border bg-content-bg sm:block">
+      <table className="w-full table-fixed text-left text-sm">
+        <caption className="bg-surface-overlay px-4 py-3 text-left text-base font-semibold text-foreground">
+          {section.title}
+        </caption>
+        <thead className="border-t border-border text-xs font-semibold text-muted">
+          <tr>
+            <th scope="col" className="w-[28%] px-4 py-2.5">Caratteristica</th>
+            <th scope="col" className="w-[36%] px-4 py-2.5">{from.name}</th>
+            <th scope="col" className="w-[36%] px-4 py-2.5">{to.name}</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {section.rows.map((row) => (
+            <tr key={row.id} className={row.differs ? "bg-accent/5" : undefined}>
+              <th scope="row" className="px-4 py-3 align-top font-medium text-muted">{row.label}</th>
+              <td className="px-4 py-3 align-top text-foreground">{row.fromValue ?? "—"}</td>
+              <td className="px-4 py-3 align-top font-medium text-foreground">{row.toValue ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function MobileComparisonSection({
+  section,
+  from,
+  to,
+}: {
+  section: IphoneComparisonSection;
+  from: Device;
+  to: Device;
+}) {
+  return (
+    <section className="sm:hidden" aria-labelledby={`iphone-compare-${section.id}`}>
+      <h3 id={`iphone-compare-${section.id}`} className="border-b border-border pb-2 text-lg font-semibold text-foreground">
+        {section.title}
+      </h3>
+      <div className="divide-y divide-border">
+        {section.rows.map((row) => (
+          <div key={row.id} className={`py-4 ${row.differs ? "bg-accent/5 px-2" : ""}`}>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.06em] text-muted">{row.label}</p>
+            <dl className="grid grid-cols-2 gap-4 text-sm">
+              <div className="min-w-0">
+                <dt className="mb-1 truncate text-xs text-muted">{from.name}</dt>
+                <dd className="break-words text-foreground">{row.fromValue ?? "—"}</dd>
+              </div>
+              <div className="min-w-0 border-l border-border pl-4">
+                <dt className="mb-1 truncate text-xs text-muted">{to.name}</dt>
+                <dd className="break-words font-medium text-foreground">{row.toValue ?? "—"}</dd>
+              </div>
+            </dl>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TechnicalComparison({ from, to }: { from: Device; to: Device }) {
+  const sections = buildIphoneComparisonSections(from, to);
+  const rows = sections.flatMap((section) => section.rows);
+  const differences = rows.filter((row) => row.differs).length;
+  const incomplete = rows.filter((row) => row.incomplete).length;
 
   return (
-    <section>
-      <h2 className="mb-3 text-lg font-semibold text-foreground">Le differenze essenziali</h2>
-      <div className="overflow-x-auto rounded-xl border border-border bg-content-bg">
-        <div className="min-w-[560px]">
-          <div className="grid grid-cols-[0.8fr_1fr_1fr] gap-4 bg-surface-overlay px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
-            <span>Caratteristica</span>
-            <span>{from.name}</span>
-            <span>{to.name}</span>
+    <section aria-labelledby="iphone-technical-comparison">
+      <h2 id="iphone-technical-comparison" className="text-xl font-semibold text-foreground">
+        Specifiche a confronto
+      </h2>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
+        {differences} {differences === 1 ? "differenza verificabile" : "differenze verificabili"}
+        {incomplete > 0 ? ` · ${incomplete} ${incomplete === 1 ? "dato disponibile su un solo modello" : "dati disponibili su un solo modello"}` : ""}.
+        Un valore mancante non viene considerato uno svantaggio.
+      </p>
+      <div className="mt-5 space-y-6">
+        {sections.map((section) => (
+          <div key={section.id}>
+            <DesktopComparisonSection section={section} from={from} to={to} />
+            <MobileComparisonSection section={section} from={from} to={to} />
           </div>
-          <div className="divide-y divide-border">
-            {rows.map(([label, fromValue, toValue]) => (
-              <div key={String(label)} className="grid grid-cols-[0.8fr_1fr_1fr] gap-4 px-4 py-3 text-sm">
-                <span className="text-muted">{String(label)}</span>
-                <span className="text-foreground">{fromValue == null ? "—" : String(fromValue)}</span>
-                <span className="font-medium text-foreground">{toValue == null ? "—" : String(toValue)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
     </section>
   );
@@ -261,12 +324,12 @@ function Result({
 
       {amazonOffer && <AmazonPriceOffer product={amazonOffer} />}
 
-      <ReasonList title="Perché potrebbe valerne la pena" reasons={assessment.benefits} />
-      <ReasonList title="Cosa valutare prima di cambiare" reasons={assessment.cautions} caution />
-      <TechnicalSnapshot from={from} to={to} />
+      <ReasonList title={`Cosa guadagni passando a ${to.name}`} reasons={assessment.benefits} />
+      <ReasonList title="Limiti e compromessi da considerare" reasons={assessment.cautions} caution />
+      <TechnicalComparison from={from} to={to} />
 
       <p className="border-t border-border pt-5 text-xs leading-5 text-muted">
-        Il verdetto è prodotto da regole editoriali applicate alle specifiche presenti nel catalogo TechJournal. Non considera prezzo, stato della batteria o valore di permuta del tuo dispositivo.
+        Il verdetto è prodotto da regole editoriali applicate alle specifiche presenti nel catalogo TechJournal. Il prezzo mostrato non modifica il giudizio tecnico; stato della batteria e valore di permuta del dispositivo attuale non sono inclusi.
       </p>
     </div>
   );
