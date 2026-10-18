@@ -17,7 +17,9 @@ function wasRecentlyDismissed(): boolean {
 function detectAdBlock(): Promise<boolean> {
   return new Promise((resolve) => {
     const bait = document.createElement("div");
-    bait.className = "adsbox ad-banner ad-unit ad-placement";
+    // Brave Shields applica i filtri cosmetici direttamente agli slot AdSense
+    // reali, mentre non sempre intercetta le classi-esca generiche.
+    bait.className = "adsbygoogle adsbox ad-banner ad-unit ad-placement";
     bait.setAttribute("aria-hidden", "true");
     bait.style.cssText =
       "position:absolute;left:-10000px;top:-10000px;width:1px;height:1px;pointer-events:none;";
