@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useDialogFocus } from "./useDialogFocus";
+import TelegramChannelCta from "@/components/TelegramChannelCta";
 
 const STORAGE_KEY = "newsletter-dismissed-v1";
 const SUCCESS_AUTO_CLOSE_MS = 2500;
@@ -89,7 +90,7 @@ export default function NewsletterModal() {
       aria-modal="true"
       aria-labelledby="newsletter-title"
     >
-      <div className="pointer-events-auto relative w-full max-w-xl rounded-dialog border border-border bg-sidebar-bg p-4 pt-12 shadow-overlay sm:p-panel sm:pt-6">
+      <div className="pointer-events-auto relative max-h-[calc(100dvh-1rem)] w-full max-w-xl overflow-y-auto rounded-dialog border border-border bg-sidebar-bg p-4 pt-12 shadow-overlay sm:max-h-[calc(100dvh-3rem)] sm:p-panel sm:pt-6">
         <button
           type="button"
           onClick={close}
@@ -153,6 +154,7 @@ export default function NewsletterModal() {
           <p className="text-muted text-[11px] mt-2">
             Iscrivendoti accetti la nostra informativa sulla privacy. Nessuno spam, promesso.
           </p>
+          <TelegramChannelCta variant="newsletter" />
         </div>
       </div>
     </div>

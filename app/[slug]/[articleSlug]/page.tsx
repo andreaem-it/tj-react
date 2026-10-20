@@ -41,6 +41,7 @@ import { loadArticleRelated } from "@/lib/content/articleRelated";
 import type { Metadata } from "next";
 import ArticleAudioPlayer from "@/components/article/ArticleAudioPlayer";
 import { isFeatureEnabled } from "@/lib/featureFlags";
+import TelegramChannelCta from "@/components/TelegramChannelCta";
 
 /**
  * Volutamente più basso di home e categorie (3600s).
@@ -375,6 +376,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 <AuthorCard author={authorProfile} />
               </div>
             )}
+
+            <TelegramChannelCta variant="article" />
 
             <InlineBannerPlaceholder
               width="100%"
