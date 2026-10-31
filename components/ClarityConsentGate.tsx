@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useIubenda } from "@mep-agency/next-iubenda";
 import Clarity from "@microsoft/clarity";
+import { consentPermissions } from "@/lib/analytics/google";
 
 const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID?.trim();
 
@@ -14,23 +15,27 @@ export default function ClarityConsentGate() {
   const { userPreferences } = useIubenda();
   const initialized = useRef(false);
 
-  const hasBeenLoaded = userPreferences?.hasBeenLoaded ?? false;
-  const allowMeasurement = Boolean(userPreferences?.gdprPurposes?.measurement);
+  const { measurement, marketing } = consentPermissions(userPreferences);
 
   useEffect(() => {
-    if (!projectId || !hasBeenLoaded || !allowMeasurement || initialized.current) return;
-    initialized.current = true;
+    if (!projectId || (!measurement && !initialized.current)) return;
 
     try {
-      Clarity.init(projectId);
-      Clarity.consentV2({ ad_Storage: "granted", analytics_Storage: "granted" });
+      if (!initialized.current) {
+        Clarity.init(projectId);
+        initialized.current = true;
+      }
+      Clarity.consentV2({
+        ad_Storage: marketing ? "granted" : "denied",
+        analytics_Storage: measurement ? "granted" : "denied",
+      });
     } catch (error) {
       initialized.current = false;
       if (process.env.NODE_ENV === "development") {
         console.error("[Clarity] init failed:", error);
       }
     }
-  }, [hasBeenLoaded, allowMeasurement]);
+  }, [measurement, marketing]);
 
   return null;
 }

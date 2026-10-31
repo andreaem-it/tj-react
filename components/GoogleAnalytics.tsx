@@ -1,93 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Script from "next/script";
+import { useEffect } from "react";
+import { useIubenda } from "@mep-agency/next-iubenda";
 import { gtagJsUrl } from "@/lib/thirdPartyScriptUrls";
+import { consentPermissions, GOOGLE_ANALYTICS_READY_EVENT, syncGoogleAnalytics } from "@/lib/analytics/google";
 
 const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
-const GA_NEED_EVENT = "techjournal:ga-needed";
-const hasIubendaConfig =
-  Boolean(process.env.NEXT_PUBLIC_IUBENDA_SITE_ID?.trim()) &&
-  Boolean(process.env.NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID?.trim());
+const SCRIPT_ID = "techjournal-ga";
 
-/**
- * Google Analytics 4 con Consent Mode v2.
- * Imposta NEXT_PUBLIC_GA_MEASUREMENT_ID (G-XXXXXXXXXX) in .env.local.
- * Se usi iubenda, al consenso cookie viene aggiornato il consent (analytics_storage granted).
- */
 export default function GoogleAnalytics() {
-  const [shouldLoad, setShouldLoad] = useState(false);
+  const { userPreferences } = useIubenda();
+  const { measurement, marketing } = consentPermissions(userPreferences);
 
   useEffect(() => {
-    if (!measurementId || typeof window === "undefined") return;
-    let cancelled = false;
+    if (!measurementId) return;
+    // Anche la revoca aggiorna tutti i segnali; measurement non concede marketing.
+    syncGoogleAnalytics(window, measurementId, { measurement, marketing });
+    if (!measurement) return;
 
-    const enable = () => {
-      if (cancelled) return;
-      setShouldLoad(true);
-      window.removeEventListener("pointerdown", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("scroll", onFirstInteraction);
-      window.removeEventListener(GA_NEED_EVENT, onGaNeeded);
-    };
-
-    const onFirstInteraction = () => enable();
-    const onGaNeeded = () => enable();
-
-    if (!hasIubendaConfig) {
-      window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
-      window.addEventListener("keydown", onFirstInteraction, { once: true });
-      window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
+    if (!document.getElementById(SCRIPT_ID)) {
+      const script = document.createElement("script");
+      script.id = SCRIPT_ID;
+      script.async = true;
+      script.src = gtagJsUrl(measurementId);
+      document.head.appendChild(script);
     }
-    window.addEventListener(GA_NEED_EVENT, onGaNeeded, { once: true });
+    // La coda è pronta anche se lo script di rete non è ancora arrivato.
+    window.dispatchEvent(new Event(GOOGLE_ANALYTICS_READY_EVENT));
+  }, [measurement, marketing]);
 
-    return () => {
-      cancelled = true;
-      if (!hasIubendaConfig) {
-        window.removeEventListener("pointerdown", onFirstInteraction);
-        window.removeEventListener("keydown", onFirstInteraction);
-        window.removeEventListener("scroll", onFirstInteraction);
-      }
-      window.removeEventListener(GA_NEED_EVENT, onGaNeeded);
-    };
-  }, []);
-
-  if (!measurementId || !shouldLoad) return null;
-
-  const consentScript = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('consent', 'default', {
-      'analytics_storage': 'denied',
-      'ad_storage': 'denied',
-      'ad_user_data': 'denied',
-      'ad_personalization': 'denied',
-      'wait_for_update': 500
-    });
-    gtag('set', 'ads_data_redaction', true);
-    gtag('config', '${measurementId}', { anonymize_ip: true });
-    window.__iubendaGaConsentUpdate = function() {
-      if (window.gtag) {
-        gtag('consent', 'update', {
-          'analytics_storage': 'granted',
-          'ad_storage': 'granted',
-          'ad_user_data': 'granted',
-          'ad_personalization': 'granted'
-        });
-      }
-    };
-  `;
-
-  return (
-    <>
-      <Script
-        src={gtagJsUrl(measurementId)}
-        strategy="lazyOnload"
-      />
-      <Script id="ga-consent-config" strategy="lazyOnload">
-        {consentScript}
-      </Script>
-    </>
-  );
+  return null;
 }

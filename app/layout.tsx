@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import IubendaProviderWrapper from "@/components/IubendaProviderWrapper";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
-import MicrosoftClarity from "@/components/MicrosoftClarity";
 import AdSenseScript from "@/components/AdSenseScript";
 import AppShell from "@/components/AppShell";
 import SiteStructuredData from "@/components/SiteStructuredData";
@@ -135,13 +135,15 @@ export default function RootLayout({
         >
           Salta al contenuto
         </a>
-        <IubendaProviderWrapper />
         <SiteStructuredData />
-        <GoogleAnalytics />
-        <MicrosoftClarity />
-        <GoogleAnalyticsPageView />
-        <AdSenseScript />
-        <AppShell>{children}</AppShell>
+        <IubendaProviderWrapper>
+          <GoogleAnalytics />
+          <Suspense fallback={null}>
+            <GoogleAnalyticsPageView />
+          </Suspense>
+          <AdSenseScript />
+          <AppShell>{children}</AppShell>
+        </IubendaProviderWrapper>
         <DeferredTelemetry />
       </body>
     </html>
