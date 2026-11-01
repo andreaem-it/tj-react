@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "tj-react",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-14",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "TJ_API_BASE_URL": "https://backend.techjournal.it"
+  }
+}
