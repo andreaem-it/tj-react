@@ -9,6 +9,9 @@ import type { NextConfig } from "next";
 const usePassthroughImages = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
 
 const nextConfig: NextConfig = {
+  // The home aggregates several cached upstream reads. Cloudflare builds must
+  // tolerate a transient slow origin without failing the whole release.
+  staticPageGenerationTimeout: 180,
   transpilePackages: ["@mep-agency/next-iubenda"],
   async redirects() {
     return [
@@ -49,12 +52,6 @@ const nextConfig: NextConfig = {
       {
         source: "/:category/:path+/feed",
         destination: "/:category/:path+",
-        permanent: true,
-      },
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "techjournal.it" }],
-        destination: "https://www.techjournal.it/:path*",
         permanent: true,
       },
     ];
