@@ -17,8 +17,8 @@ export const MIN_DISPLAY_DISCOUNT_PERCENT = 3;
  * Dati calcolati sul server e passati al componente client come stato iniziale.
  *
  * Dichiarata qui e non in `lib/priceRadar/server` perché la importa anche il
- * componente client: `server.ts` importa `lib/config/tjApi`, che a module-load
- * fa un check fail-fast su una env server-only.
+ * componente client: `server.ts` importa `lib/config/tjApi`, che legge una env
+ * server-only a runtime.
  */
 export interface PriceRadarInitialData {
   offers: TechRadarOffer[];

@@ -248,7 +248,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
       <FaqStructuredData entries={enrichment.faq} />
       <div className="flex flex-col lg:flex-row gap-8">
-        <article className="flex-1 min-w-0 w-full max-w-full bg-content-bg rounded-lg overflow-hidden">
+        <article data-content-type={enrichment.contentType} className="flex-1 min-w-0 w-full max-w-full bg-content-bg rounded-lg overflow-hidden">
           <header className="w-full max-w-full min-w-0 px-3 pt-6 pb-4 md:p-8 box-border">
             <Breadcrumbs items={breadcrumbItems} />
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 max-w-full">

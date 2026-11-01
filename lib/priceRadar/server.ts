@@ -19,8 +19,8 @@ import {
  * Caricamento server-side dei dati iniziali di `/price-radar`.
  *
  * Da non usare in un componente client: `getTjApiBaseUrl()` legge
- * `TJ_API_BASE_URL`, che è server-only, e `lib/config/tjApi` fa un check
- * fail-fast a module-load.
+ * `TJ_API_BASE_URL`, che è server-only e viene letta a runtime da
+ * `lib/config/tjApi`.
  *
  * Non passa da `lib/tjApiClient`: lì `resolvePublicApiUrl()` restituisce un
  * path **relativo** (`/api/...`) quando `NEXT_PUBLIC_TJ_API_BASE_URL` non è
@@ -70,8 +70,7 @@ async function getJson<T>(url: string): Promise<T | null> {
 async function loadFromTjApi(): Promise<PriceRadarInitialData> {
   const base = getTjApiBaseUrl();
   if (!base) {
-    // In dev senza TJ_API_BASE_URL il check è solo un warning: si lascia
-    // ritentare il client, che passa dal proxy.
+    // Senza TJ_API_BASE_URL si lascia ritentare il client, che passa dal proxy.
     return { ...EMPTY, failed: true };
   }
 

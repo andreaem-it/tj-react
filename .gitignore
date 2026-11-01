@@ -19,6 +19,7 @@
 
 # next.js
 /.next/
+/.open-next/
 /out/
 
 # production
@@ -49,3 +50,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Cloudflare local state and secrets
+/.wrangler/
+.dev.vars*
+cloudflare-env.d.ts
