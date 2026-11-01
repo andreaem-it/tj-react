@@ -19,8 +19,8 @@ import type {
 /**
  * Accesso server-side ai prodotti Price Radar e alla loro analisi.
  *
- * **Modulo server-only**: `getTjApiBaseUrl()` legge una env server-only e
- * `lib/config/tjApi` fa un check fail-fast a module-load.
+ * **Modulo server-only**: `getTjApiBaseUrl()` legge una env server-only a
+ * runtime.
  *
  * Come `lib/priceRadar/server.ts`, va diretto a tj-api invece di passare dal
  * proxy `/api/*`: far chiamare al server il proprio stesso proxy costerebbe due
