@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import IubendaProviderWrapper from "@/components/IubendaProviderWrapper";
+import GoogleCmpBootstrap from "@/components/GoogleCmpBootstrap";
+import GoogleCmpClarityConsentGate from "@/components/GoogleCmpClarityConsentGate";
+import GoogleCmpConsentProvider from "@/components/GoogleCmpConsentProvider";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import MicrosoftClarity from "@/components/MicrosoftClarity";
 import AdSenseScript from "@/components/AdSenseScript";
@@ -62,9 +65,9 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   /** Icone servite da /public (affidabili, niente dipendenze da domini esterni). */
   icons: {
-    icon: [{ url: "/techjournal-favicon.png", type: "image/png", sizes: "1135x1069" }],
-    shortcut: [{ url: "/techjournal-favicon.png", type: "image/png" }],
-    apple: [{ url: "/techjournal-favicon.png", type: "image/png", sizes: "1135x1069" }],
+    icon: [{ url: "/techjournal-favicon-64.png", type: "image/png", sizes: "64x60" }],
+    shortcut: [{ url: "/techjournal-favicon-64.png", type: "image/png" }],
+    apple: [{ url: "/techjournal-apple-touch-icon.png", type: "image/png", sizes: "180x170" }],
   },
   appleWebApp: {
     capable: true,
@@ -86,11 +89,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const proxyThirdPartyScripts = shouldProxyThirdPartyScripts();
+  const useGoogleCmp = process.env.NEXT_PUBLIC_CONSENT_PROVIDER === "google";
+  const app = (
+    <>
+      <SiteStructuredData />
+      <GoogleAnalytics />
+      <MicrosoftClarity />
+      <AnalyticsEvents />
+      <AdSenseScript />
+      <AppShell>{children}</AppShell>
+      {process.env.CLOUDFLARE_PREVIEW !== "1" && <DeferredTelemetry />}
+    </>
+  );
 
   return (
-    <html lang="it" className={inter.variable} suppressHydrationWarning>
+    <html lang="it" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SITE_THEME_BOOTSTRAP_SCRIPT }} />
+        {useGoogleCmp && <GoogleCmpBootstrap />}
         {!proxyThirdPartyScripts && (
           <>
             <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="" />
@@ -103,10 +119,14 @@ export default function RootLayout({
         )}
         <link rel="preconnect" href="https://region1.google-analytics.com" crossOrigin="" />
         <link rel="dns-prefetch" href="//region1.google-analytics.com" />
-        <link rel="preconnect" href="https://cs.iubenda.com" crossOrigin="" />
-        <link rel="dns-prefetch" href="//cs.iubenda.com" />
-        <link rel="preconnect" href="https://idb.iubenda.com" crossOrigin="" />
-        <link rel="dns-prefetch" href="//idb.iubenda.com" />
+        {!useGoogleCmp && (
+          <>
+            <link rel="preconnect" href="https://cs.iubenda.com" crossOrigin="" />
+            <link rel="dns-prefetch" href="//cs.iubenda.com" />
+            <link rel="preconnect" href="https://idb.iubenda.com" crossOrigin="" />
+            <link rel="dns-prefetch" href="//idb.iubenda.com" />
+          </>
+        )}
         <link rel="preconnect" href="https://static.techjournal.it" crossOrigin="" />
         <link rel="dns-prefetch" href="//static.techjournal.it" />
       </head>
@@ -135,14 +155,14 @@ export default function RootLayout({
         >
           Salta al contenuto
         </a>
-        <IubendaProviderWrapper />
-        <SiteStructuredData />
-        <GoogleAnalytics />
-        <MicrosoftClarity />
-        <AnalyticsEvents />
-        <AdSenseScript />
-        <AppShell>{children}</AppShell>
-        {process.env.CLOUDFLARE_PREVIEW !== "1" && <DeferredTelemetry />}
+        {useGoogleCmp ? (
+          <GoogleCmpConsentProvider>
+            <GoogleCmpClarityConsentGate />
+            {app}
+          </GoogleCmpConsentProvider>
+        ) : (
+          <IubendaProviderWrapper>{app}</IubendaProviderWrapper>
+        )}
       </body>
     </html>
   );

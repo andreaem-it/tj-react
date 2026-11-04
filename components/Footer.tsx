@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import GoogleCmpPreferencesButton from "@/components/GoogleCmpPreferencesButton";
 
 export default function Footer() {
   return (
@@ -7,8 +8,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-[10px] sm:px-4 xl:px-12 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex min-h-11 items-center shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label="TechJournal">
-            <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-7 w-auto object-contain dark:hidden" aria-hidden />
-            <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-7 w-auto object-contain dark:block" aria-hidden />
+            <Image src="/techjournal-logo-grey.webp" alt="" width={449} height={72} className="h-7 w-auto object-contain dark:hidden" aria-hidden />
+            <Image src="/techjournal-logo.webp" alt="" width={447} height={72} className="hidden h-7 w-auto object-contain dark:block" aria-hidden />
           </Link>
           <p className="text-muted text-sm">
             © {new Date().getFullYear()} TechJournal. Tutti i diritti riservati.
@@ -47,6 +48,7 @@ export default function Footer() {
             <Link href="/privacy" className="inline-flex min-h-11 items-center text-muted hover:text-accent transition-colors text-sm" prefetch={false}>
               Privacy e Cookie policy
             </Link>
+            <GoogleCmpPreferencesButton />
           </nav>
         </div>
         <p className="text-muted text-xs mt-6 pt-6 border-t border-border w-full text-center">

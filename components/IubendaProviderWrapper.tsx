@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { ReactNode, useMemo, useSyncExternalStore } from "react";
 import {
   IubendaProvider,
   type IubendaCookieSolutionBannerConfigInterface,
@@ -38,6 +38,10 @@ function buildBannerConfig(
     lang,
     enableGdpr: true,
     gdprAppliesGlobally: true,
+    enableTcf: true,
+    googleAdditionalConsentMode: true,
+    askConsentIfCMPNotFound: true,
+    tcfPublisherCC: "IT",
     perPurposeConsent: true,
     floatingPreferencesButtonDisplay: "bottom-left",
     floatingPreferencesButtonColor: shell as `#${string}`,
@@ -67,7 +71,7 @@ function buildBannerConfig(
  * Se NEXT_PUBLIC_IUBENDA_SITE_ID o NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID non sono impostati,
  * restituisce solo i children (nessun banner cookie).
  */
-export default function IubendaProviderWrapper({}: Record<string, never>) {
+export default function IubendaProviderWrapper({ children }: { children: ReactNode }) {
   const siteIdNum = siteId ? Number(siteId) : NaN;
   const cookiePolicyIdNum = cookiePolicyId ? Number(cookiePolicyId) : NaN;
   const invalid =
@@ -84,57 +88,13 @@ export default function IubendaProviderWrapper({}: Record<string, never>) {
     [theme, siteIdNum, cookiePolicyIdNum],
   );
 
-  const [shouldLoadProvider, setShouldLoadProvider] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    let cancelled = false;
-    let idleId: number | null = null;
-    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const enable = () => {
-      if (cancelled) return;
-      setShouldLoadProvider(true);
-      window.removeEventListener("pointerdown", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("scroll", onFirstInteraction);
-    };
-
-    const onFirstInteraction = () => enable();
-
-    window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
-    window.addEventListener("keydown", onFirstInteraction, { once: true });
-    window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
-
-    if ("requestIdleCallback" in window) {
-      idleId = (
-        window as Window & {
-          requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number;
-        }
-      ).requestIdleCallback(enable, { timeout: 9000 });
-    } else {
-      fallbackTimer = setTimeout(enable, 5000);
-    }
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener("pointerdown", onFirstInteraction);
-      window.removeEventListener("keydown", onFirstInteraction);
-      window.removeEventListener("scroll", onFirstInteraction);
-      if (idleId != null && "cancelIdleCallback" in window) {
-        (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
-      }
-      if (fallbackTimer) clearTimeout(fallbackTimer);
-    };
-  }, []);
-
-  if (invalid) return null;
-  if (!shouldLoadProvider) return null;
+  if (invalid) return <>{children}</>;
 
   return (
     <IubendaProvider bannerConfig={bannerConfig} lang={lang}>
       <TrackingConsentGate />
       <ClarityConsentGate />
+      {children}
     </IubendaProvider>
   );
 }

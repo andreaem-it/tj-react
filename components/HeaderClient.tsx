@@ -18,8 +18,8 @@ function TechJournalLogo() {
   if (useRasterBrand) {
     return (
       <>
-        <Image src="/techjournal-logo-grey.png" alt="" width={1640} height={263} className="h-9 w-auto object-contain max-[359px]:h-7 dark:hidden" priority aria-hidden />
-        <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-9 w-auto object-contain max-[359px]:h-7 dark:block" priority aria-hidden />
+        <Image src="/techjournal-logo-grey.webp" alt="" width={449} height={72} className="h-9 w-auto object-contain max-[359px]:h-7 dark:hidden" priority aria-hidden />
+        <Image src="/techjournal-logo.webp" alt="" width={447} height={72} className="hidden h-9 w-auto object-contain max-[359px]:h-7 dark:block" priority aria-hidden />
       </>
     );
   }

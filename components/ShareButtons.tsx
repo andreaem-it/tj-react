@@ -1,5 +1,7 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics/client";
+
 interface ShareButtonsProps {
   title: string;
   url: string;
@@ -9,6 +11,11 @@ interface ShareButtonsProps {
 export default function ShareButtons({ title, url, variant = "dark" }: ShareButtonsProps) {
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
+  const trackShare = (method: string) => trackEvent("share", {
+    method,
+    content_type: "article",
+    item_id: url,
+  });
 
   if (variant === "articleTop") {
     const bigBtnClass =
@@ -22,6 +29,7 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
             rel="noopener noreferrer"
             className={bigBtnClass}
             aria-label="Condividi su Facebook"
+            onClick={() => trackShare("facebook")}
           >
             <span className="text-base font-bold">f</span>
             <span>Facebook</span>
@@ -32,6 +40,7 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
             rel="noopener noreferrer"
             className={bigBtnClass}
             aria-label="Condividi su X"
+            onClick={() => trackShare("x")}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -55,6 +64,7 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
         rel="noopener noreferrer"
         className={btnClass}
         aria-label="Condividi su Facebook"
+        onClick={() => trackShare("facebook")}
       >
         <span className="text-sm font-bold">f</span>
       </a>
@@ -64,6 +74,7 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
         rel="noopener noreferrer"
         className={btnClass}
         aria-label="Condividi su X"
+        onClick={() => trackShare("x")}
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -73,6 +84,7 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
         href={`mailto:?subject=${encodedTitle}&body=${encodedUrl}`}
         className={btnClass}
         aria-label="Invia per email"
+        onClick={() => trackShare("email")}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -80,7 +92,10 @@ export default function ShareButtons({ title, url, variant = "dark" }: ShareButt
       </a>
       <button
         type="button"
-        onClick={() => navigator.clipboard.writeText(url)}
+        onClick={() => {
+          trackShare("copy_link");
+          void navigator.clipboard.writeText(url);
+        }}
         className={btnClass}
         aria-label="Copia link"
       >

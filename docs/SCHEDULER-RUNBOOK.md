@@ -10,8 +10,8 @@ Gli endpoint cron vivono in `tj-api` e richiedono sempre `Authorization: Bearer 
 | Feed + autoposter | `/api/cron/ingest-feeds` | ogni 10 minuti | 300 s | Lock PostgreSQL anti-sovrapposizione |
 | Riempimento giornata | `/api/cron/autopost-fill-day` | ogni giorno, 20:30 Europe/Rome | 300 s | Ripromuove i deferiti se sotto target |
 | Worker audio | `/api/cron/article-audio-worker` | ogni minuto | 300 s | Un job per invocazione |
-| Newsletter | `/api/cron/newsletter-daily` | ogni giorno, 08:00 Europe/Rome | 300 s | Invio idempotente entro la finestra |
-| Digest Price Radar | `/api/cron/newsletter-price-radar-weekly` | lunedì, 08:15 Europe/Rome | 300 s | Settimanale |
+| Newsletter | tick Worker ogni 15 minuti | ogni giorno, 09:00 Europe/Rome | 300 s | Orario letto dalle impostazioni; invio idempotente |
+| Digest Price Radar | tick Worker ogni 15 minuti | lunedì, 09:15 Europe/Rome | 300 s | Orario letto dalle impostazioni; settimanale |
 | Controllo Price Radar | `/api/cron/price-radar` | timer VPS esistente | 300 s | Confermare timer e ultimo successo |
 | Digest guide | `/api/cron/guide-review-digest` | lunedì, 09:00 Europe/Rome | 300 s | Revisione umana |
 | Auto-update guide | `/api/cron/guide-auto-update` | ogni giorno, 05:30 Europe/Rome | 300 s | No-op se `GUIDE_AUTO_UPDATE_ENABLED` non è `true` |

@@ -45,7 +45,7 @@ import type { Metadata } from "next";
  * on-demand dal webhook di pubblicazione (`/api/webhooks/wp-post-published`).
  * Se il webhook non è configurato o fallisce, si riallinea entro un'ora.
  */
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const siteUrl = SITE_URL.replace(/\/$/, "");
 
@@ -69,14 +69,8 @@ export const metadata: Metadata = {
 };
 
 const emptyPosts: PostListItem[] = [];
-const INITIAL_POSTS_TARGET = 12;
-const RETRY_DELAYS_MS = [0, 250, 700] as const;
-
-async function waitMs(ms: number): Promise<void> {
-  if (ms <= 0) return;
-  await new Promise((resolve) => setTimeout(resolve, ms));
-}
-
+const HOME_INITIAL_POSTS = 20;
+const ARCHIVE_PAGE_SIZE = 10;
 /**
  * Ingresso al database di compatibilità.
  *
@@ -227,23 +221,29 @@ export default async function HomePage() {
   };
 
   try {
-    let homeData = null as Awaited<ReturnType<typeof fetchHome>>;
-    for (const delay of RETRY_DELAYS_MS) {
-      await waitMs(delay);
-      homeData = await fetchHome();
-      if (homeData?.initial?.posts?.length) break;
-    }
+    const homeData = await fetchHome();
     if (homeData?.initial?.posts?.length) {
-      initialPosts = homeData.initial.posts;
-      totalPages = homeData.initial.totalPages ?? 1;
-      pagesConsumed = homeData.initial.pagesConsumed ?? 1;
+      const receivedInitialPosts = homeData.initial.posts;
+      const legacyOversizedBatch = receivedInitialPosts.length > HOME_INITIAL_POSTS;
+      initialPosts = receivedInitialPosts.slice(0, HOME_INITIAL_POSTS);
+      // Compatibilità durante il rollout: il vecchio endpoint restituiva cento
+      // post e contava pagine da cento, mentre /api/posts pagina da dieci.
+      // Il limite locale impedisce comunque di idratare cento card.
+      totalPages = legacyOversizedBatch
+        ? Math.max(
+            1,
+            (homeData.initial.totalPages ?? 1) *
+              Math.ceil(receivedInitialPosts.length / ARCHIVE_PAGE_SIZE),
+          )
+        : (homeData.initial.totalPages ?? 1);
+      pagesConsumed = Math.ceil(initialPosts.length / ARCHIVE_PAGE_SIZE);
       offertePosts = homeData.offerte ?? emptyPosts;
       mostReadPosts = homeData.mostRead ?? emptyPosts;
       weekTrendingPosts = homeData.weekTrending ?? emptyPosts;
       monthTrendingPosts = homeData.monthTrending ?? emptyPosts;
       signalPool = homeData.trending ?? emptyPosts;
     } else {
-      console.error("[Home] tj/v1/home non disponibile dopo i retry: fallback su /posts");
+      console.error("[Home] tj/v1/home non disponibile: fallback su /posts");
       await loadFromPostsFallback();
     }
   } catch (e) {

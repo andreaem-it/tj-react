@@ -16,9 +16,12 @@ export {
  * webhook non è configurato o fallisce.
  */
 export const TJ_FETCH_REVALIDATE = 3600;
-/** La home editoriale viene aggiornata dal middleware: non deve restare un'ora
- * su una risposta precedente, né degradare a una sorgente diversa. */
-export const TJ_HOME_FETCH_REVALIDATE = 60;
+/**
+ * La home viene invalidata on-demand dal webhook di pubblicazione. Un TTL di
+ * un'ora è soltanto la rete di sicurezza: evitare la rigenerazione ogni minuto
+ * impedisce che una normale visita paghi la latenza dell'API editoriale.
+ */
+export const TJ_HOME_FETCH_REVALIDATE = 3600;
 
 /**
  * TTL del fetch del *singolo* articolo, volutamente più corto.

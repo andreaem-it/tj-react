@@ -34,6 +34,7 @@ export default function InlineBannerPlaceholder({
       <AdSenseUnit
         adSlot={adSlot}
         adFormat={resolvedAdFormat}
+        adPosition="inline"
         fullWidthResponsive={resolvedFullWidthResponsive}
         deferUntilVisible
         rootMargin="250px"

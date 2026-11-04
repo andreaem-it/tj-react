@@ -2,10 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 import {
-  SITE_THEME_STORAGE_KEY,
   type SiteTheme,
-  applySiteThemeToDocument,
   getSiteThemeFromDom,
+  setSiteTheme,
   subscribeSiteThemeClass,
 } from "@/lib/siteTheme";
 
@@ -22,8 +21,7 @@ export default function ThemeToggle() {
   };
 
   const setTheme = (next: SiteTheme) => {
-    applySiteThemeToDocument(next);
-    window.localStorage.setItem(SITE_THEME_STORAGE_KEY, next);
+    setSiteTheme(next);
   };
 
   const label =

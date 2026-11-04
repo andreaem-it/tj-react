@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useDialogFocus } from "./useDialogFocus";
+import { trackEvent } from "@/lib/analytics/client";
 
 const STORAGE_KEY = "newsletter-dismissed-v1";
 const SUCCESS_AUTO_CLOSE_MS = 2500;
@@ -9,6 +11,8 @@ const SUCCESS_AUTO_CLOSE_MS = 2500;
 export default function NewsletterModal() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [newsletterConsent, setNewsletterConsent] = useState(false);
+  const [pixelTrackingConsent, setPixelTrackingConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -18,7 +22,10 @@ export default function NewsletterModal() {
       const dismissed = window.localStorage.getItem(STORAGE_KEY);
       if (!dismissed) {
         // Mostra il box dopo un breve delay per non disturbare subito.
-        const t = setTimeout(() => setOpen(true), 4000);
+        const t = setTimeout(() => {
+          setOpen(true);
+          trackEvent("newsletter_form_view", { form_location: "modal" });
+        }, 4000);
         return () => clearTimeout(t);
       }
     } catch {
@@ -49,24 +56,28 @@ export default function NewsletterModal() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || submitting || status === "success") return;
+    if (!email.trim() || !newsletterConsent || submitting || status === "success") return;
     setSubmitting(true);
+    trackEvent("newsletter_start", { form_location: "modal" });
     setStatus("idle");
     setMessage(null);
     try {
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({
+          email: email.trim(),
+          newsletterConsent,
+          pixelTrackingConsent,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setStatus("success");
         setMessage("Iscrizione completata! Controlla la tua casella email.");
-        window.gtag?.("event", "sign_up", {
-          method: "newsletter_modal",
-        });
+        trackEvent("generate_lead", { method: "newsletter", form_location: "modal" });
       } else {
+        trackEvent("newsletter_error", { form_location: "modal", error_type: "server" });
         setStatus("error");
         setMessage(
           typeof data?.error === "string"
@@ -75,6 +86,7 @@ export default function NewsletterModal() {
         );
       }
     } catch {
+      trackEvent("newsletter_error", { form_location: "modal", error_type: "network" });
       setStatus("error");
       setMessage("Errore di rete, riprova.");
     } finally {
@@ -113,31 +125,62 @@ export default function NewsletterModal() {
           </p>
           <form
             onSubmit={onSubmit}
-            className="flex flex-col sm:flex-row gap-2"
+            className="space-y-3"
             tool-name="newsletter-subscribe"
             tool-description="Subscribe a user email to TechJournal newsletter updates"
           >
-            <label htmlFor="newsletter-email" className="sr-only">
-              Indirizzo email
+            <div className="flex flex-col sm:flex-row gap-2">
+              <label htmlFor="newsletter-email" className="sr-only">
+                Indirizzo email
+              </label>
+              <input
+                id="newsletter-email"
+                type="email"
+                name="email"
+                tool-param-description="Email address to subscribe"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="La tua email"
+                className="flex-1 rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent min-h-11"
+              />
+              <button
+                type="submit"
+                disabled={submitting || !newsletterConsent || status === "success"}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-accent text-gray-900 text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity whitespace-nowrap min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                {submitting ? "Invio..." : status === "success" ? "Iscritto!" : "Iscriviti"}
+              </button>
+            </div>
+            <div className="flex items-start gap-2 text-xs leading-5 text-muted">
+              <input
+                id="newsletter-consent"
+                type="checkbox"
+                required
+                checked={newsletterConsent}
+                onChange={(e) => setNewsletterConsent(e.target.checked)}
+                className="mt-1 h-4 w-4 shrink-0 accent-[var(--accent)]"
+              />
+              <span>
+                <label htmlFor="newsletter-consent">
+                  Voglio ricevere la newsletter di TechJournal e dichiaro di aver letto
+                </label>{" "}
+                l’<Link href="/privacy#newsletter" className="text-accent hover:underline">informativa privacy</Link>.
+              </span>
+            </div>
+            <label className="flex items-start gap-2 text-xs leading-5 text-muted">
+              <input
+                type="checkbox"
+                checked={pixelTrackingConsent}
+                onChange={(e) => setPixelTrackingConsent(e.target.checked)}
+                className="mt-1 h-4 w-4 shrink-0 accent-[var(--accent)]"
+              />
+              <span>
+                Facoltativo: acconsento al tracciamento individuale di aperture e clic
+                tramite pixel e link personalizzati, per misurare e migliorare la newsletter.
+                Posso revocarlo in ogni email senza disiscrivermi.
+              </span>
             </label>
-            <input
-              id="newsletter-email"
-              type="email"
-              name="email"
-              tool-param-description="Email address to subscribe"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="La tua email"
-              className="flex-1 rounded-lg border border-border bg-surface-overlay px-3 py-2 text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent min-h-11"
-            />
-            <button
-              type="submit"
-              disabled={submitting || status === "success"}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-accent text-gray-900 text-sm font-medium hover:opacity-90 disabled:opacity-60 transition-opacity whitespace-nowrap min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              {submitting ? "Invio..." : status === "success" ? "Iscritto!" : "Iscriviti"}
-            </button>
           </form>
           {message && (
             <p
@@ -154,7 +197,7 @@ export default function NewsletterModal() {
             </p>
           )}
           <p className="text-muted text-[11px] mt-2">
-            Iscrivendoti accetti la nostra informativa sulla privacy. Nessuno spam, promesso.
+            Se non accetti il tracciamento continuerai comunque a ricevere la newsletter.
           </p>
         </div>
       </div>

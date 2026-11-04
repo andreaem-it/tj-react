@@ -1,6 +1,8 @@
 # TechJournal (techjournal.it) - LLM & Agent Access Guide
 
-Site: https://www.techjournal.it
+> TechJournal is an Italian technology publication covering news, guides, product analysis, artificial intelligence, apps, devices, and digital services.
+
+Site: [TechJournal](https://www.techjournal.it)
 Type: Italian technology news website
 Primary language: it-IT
 Content type: News, guides, product analysis
@@ -9,26 +11,26 @@ Content type: News, guides, product analysis
 
 ## Discovery
 
-- Sitemap: https://www.techjournal.it/sitemap.xml
-- Robots: https://www.techjournal.it/robots.txt
-- RSS Feed: https://www.techjournal.it/feed.xml
+- [Sitemap](https://www.techjournal.it/sitemap.xml)
+- [Robots](https://www.techjournal.it/robots.txt)
+- [RSS Feed](https://www.techjournal.it/feed.xml)
 
 ---
 
 ## Machine-readable endpoints
 
-- API catalog: https://www.techjournal.it/.well-known/api-catalog
-- Agent skills: https://www.techjournal.it/.well-known/agent-skills/index.json
-- Agent card: https://www.techjournal.it/.well-known/agent.json
-- API status: https://www.techjournal.it/api/status
+- [API catalog](https://www.techjournal.it/.well-known/api-catalog)
+- [Agent skills](https://www.techjournal.it/.well-known/agent-skills/index.json)
+- [Agent card](https://www.techjournal.it/.well-known/agent.json)
+- [API status](https://www.techjournal.it/api/status)
 
 ---
 
 ## API Access
 
-Base: https://www.techjournal.it/api
+Base: [Public API](https://www.techjournal.it/api)
 
-Documentation: https://www.techjournal.it/docs
+Documentation: [API documentation](https://www.techjournal.it/docs)
 
 Availability:
 - Check /api/status before batch requests
@@ -74,12 +76,10 @@ Scope:
 ### 1. Fetch latest articles
 
 Preferred:
-- Use RSS feed:
-  https://www.techjournal.it/feed.xml
+- Use the [RSS feed](https://www.techjournal.it/feed.xml)
 
 Alternative:
-- Parse homepage:
-  https://www.techjournal.it/
+- Parse the [homepage](https://www.techjournal.it/)
 
 ---
 

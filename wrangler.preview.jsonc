@@ -53,6 +53,7 @@
     "binding": "IMAGES"
   },
   "vars": {
-    "CLOUDFLARE_PREVIEW": "1"
+    "CLOUDFLARE_PREVIEW": "1",
+    "NEXT_PUBLIC_ADSENSE_SLOT_SKYSCRAPER_RIGHT": "9656210695"
   }
 }

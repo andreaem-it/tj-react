@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDialogFocus } from "@/components/useDialogFocus";
 import type { SearchResponse, SearchResult } from "@/lib/search/types";
+import { trackEvent } from "@/lib/analytics/client";
 
 /**
  * Tendina della ricerca globale.
@@ -84,6 +85,12 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as SearchResponse;
+        const resultCount = data.groups.reduce((total, group) => total + group.results.length, 0);
+        trackEvent(resultCount === 0 ? "search_no_results" : "search", {
+          search_term: trimmed,
+          search_location: "global_dialog",
+          result_count: resultCount,
+        });
         cacheRef.current.set(trimmed, data);
         setResponse(data);
         setActiveIndex(0);
@@ -92,6 +99,7 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
         // una richiesta è in volo, e non è una condizione da segnalare.
         if ((error as Error)?.name === "AbortError") return;
         console.error("[Search] richiesta fallita:", error);
+        trackEvent("search_error", { search_location: "global_dialog", error_type: "network" });
         setResponse({ query: trimmed, groups: [] });
       } finally {
         // Una query precedente abortita può terminare dopo che quella nuova è
@@ -108,10 +116,18 @@ export default function SearchDialog({ onClose }: SearchDialogProps) {
 
   const go = useCallback(
     (href: string) => {
+      const selected = flat.find((result) => result.href === href);
+      if (selected) {
+        trackEvent("select_content", {
+          content_type: selected.kind,
+          content_id: String(selected.id),
+          content_source: "global_search",
+        });
+      }
       onClose();
       router.push(href);
     },
-    [onClose, router],
+    [flat, onClose, router],
   );
 
   const submitFullSearch = useCallback(() => {

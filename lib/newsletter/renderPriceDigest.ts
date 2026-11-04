@@ -42,7 +42,7 @@ export function renderPriceDigestSubject(digest: PriceDigest): string {
 }
 
 export function renderPriceDigestHtml(digest: PriceDigest, options: RenderDigestOptions): string {
-  const { siteUrl, unsubscribeUrl } = options;
+  const { siteUrl, unsubscribeUrl, trackingOptOutUrl } = options;
   const base = siteUrl.replace(/\/$/, "");
   const title = options.title ?? "Le occasioni della settimana";
 
@@ -82,11 +82,12 @@ export function renderPriceDigestHtml(digest: PriceDigest, options: RenderDigest
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;">
   <tr>
     <td align="center" style="padding:24px 12px;">
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(17,24,39,.08);">
         <tr>
-          <td style="padding:28px 28px 8px 28px;font-family:${FONT};">
-            <a href="${escapeHtmlAttribute(base)}" style="font-size:20px;font-weight:800;color:#111827;text-decoration:none;">TechJournal</a>
-            <div style="font-size:13px;color:#6b7280;padding-top:4px;">${escapeText(title)} · ${escapeText(formatPeriod(digest.periodEnd))}</div>
+          <td style="padding:26px 28px 24px 28px;font-family:${FONT};border-top:5px solid #f5a623;">
+            <a href="${escapeHtmlAttribute(base)}" style="display:inline-block;text-decoration:none;"><img src="${escapeHtmlAttribute(`${base}/techjournal-logo-grey.png`)}" alt="TechJournal" width="220" style="display:block;width:220px;max-width:100%;height:auto;border:0;"></a>
+            <div style="font-size:13px;color:#6b7280;padding-top:8px;">${escapeText(title)} &nbsp;•&nbsp; ${escapeText(formatPeriod(digest.periodEnd))}</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;line-height:1.45;color:#1f2937;padding-top:22px;">I prezzi cambiano in fretta. Noi teniamo d'occhio quelli che meritano davvero.</div>
           </td>
         </tr>
         <tr><td style="padding:20px 28px 0 28px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table></td></tr>
@@ -97,7 +98,10 @@ export function renderPriceDigestHtml(digest: PriceDigest, options: RenderDigest
             </div>
             <div style="font-size:11px;color:#9ca3af;padding-top:14px;line-height:1.5;">
               Ricevi questa email perché ti sei iscritto alla newsletter di TechJournal.
+              Le email possono contenere pixel e link personalizzati solo in base alla preferenza di consenso registrata.
+              <a href="${escapeHtmlAttribute(`${base}/privacy#newsletter`)}" style="color:#9ca3af;">Informativa newsletter e pixel</a>.
               <a href="${escapeHtmlAttribute(unsubscribeUrl)}" style="color:#9ca3af;">Disiscriviti</a>.
+              ${trackingOptOutUrl ? `<a href="${escapeHtmlAttribute(trackingOptOutUrl)}" style="color:#9ca3af;">Disattiva il tracciamento di aperture e clic</a>, continuando a ricevere la newsletter.` : ""}
             </div>
           </td>
         </tr>
@@ -132,7 +136,11 @@ export function renderPriceDigestText(digest: PriceDigest, options: RenderDigest
   lines.push("---");
   lines.push(`Tutte le occasioni: ${base}/price-radar`);
   lines.push("");
+  lines.push(`Informativa newsletter e pixel: ${base}/privacy#newsletter`);
   lines.push(`Disiscriviti: ${options.unsubscribeUrl}`);
+  if (options.trackingOptOutUrl) {
+    lines.push(`Disattiva il tracciamento di aperture e clic: ${options.trackingOptOutUrl}`);
+  }
 
   return lines.join("\n");
 }

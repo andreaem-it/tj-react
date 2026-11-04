@@ -249,7 +249,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
       <FaqStructuredData entries={enrichment.faq} />
       <div className="flex flex-col lg:flex-row gap-8">
-        <article className="flex-1 min-w-0 w-full max-w-full bg-content-bg rounded-lg overflow-hidden">
+        <article
+          className="flex-1 min-w-0 w-full max-w-full bg-content-bg rounded-lg overflow-hidden"
+          data-article-id={post.id}
+          data-article-category={post.categoryName}
+          data-article-author={post.authorName}
+          data-content-type={enrichment.contentType}
+        >
           <header className="w-full max-w-full min-w-0 px-3 pt-6 pb-4 md:p-8 box-border">
             <Breadcrumbs items={breadcrumbItems} />
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 max-w-full">
@@ -338,7 +344,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <div id={`article-reading-${post.id}`}>
               <ArticleBody safeHtml={enrichment.safeHtml} postId={post.id} />
             </div>
-            <ArticleReadingTracker postId={post.id} targetId={`article-reading-${post.id}`} />
+            <ArticleReadingTracker
+              postId={post.id}
+              targetId={`article-reading-${post.id}`}
+              category={post.categoryName}
+              author={post.authorName}
+              contentType={enrichment.contentType}
+              wordCount={enrichment.wordCount}
+              readingMinutes={enrichment.readingMinutes}
+              publishedAt={post.date}
+            />
 
             {/* Price Radar dentro l'articolo: il prezzo di cui si parla, con la
                 media registrata e la valutazione, invece del solo "è in

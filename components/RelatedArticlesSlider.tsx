@@ -22,7 +22,7 @@ export default function RelatedArticlesSlider({ posts, heading }: RelatedArticle
   const canNext = currentSlide < totalSlides - 1;
 
   return (
-    <section className="mt-8 pt-6 border-t border-border">
+    <section className="mt-8 pt-6 border-t border-border" data-content-source="related_articles">
       <div className="flex items-center justify-between gap-4 mb-4">
         <h2 className="text-foreground text-lg font-semibold">
           {heading ?? "Articoli correlati"}

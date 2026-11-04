@@ -176,6 +176,19 @@ test("il link di disiscrizione è sempre presente", () => {
   assert.match(renderDigestText(digest, OPTIONS), /Disiscriviti: https:\/\/example\.test/);
 });
 
+test("il footer consente la revoca granulare del tracciamento", () => {
+  const digest = digestOf([post("A", 1), post("B", 2), post("C", 3)])!;
+  const options = {
+    ...OPTIONS,
+    trackingOptOutUrl: "{{ revoke_open_pixel_tracking }}",
+  };
+  const html = renderDigestHtml(digest, options);
+  assert.match(html, /revoke_open_pixel_tracking/);
+  assert.match(html, /Disattiva il tracciamento/);
+  assert.match(html, /Informativa newsletter e pixel/);
+  assert.match(renderDigestText(digest, options), /Disattiva il tracciamento/);
+});
+
 test("il markup nei titoli viene neutralizzato", () => {
   const digest = digestOf([
     post('Titolo con <script>alert("x")</script>', 1),

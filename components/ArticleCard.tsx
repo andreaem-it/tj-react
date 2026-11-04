@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { PostListItem } from "@/lib/api";
 import { getCategoryUrlSlugFromWpSlug } from "@/lib/categorySlugs";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import { withCloudflareImageAspect } from "@/lib/cloudflareImageUrl";
 
 interface ArticleCardProps {
   post: PostListItem;
@@ -32,10 +33,10 @@ export default function ArticleCard({ post, variant = "default", size, priority 
   const showHeroImage = variant === "hero" && post.imageUrl && !heroImageError;
   const heroSizes =
     size === "large"
-      ? "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 50vw"
+      ? "(max-width: 768px) 50vw, (max-width: 1280px) 50vw, 50vw"
       : size === "medium"
-        ? "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-        : "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw";
+        ? "(max-width: 768px) 50vw, (max-width: 1280px) 50vw, 25vw"
+        : "(max-width: 768px) 50vw, (max-width: 1280px) 50vw, 25vw";
 
   if (variant === "strip") {
     return (
@@ -43,7 +44,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
         <div className="relative overflow-hidden rounded-lg aspect-[4/3] bg-content-bg mb-2">
           {post.imageUrl && (
             <Image
-              src={post.imageUrl}
+              src={withCloudflareImageAspect(post.imageUrl, 4, 3)}
               alt={post.imageAlt}
               fill
               className="object-cover transition-transform md:group-hover:scale-105"
@@ -72,7 +73,7 @@ export default function ArticleCard({ post, variant = "default", size, priority 
       >
         {showHeroImage ? (
           <Image
-            src={post.imageUrl!}
+            src={withCloudflareImageAspect(post.imageUrl!, 16, 9)}
             alt={post.imageAlt}
             fill
             className="object-cover transition-transform md:group-hover:scale-105"
@@ -122,11 +123,11 @@ export default function ArticleCard({ post, variant = "default", size, priority 
       >
         {post.imageUrl ? (
           <Image
-            src={post.imageUrl}
+            src={withCloudflareImageAspect(post.imageUrl, 16, 10)}
             alt={post.imageAlt}
             fill
             className="object-cover transition-transform md:group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 50vw, 33vw"
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             priority={priority}

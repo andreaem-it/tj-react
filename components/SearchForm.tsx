@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef } from "react";
+import { trackEvent } from "@/lib/analytics/client";
 
 export default function SearchForm({ defaultQuery = "" }: { defaultQuery?: string }) {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function SearchForm({ defaultQuery = "" }: { defaultQuery?: strin
     e.preventDefault();
     const value = inputRef.current?.value?.trim();
     if (value) {
+      trackEvent("search", { search_term: value, search_location: "search_page" });
       router.push(`/search?q=${encodeURIComponent(value)}`);
     }
   };

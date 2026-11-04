@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import AdSenseUnit from "./AdSenseUnit";
 
 interface BannerPlaceholderProps {
@@ -18,13 +19,18 @@ export default function BannerPlaceholder({
   minHeight = 600,
   adSlot,
 }: BannerPlaceholderProps) {
+  const pathname = usePathname();
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
   const asideContent =
     clientId?.trim() && adSlot?.trim() ? (
       <AdSenseUnit
+        // The root layout survives client-side navigation. Remount the slot so
+        // every user-requested page change sends a fresh AdSense request.
+        key={`${side}:${pathname}`}
         adSlot={adSlot}
         adFormat="vertical"
+        adPosition={`sidebar_${side}`}
         fullWidthResponsive={false}
         deferUntilVisible={false}
         rootMargin="400px"

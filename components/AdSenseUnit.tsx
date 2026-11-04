@@ -22,11 +22,27 @@ export interface AdSenseUnitProps {
   deferUntilVisible?: boolean;
   /** Margine observer viewport (es. "300px") */
   rootMargin?: string;
+  /** Posizione editoriale usata nei report GA4 (es. sidebar_left, article_inline). */
+  adPosition?: string;
 }
 
 const placeholderClassName =
   "rounded border border-dashed border-border bg-surface-overlay flex items-center justify-center text-muted text-xs";
 const ADSENSE_NEED_EVENT = "techjournal:adsense-needed";
+const GA_NEED_EVENT = "techjournal:ga-needed";
+
+function sendAdEvent(
+  eventName: "ad_banner_loaded" | "ad_banner_view" | "ad_banner_unfilled",
+  params: Record<string, string>,
+): boolean {
+  if (typeof window === "undefined") return false;
+  if (!window.gtag) {
+    window.dispatchEvent(new Event(GA_NEED_EVENT));
+    return false;
+  }
+  window.gtag("event", eventName, params);
+  return true;
+}
 
 /**
  * Unità pubblicitaria Google AdSense. Richiede che AdSenseScript sia caricato nel layout
@@ -41,10 +57,13 @@ export default function AdSenseUnit({
   className = "",
   deferUntilVisible = true,
   rootMargin = "300px",
+  adPosition = "unspecified",
 }: AdSenseUnitProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const insRef = useRef<HTMLModElement>(null);
   const pushedRef = useRef(false);
+  const fillStatusRef = useRef<"filled" | "unfilled" | null>(null);
+  const viewSentRef = useRef(false);
   const requestedScriptRef = useRef(false);
   const [useRealAd, setUseRealAd] = useState(false);
   const [isVisible, setIsVisible] = useState(!deferUntilVisible);
@@ -118,6 +137,77 @@ export default function AdSenseUnit({
     return () => clearInterval(interval);
   }, [adSlot, useRealAd, isVisible]);
 
+  useEffect(() => {
+    if (!useRealAd || !isVisible || !insRef.current) return;
+    const adElement = insRef.current;
+    const eventParams = {
+      ad_slot: adSlot,
+      ad_format: adFormat,
+      ad_position: adPosition,
+      consent_marketing: "granted",
+    };
+    let viewTimer: ReturnType<typeof setTimeout> | null = null;
+    let analyticsRetry: ReturnType<typeof setInterval> | null = null;
+
+    const emitWithRetry = (
+      eventName: "ad_banner_loaded" | "ad_banner_view" | "ad_banner_unfilled",
+    ) => {
+      if (sendAdEvent(eventName, eventParams) || analyticsRetry) return;
+      let attempts = 0;
+      analyticsRetry = setInterval(() => {
+        attempts += 1;
+        if (sendAdEvent(eventName, eventParams) || attempts >= 20) {
+          if (analyticsRetry) clearInterval(analyticsRetry);
+          analyticsRetry = null;
+        }
+      }, 250);
+    };
+
+    const readFillStatus = () => {
+      const status = adElement.getAttribute("data-ad-status");
+      if (status !== "filled" && status !== "unfilled") return;
+      if (fillStatusRef.current === status) return;
+      fillStatusRef.current = status;
+      emitWithRetry(status === "filled" ? "ad_banner_loaded" : "ad_banner_unfilled");
+    };
+
+    const mutationObserver = new MutationObserver(readFillStatus);
+    mutationObserver.observe(adElement, {
+      attributes: true,
+      attributeFilter: ["data-ad-status"],
+    });
+    readFillStatus();
+
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        const isViewable =
+          entry?.isIntersecting && entry.intersectionRatio >= 0.5 && fillStatusRef.current === "filled";
+        if (!isViewable) {
+          if (viewTimer) clearTimeout(viewTimer);
+          viewTimer = null;
+          return;
+        }
+        if (viewSentRef.current || viewTimer) return;
+        viewTimer = setTimeout(() => {
+          viewTimer = null;
+          if (viewSentRef.current || fillStatusRef.current !== "filled") return;
+          viewSentRef.current = true;
+          emitWithRetry("ad_banner_view");
+          visibilityObserver.disconnect();
+        }, 1000);
+      },
+      { threshold: [0, 0.5, 1] },
+    );
+    visibilityObserver.observe(adElement);
+
+    return () => {
+      mutationObserver.disconnect();
+      visibilityObserver.disconnect();
+      if (viewTimer) clearTimeout(viewTimer);
+      if (analyticsRetry) clearInterval(analyticsRetry);
+    };
+  }, [adFormat, adPosition, adSlot, isVisible, useRealAd]);
+
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
   if (!clientId?.trim() || !adSlot?.trim()) return null;
 
@@ -146,7 +236,6 @@ export default function AdSenseUnit({
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive={fullWidthResponsive ? "true" : "false"}
-        aria-label="Pubblicità"
       />
     </div>
   );

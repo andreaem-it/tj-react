@@ -13,15 +13,15 @@ export default function HeaderSkeleton() {
           </div>
           <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="TechJournal">
             <Image
-              src="/techjournal-logo-grey.png"
+              src="/techjournal-logo-grey.webp"
               alt=""
-              width={1640}
-              height={263}
+              width={449}
+              height={72}
               className="h-9 w-auto object-contain dark:hidden"
               priority
               aria-hidden
             />
-            <Image src="/techjournal-logo.png" alt="" width={1645} height={265} className="hidden h-9 w-auto object-contain dark:block" priority aria-hidden />
+            <Image src="/techjournal-logo.webp" alt="" width={447} height={72} className="hidden h-9 w-auto object-contain dark:block" priority aria-hidden />
           </Link>
           <div className="flex items-center gap-4 shrink-0">
             <Skeleton className="w-6 h-6 rounded" />

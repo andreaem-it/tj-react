@@ -9,6 +9,7 @@ const GA_NEED_EVENT = "techjournal:ga-needed";
 const hasIubendaConfig =
   Boolean(process.env.NEXT_PUBLIC_IUBENDA_SITE_ID?.trim()) &&
   Boolean(process.env.NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID?.trim());
+const useGoogleCmp = process.env.NEXT_PUBLIC_CONSENT_PROVIDER === "google";
 
 /**
  * Google Analytics 4 con Consent Mode v2.
@@ -34,7 +35,9 @@ export default function GoogleAnalytics() {
     const onFirstInteraction = () => enable();
     const onGaNeeded = () => enable();
 
-    if (!hasIubendaConfig) {
+    if (useGoogleCmp && window.__techjournalGoogleConsent?.analytics) enable();
+
+    if (!hasIubendaConfig && !useGoogleCmp) {
       window.addEventListener("pointerdown", onFirstInteraction, { once: true, passive: true });
       window.addEventListener("keydown", onFirstInteraction, { once: true });
       window.addEventListener("scroll", onFirstInteraction, { once: true, passive: true });
@@ -43,7 +46,7 @@ export default function GoogleAnalytics() {
 
     return () => {
       cancelled = true;
-      if (!hasIubendaConfig) {
+      if (!hasIubendaConfig && !useGoogleCmp) {
         window.removeEventListener("pointerdown", onFirstInteraction);
         window.removeEventListener("keydown", onFirstInteraction);
         window.removeEventListener("scroll", onFirstInteraction);
@@ -54,7 +57,12 @@ export default function GoogleAnalytics() {
 
   if (!measurementId || !shouldLoad) return null;
 
-  const consentScript = `
+  const consentScript = useGoogleCmp ? `
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${measurementId}', { anonymize_ip: true });
+  ` : `
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCategoryUrlSlugFromWpSlug, type PostListItem } from "@/lib/api";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import { withCloudflareImageAspect } from "@/lib/cloudflareImageUrl";
 
 interface ArticleCardStaticProps {
   post: PostListItem;
@@ -39,11 +40,11 @@ export default function ArticleCardStatic({ post, priority }: ArticleCardStaticP
       >
         {post.imageUrl ? (
           <Image
-            src={post.imageUrl}
+            src={withCloudflareImageAspect(post.imageUrl, 16, 10)}
             alt={post.imageAlt}
             fill
             className="object-cover transition-transform md:group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 50vw, 33vw"
             placeholder="blur"
             blurDataURL={BLUR_DATA_URL}
             priority={priority}

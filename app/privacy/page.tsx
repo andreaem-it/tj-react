@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 };
 
 const DEFAULT_PRIVACY_PATH = "https://www.iubenda.com/privacy-policy";
+const useGoogleCmp = process.env.NEXT_PUBLIC_CONSENT_PROVIDER === "google";
 
 function getPrivacyUrl(): string | null {
   const url = process.env.NEXT_PUBLIC_IUBENDA_PRIVACY_URL;
@@ -42,14 +43,37 @@ function getPolicyId(): string | null {
 }
 
 export default function PrivacyPage() {
-  const privacyUrl = getPrivacyUrl();
-  const cookieUrl = getCookiePolicyUrl();
-  const policyId = getPolicyId();
+  const privacyUrl = useGoogleCmp
+    ? process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL?.trim() ?? null
+    : getPrivacyUrl();
+  const cookieUrl = useGoogleCmp
+    ? process.env.NEXT_PUBLIC_COOKIE_POLICY_URL?.trim() ?? null
+    : getCookiePolicyUrl();
+  const policyId = useGoogleCmp ? null : getPolicyId();
   const hasAny = policyId || privacyUrl || cookieUrl;
 
   return (
     <div className="max-w-3xl mx-auto px-0 md:px-4 py-12">
       <h1 className="text-2xl font-bold text-foreground mb-8">Privacy e Cookie policy</h1>
+      <section id="newsletter" className="mb-10 scroll-mt-24 space-y-3 text-sm leading-6 text-muted">
+        <h2 className="text-xl font-semibold text-foreground">Newsletter e tracciamento nelle email</h2>
+        <p>
+          Quando ti iscrivi, TechJournal usa il tuo indirizzo email per inviarti la newsletter
+          richiesta tramite Brevo. L’indirizzo viene conservato fino alla disiscrizione; la prova
+          delle preferenze espresse può essere conservata per adempiere agli obblighi di legge.
+        </p>
+        <p>
+          Solo se presti il consenso facoltativo, le email possono contenere pixel e link
+          personalizzati che associano al tuo contatto aperture e clic, insieme a dati tecnici
+          come data e ora, indirizzo IP, dispositivo e client di posta. Usiamo queste informazioni
+          per misurare e migliorare contenuti, frequenza e prestazioni della newsletter.
+        </p>
+        <p>
+          Il rifiuto non limita la newsletter. Puoi revocare soltanto il tracciamento dal link
+          presente nel footer di ogni email, continuando a riceverla, oppure puoi disiscriverti
+          del tutto. La revoca vale per gli invii successivi.
+        </p>
+      </section>
       {hasAny ? (
         <div className="space-y-10 text-muted">
           {policyId && privacyUrl && (
@@ -102,10 +126,8 @@ export default function PrivacyPage() {
             normativa italiana.
           </p>
           <p>
-            Per l’informativa completa e la cookie policy configura{" "}
-            <code className="text-foreground">NEXT_PUBLIC_IUBENDA_SITE_ID</code> e{" "}
-            <code className="text-foreground">NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID</code> in .env
-            oppure contatta il titolare indicato nel footer.
+            Per l’informativa completa e la cookie policy configura gli URL delle policy nel file
+            di ambiente oppure contatta il titolare indicato nel footer.
           </p>
         </div>
       )}

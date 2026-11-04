@@ -81,7 +81,8 @@ export async function GET(request: NextRequest) {
      * Resta visibile nell'anteprima perché un digest senza disiscrizione non è
      * spedibile, e chi rivede deve vedere che il posto c'è.
      */
-    unsubscribeUrl: `${SITE_URL.replace(/\/$/, "")}/privacy#newsletter`,
+    unsubscribeUrl: "{{ unsubscribe }}",
+    trackingOptOutUrl: "{{ revoke_open_pixel_tracking }}",
   };
 
   if (kind === "price-radar-weekly") {

@@ -7,6 +7,7 @@ const projectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID?.trim();
 const hasIubendaConfig =
   Boolean(process.env.NEXT_PUBLIC_IUBENDA_SITE_ID?.trim()) &&
   Boolean(process.env.NEXT_PUBLIC_IUBENDA_COOKIE_POLICY_ID?.trim());
+const useGoogleCmp = process.env.NEXT_PUBLIC_CONSENT_PROVIDER === "google";
 
 /**
  * Fallback Clarity senza Iubenda (solo dev/local).
@@ -16,7 +17,7 @@ export default function MicrosoftClarity() {
   const initialized = useRef(false);
 
   useEffect(() => {
-    if (!projectId || hasIubendaConfig || typeof window === "undefined") return;
+    if (!projectId || useGoogleCmp || hasIubendaConfig || typeof window === "undefined") return;
     let cancelled = false;
 
     const init = () => {

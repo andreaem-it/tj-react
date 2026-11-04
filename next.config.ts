@@ -1,13 +1,7 @@
 import type { NextConfig } from "next";
 
-/**
- * Safe-by-default: bypass `/_next/image` to avoid production outages when
- * external image optimization returns 402 (quota/billing).
- *
- * Set NEXT_IMAGE_PASSTHROUGH=0 to explicitly re-enable Next/Vercel optimizer.
- */
-const usePassthroughImages = process.env.NEXT_IMAGE_PASSTHROUGH !== "0";
-
+// Images on static.techjournal.it use the custom Cloudflare Worker loader.
+// Local and third-party images keep their original URL.
 const nextConfig: NextConfig = {
   // The home aggregates several cached upstream reads. Cloudflare builds must
   // tolerate a transient slow origin without failing the whole release.
@@ -93,6 +87,19 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        source: "/",
+        headers: [
+          // Keep browser caching under Next.js control while allowing the
+          // Cloudflare edge to serve the public homepage without invoking the
+          // Worker on every request. Stale content is refreshed in background.
+          {
+            key: "Cloudflare-CDN-Cache-Control",
+            value: "public, max-age=300, stale-while-revalidate=3600, stale-if-error=86400",
+          },
+          ...securityHeaders,
+        ],
+      },
+      {
         source: "/:path*",
         headers: securityHeaders,
       },
@@ -133,7 +140,10 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    unoptimized: usePassthroughImages,
+    loader: "custom",
+    loaderFile: "./lib/cloudflareImageLoader.ts",
+    deviceSizes: [320, 480, 640, 768, 960, 1200, 1600, 1920],
+    imageSizes: [48, 64, 96, 128, 256, 384],
     remotePatterns: [
       { protocol: "https", hostname: "www.techjournal.it", pathname: "/**" },
       { protocol: "https", hostname: "backend.techjournal.it", pathname: "/**" },

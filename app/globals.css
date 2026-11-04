@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Le utility `dark:*` seguono il tema scelto nel sito, non quello del sistema. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Keep assistive-only content hidden even when the generated utility sheet is
    trimmed by the deployment build. WebMCP forms still need to remain in the
    document, so `display: none` is intentionally avoided. */

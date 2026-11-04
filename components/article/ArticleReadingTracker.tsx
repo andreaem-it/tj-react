@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { reachedReadingCheckpoint, readingDepthPercent } from "@/lib/analytics/reading";
+import { trackEvent } from "@/lib/analytics/client";
 
 const SESSION_KEY = "tj-reading-session-v1";
 
@@ -13,7 +14,20 @@ function visitorKey(): string {
   return created;
 }
 
-export default function ArticleReadingTracker({ postId, targetId }: { postId: number; targetId: string }) {
+interface ArticleReadingTrackerProps {
+  postId: number;
+  targetId: string;
+  category: string;
+  author: string;
+  contentType: string;
+  wordCount: number;
+  readingMinutes: number;
+  publishedAt: string;
+}
+
+export default function ArticleReadingTracker({
+  postId, targetId, category, author, contentType, wordCount, readingMinutes, publishedAt,
+}: ArticleReadingTrackerProps) {
   useEffect(() => {
     const target = document.getElementById(targetId);
     if (!target) return;
@@ -22,6 +36,7 @@ export default function ArticleReadingTracker({ postId, targetId }: { postId: nu
     let maxDepth = 0;
     let lastCheckpoint = 0;
     let activeMs = 0;
+    let engagedSent = false;
     let activeSince = document.visibilityState === "visible" ? performance.now() : null;
     let frame: number | null = null;
 
@@ -57,7 +72,24 @@ export default function ArticleReadingTracker({ postId, targetId }: { postId: nu
       const checkpoint = reachedReadingCheckpoint(maxDepth, lastCheckpoint);
       if (checkpoint != null) {
         lastCheckpoint = checkpoint;
+        trackEvent(checkpoint >= 90 ? "article_complete" : `article_read_${checkpoint}`, {
+          article_id: String(postId),
+          article_category: category,
+          article_author: author,
+          content_type: contentType,
+          word_count: wordCount,
+          reading_time: readingMinutes,
+          publish_age_days: Math.max(0, Math.floor((Date.now() - new Date(publishedAt).getTime()) / 86400000)),
+          scroll_depth: checkpoint,
+        });
         report();
+      }
+      if (!engagedSent && maxDepth >= 50 && activeSeconds() >= 30) {
+        engagedSent = true;
+        trackEvent("article_engaged", {
+          article_id: String(postId), article_category: category, article_author: author,
+          content_type: contentType, reading_time: readingMinutes,
+        });
       }
     };
     const scheduleMeasure = () => {
@@ -86,7 +118,7 @@ export default function ArticleReadingTracker({ postId, targetId }: { postId: nu
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("pagehide", onPageHide);
     };
-  }, [postId, targetId]);
+  }, [author, category, contentType, postId, publishedAt, readingMinutes, targetId, wordCount]);
 
   return null;
 }
