@@ -60,6 +60,7 @@ function logSearchQueryBestEffort(query: string, resultsCount: number): void {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, resultsCount }),
+    signal: AbortSignal.timeout(5_000),
   }).catch((e) => {
     console.error("[search] log query non riuscito (non bloccante):", e);
   });

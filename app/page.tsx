@@ -1,10 +1,8 @@
 import { Suspense } from "react";
 import {
   fetchHome,
-  fetchMostReadPosts,
   fetchPosts,
   fetchPostsByCategorySlug,
-  fetchTrendingWeekAndMonth,
   type PostListItem,
 } from "@/lib/api";
 import HomeContent from "@/components/HomeContent";
