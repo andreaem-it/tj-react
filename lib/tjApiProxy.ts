@@ -240,6 +240,16 @@ export async function proxyToTjApi(
     }
     const upstreamCt = res.headers.get("content-type");
 
+    // 204/205/304 non possono avere un body secondo Fetch. Evita sia di
+    // classificarli come JSON non valido sia di costruire una Response illegale
+    // con la stringa vuota come corpo.
+    if (res.status === 204 || res.status === 205 || res.status === 304) {
+      return new NextResponse(null, {
+        status: res.status,
+        headers: buildUpstreamResponseHeaders(res),
+      });
+    }
+
     if (pathname.startsWith("/api/")) {
       const trimmed = text.trimStart();
       const looksJson =

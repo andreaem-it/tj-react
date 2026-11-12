@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { trackEvent } from "@/lib/analytics/client";
+import { errorDetails, reportClientDiagnostic } from "@/lib/diagnostics/client";
 
 declare global {
   interface Window {
@@ -16,6 +17,15 @@ declare global {
  */
 export default function AnalyticsEvents() {
   useEffect(() => {
+    const sourceHost = (source: string | null | undefined) => {
+      if (!source) return "unknown";
+      try {
+        return new URL(source, window.location.href).hostname || "inline";
+      } catch {
+        return "unknown";
+      }
+    };
+
     const onClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -68,17 +78,69 @@ export default function AnalyticsEvents() {
     };
 
     const onError = (event: ErrorEvent) => {
-      trackEvent("content_load_error", {
-        error_type: "javascript",
-        error_source: event.filename ? new URL(event.filename, window.location.href).hostname : "unknown",
+      const details = errorDetails(event.error ?? event.message);
+      trackEvent("javascript_error", {
+        error_type: details.errorType,
+        error_source: sourceHost(event.filename),
+      });
+      reportClientDiagnostic({
+        eventName: "javascript_error",
+        errorType: details.errorType,
+        message: details.message,
+        stack: details.stack,
+        source: event.filename,
+        context: event.lineno ? `line:${event.lineno}:${event.colno}` : "window_error",
+      });
+    };
+
+    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const details = errorDetails(event.reason);
+      trackEvent("javascript_error", { error_type: "unhandled_rejection", error_source: "promise" });
+      reportClientDiagnostic({
+        eventName: "unhandled_rejection",
+        errorType: details.errorType,
+        message: details.message,
+        stack: details.stack,
+        context: "window_unhandledrejection",
+      });
+    };
+
+    const onResourceError = (event: Event) => {
+      const element = event.target;
+      if (!(element instanceof HTMLElement)) return;
+      const tag = element.tagName.toLowerCase();
+      const source =
+        element instanceof HTMLImageElement
+          ? element.currentSrc || element.src
+          : element instanceof HTMLScriptElement
+            ? element.src
+            : element instanceof HTMLLinkElement
+              ? element.href
+              : element instanceof HTMLMediaElement
+                ? element.currentSrc || element.src
+                : null;
+      if (!source) return;
+      const isContent = tag === "img" || tag === "audio" || tag === "video";
+      const eventName = isContent ? "content_load_error" : "resource_load_error";
+      trackEvent(eventName, { error_type: tag, error_source: sourceHost(source) });
+      reportClientDiagnostic({
+        eventName,
+        errorType: tag,
+        message: `Impossibile caricare la risorsa ${tag}`,
+        source,
+        context: isContent ? "content_asset" : "page_resource",
       });
     };
 
     document.addEventListener("click", onClick, true);
+    document.addEventListener("error", onResourceError, true);
     window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
     return () => {
       document.removeEventListener("click", onClick, true);
+      document.removeEventListener("error", onResourceError, true);
       window.removeEventListener("error", onError);
+      window.removeEventListener("unhandledrejection", onUnhandledRejection);
     };
   }, []);
 

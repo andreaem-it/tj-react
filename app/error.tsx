@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { errorDetails, reportClientDiagnostic } from "@/lib/diagnostics/client";
 
 export default function Error({
   error,
@@ -12,6 +13,15 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error("[error boundary]", error);
+    const details = errorDetails(error);
+    reportClientDiagnostic({
+      eventName: "app_render_error",
+      errorType: details.errorType,
+      message: details.message,
+      stack: details.stack,
+      digest: error.digest,
+      context: "root_error_boundary",
+    });
   }, [error]);
 
   return (

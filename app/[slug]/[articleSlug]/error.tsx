@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import TjLink from "@/components/TjLink";
+import { errorDetails, reportClientDiagnostic } from "@/lib/diagnostics/client";
 
 export default function ArticleError({
   error,
@@ -12,6 +13,15 @@ export default function ArticleError({
 }) {
   useEffect(() => {
     console.error("[article-error]", error);
+    const details = errorDetails(error);
+    reportClientDiagnostic({
+      eventName: "content_load_error",
+      errorType: details.errorType,
+      message: details.message,
+      stack: details.stack,
+      digest: error.digest,
+      context: "article_error_boundary",
+    });
   }, [error]);
 
   return (
